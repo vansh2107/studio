@@ -66,17 +66,18 @@ export function AppSidebar() {
         <SidebarMenu>
           {visibleMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href}>
-                <SidebarMenuButton
-                  isActive={isActive(item.href)}
-                  tooltip={{ children: item.label, side: 'right' }}
-                >
+              <SidebarMenuButton
+                asChild
+                isActive={isActive(item.href)}
+                tooltip={{ children: item.label, side: 'right' }}
+              >
+                <Link href={item.href}>
                   <item.icon />
                   <span className={cn(sidebarState === 'collapsed' && 'sr-only')}>
                     {item.label}
                   </span>
-                </SidebarMenuButton>
-              </Link>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
