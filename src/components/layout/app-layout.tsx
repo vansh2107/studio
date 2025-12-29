@@ -1,6 +1,6 @@
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/app-header';
-import { SidebarProvider, SidebarInset, SidebarRail } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/toaster';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -8,9 +8,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <div className="min-h-screen">
         <AppSidebar />
-        <div className="flex flex-col md:pl-[var(--sidebar-width-icon)] group-data-[collapsible=icon]:md:pl-[var(--sidebar-width-icon)] group-data-[state=expanded]:md:pl-[var(--sidebar-width)] transition-[padding-left] duration-200 ease-linear">
+        <div className="flex flex-col transition-[padding-left] duration-200 ease-linear md:pl-[var(--sidebar-width-icon)] group-data-[state=expanded]:md:pl-[var(--sidebar-width)]">
           <AppHeader />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background">
+          <main className="flex-1 bg-background p-4 sm:p-6 lg:p-8">
             {children}
           </main>
         </div>
