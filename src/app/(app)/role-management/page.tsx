@@ -209,7 +209,7 @@ export default function RoleManagementPage() {
                   </TableCell>
                 </TableRow>
               ))}
-            </Body>
+            </TableBody>
           </Table>
         </CardContent>
       </Card>
