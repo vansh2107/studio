@@ -43,7 +43,13 @@ export function AppSidebar() {
   };
 
   if (!userRole) {
-    return null; // Or a loading skeleton
+    return (
+      <Sidebar>
+        <SidebarHeader>
+          <AscendWealthLogo />
+        </SidebarHeader>
+      </Sidebar>
+    );
   }
 
   const visibleMenuItems = menuItems.filter(item => item.roles.includes(userRole));
