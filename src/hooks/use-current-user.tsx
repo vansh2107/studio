@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { User, Role, Permission } from '@/lib/types';
-import { users, roles, userMappings, HIERARCHY } from '@/lib/mock-data';
+import { users, roles, userMappings } from '@/lib/mock-data';
+import { HIERARCHY } from '@/lib/constants';
 
 // --- Helper Functions ---
 
@@ -84,7 +85,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setImpersonatedUser(null);
     // In a real app, you'd redirect to a login page.
     // Here we'll just log in the default user.
-    login(users[0].id);
+    if (users.length > 0) {
+      login(users[0].id);
+    }
   }, [login]);
 
   const impersonate = useCallback((userId: string) => {
