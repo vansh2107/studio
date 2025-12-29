@@ -10,8 +10,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { AscendWealthLogo } from '@/components/icons/logo';
 import {

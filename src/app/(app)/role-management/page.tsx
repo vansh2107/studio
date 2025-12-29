@@ -158,59 +158,61 @@ export default function RoleManagementPage() {
       </div>
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Role</TableHead>
-                <TableHead>Permissions</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {roles.map((role) => (
-                <TableRow key={role.name}>
-                  <TableCell className="font-medium">{role.name}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {role.permissions.map(p => <Badge key={p} variant="outline">{p}</Badge>)}
-                      {role.permissions.length === 0 && <span className="text-muted-foreground text-xs">No permissions</span>}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {role.name !== 'SUPER_ADMIN' ? (
-                      <div className="flex gap-2 justify-end">
-                        <RoleEditor role={role} onSave={handleSaveRole}>
-                          <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
-                        </RoleEditor>
-
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" disabled={isRoleInUse(role.name)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the <strong>{role.name}</strong> role.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => handleDeleteRole(role.name)}>Delete</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Not editable</span>
-                    )}
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Permissions</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {roles.map((role) => (
+                  <TableRow key={role.name}>
+                    <TableCell className="font-medium">{role.name}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {role.permissions.map(p => <Badge key={p} variant="outline">{p}</Badge>)}
+                        {role.permissions.length === 0 && <span className="text-muted-foreground text-xs">No permissions</span>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {role.name !== 'SUPER_ADMIN' ? (
+                        <div className="flex gap-2 justify-end">
+                          <RoleEditor role={role} onSave={handleSaveRole}>
+                            <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
+                          </RoleEditor>
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" disabled={isRoleInUse(role.name)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete the <strong>{role.name}</strong> role.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => handleDeleteRole(role.name)}>Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Not editable</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
