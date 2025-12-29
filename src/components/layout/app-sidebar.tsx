@@ -22,6 +22,8 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import { cn } from '@/lib/utils';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE', 'CUSTOMER'] },
@@ -36,6 +38,7 @@ const menuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { effectiveUser } = useCurrentUser();
+  const { state: sidebarState } = useSidebar();
   const userRole = effectiveUser?.role;
 
   const isActive = (href: string) => {
@@ -63,16 +66,18 @@ export function AppSidebar() {
         <SidebarMenu>
           {visibleMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive(item.href)}
-                tooltip={{ children: item.label, side: 'right' }}
-              >
-                <Link href={item.href}>
+              <Link href={item.href} passHref legacyBehavior>
+                <SidebarMenuButton
+                  as="a"
+                  isActive={isActive(item.href)}
+                  tooltip={{ children: item.label, side: 'right' }}
+                >
                   <item.icon />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
+                  <span className={cn(sidebarState === 'collapsed' && 'sr-only')}>
+                    {item.label}
+                  </span>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -83,3 +88,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    

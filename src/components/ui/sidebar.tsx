@@ -511,42 +511,16 @@ const SidebarMenuButton = React.forwardRef<
     const Comp = asChild ? Slot : "button"
     const { isMobile, state } = useSidebar()
     
-    const buttonContent = (
-      <>
-        {React.Children.map(children, (child) => {
-          if (React.isValidElement(child) && typeof child.type !== 'string') {
-            return child; // Keep icons etc.
-          }
-          if (state === 'collapsed') {
-            return null; // Hide text spans when collapsed
-          }
-          return child;
-        })}
-         <span className={cn('whitespace-nowrap', state === 'collapsed' && !isMobile ? 'sr-only' : 'flex-1 text-left')}>
-          {React.Children.map(children, child => {
-            if (typeof child === 'string') {
-              return child;
-            }
-            if (React.isValidElement(child) && child.props.children && typeof child.props.children === 'string') {
-               // This is fragile, depends on span being the text holder
-               if (child.type === 'span') return child.props.children;
-            }
-            return null;
-          })}
-        </span>
-      </>
-    );
-
     const button = (
       <Comp
         ref={ref}
         data-sidebar="menu-button"
         data-size={size}
         data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+        className={cn(sidebarMenuButtonVariants({ variant, size, className }))}
         {...props}
       >
-        {buttonContent}
+        {children}
       </Comp>
     )
 
