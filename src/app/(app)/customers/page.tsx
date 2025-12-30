@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -20,78 +20,79 @@ import { MoreHorizontal, PlusCircle, Eye, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FamilyFormModal } from '@/components/customers/family-form-modal';
 import { ViewFamilyModal } from '@/components/customers/view-family-modal';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Family } from '@/lib/types';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { families as mockFamilies } from '@/lib/mock-data';
+import Modal from '@/components/ui/Modal';
+import {
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog'; // Keep these for styling similarity
+
+type ActiveModal = 'form' | 'view' | 'delete' | null;
 
 export default function CustomersPage() {
   const { hasPermission } = useCurrentUser();
   const { toast } = useToast();
-  
-  const [families, setFamilies] = useState<Family[]>([]);
-  const [loadingFamilies, setLoadingFamilies] = useState(true);
 
-  // State management for modals
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [families, setFamilies] = useState<Family[]>(mockFamilies);
+  const [loadingFamilies, setLoadingFamilies] = useState(false); // Kept for skeleton demo
+
+  const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
 
 
-  useEffect(() => {
-    // Simulate fetching data
+  // Simulate fetching data
+  useMemo(() => {
+    setLoadingFamilies(true);
     setTimeout(() => {
       setFamilies(mockFamilies);
       setLoadingFamilies(false);
     }, 500);
   }, []);
 
+  const handleCloseModal = () => {
+    setActiveModal(null);
+    setSelectedFamily(null);
+  };
+  
   const handleAddNew = () => {
     setSelectedFamily(null);
-    setIsFormModalOpen(true);
+    setActiveModal('form');
   };
 
   const handleEdit = (family: Family) => {
     setSelectedFamily(family);
-    setIsFormModalOpen(true);
+    setActiveModal('form');
   };
 
   const handleView = (family: Family) => {
     setSelectedFamily(family);
-    setIsViewModalOpen(true);
+    setActiveModal('view');
   };
-  
+
   const handleDeleteTrigger = (family: Family) => {
     setSelectedFamily(family);
-    setIsDeleteAlertOpen(true);
-  }
+    setActiveModal('delete');
+  };
 
   const handleDeleteConfirm = () => {
     if (!selectedFamily) return;
-    
+
     setFamilies(prev => prev.filter(f => f.id !== selectedFamily.id));
 
     toast({
       title: 'Family Deleted',
       description: `The family "${selectedFamily.familyName}" has been successfully deleted.`,
     });
-    
-    // Reset state
-    setIsDeleteAlertOpen(false);
-    setSelectedFamily(null);
+
+    handleCloseModal();
   };
 
   const handleSave = (savedFamily: Family) => {
@@ -102,8 +103,8 @@ export default function CustomersPage() {
       }
       return [...prev, savedFamily];
     });
-    // The form modal will close itself and reset state via its onOpenChange
-  }
+    handleCloseModal();
+  };
 
   const canCreate = hasPermission('CUSTOMER', 'create');
   const canUpdate = hasPermission('CUSTOMER', 'update');
@@ -124,148 +125,125 @@ export default function CustomersPage() {
 
       <Card>
         <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Family Name</TableHead>
-                  <TableHead>Family Head</TableHead>
-                  <TableHead>Phone Number</TableHead>
-                  <TableHead>Email ID</TableHead>
-                  <TableHead>Date of Birth</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loadingFamilies ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-24" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-32" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-28" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-40" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-24" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-8 w-8" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : families && families.length > 0 ? (
-                  families.map(family => (
-                    <TableRow key={family.id}>
-                      <TableCell className="font-medium">
-                        {family.familyName}
-                      </TableCell>
-                      <TableCell>{family.familyHeadName}</TableCell>
-                      <TableCell>{family.phoneNumber}</TableCell>
-                      <TableCell>{family.emailId}</TableCell>
-                      <TableCell>
-                        {family.dateOfBirth
-                          ? new Date(family.dateOfBirth).toLocaleDateString()
-                          : 'N/A'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {canView && (
-                              <DropdownMenuItem onClick={() => handleView(family)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View
-                              </DropdownMenuItem>
-                            )}
-                            {canUpdate && (
-                              <DropdownMenuItem onClick={() => handleEdit(family)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                            )}
-                            {canDelete && (
-                                <DropdownMenuItem
-                                  onSelect={(e) => {
-                                    e.preventDefault(); // This is important to prevent menu from closing
-                                    handleDeleteTrigger(family);
-                                  }}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
-                                </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                      No families found.
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Family Name</TableHead>
+                <TableHead>Family Head</TableHead>
+                <TableHead>Phone Number</TableHead>
+                <TableHead>Email ID</TableHead>
+                <TableHead>Date of Birth</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loadingFamilies ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-8 w-8" /></TableCell>
+                  </TableRow>
+                ))
+              ) : families.length > 0 ? (
+                families.map(family => (
+                  <TableRow key={family.id}>
+                    <TableCell className="font-medium">{family.familyName}</TableCell>
+                    <TableCell>{family.familyHeadName}</TableCell>
+                    <TableCell>{family.phoneNumber}</TableCell>
+                    <TableCell>{family.emailId}</TableCell>
+                    <TableCell>
+                      {family.dateOfBirth
+                        ? new Date(family.dateOfBirth).toLocaleDateString()
+                        : 'N/A'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {canView && (
+                            <DropdownMenuItem onClick={() => handleView(family)}>
+                              <Eye className="mr-2 h-4 w-4" /> View
+                            </DropdownMenuItem>
+                          )}
+                          {canUpdate && (
+                            <DropdownMenuItem onClick={() => handleEdit(family)}>
+                              <Edit className="mr-2 h-4 w-4" /> Edit
+                            </DropdownMenuItem>
+                          )}
+                          {canDelete && (
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteTrigger(family)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    No families found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
-      
-      {/* Modals and Dialogs */}
-      <FamilyFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => {
-          setIsFormModalOpen(false);
-          setSelectedFamily(null);
-        }}
-        family={selectedFamily}
-        onSave={handleSave}
-      />
 
-      {selectedFamily && (
-        <ViewFamilyModal
-          isOpen={isViewModalOpen}
-          onClose={() => {
-            setIsViewModalOpen(false);
-            setSelectedFamily(null);
-          }}
-          family={selectedFamily}
-        />
-      )}
+      {/* Unified Modal */}
+      <Modal open={!!activeModal} onClose={handleCloseModal}>
+        <>
+          {activeModal === 'form' && (
+            <FamilyFormModal
+              onClose={handleCloseModal}
+              family={selectedFamily}
+              onSave={handleSave}
+            />
+          )}
 
-      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              family record for{' '}
-              <strong>{selectedFamily?.familyName}</strong>.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setSelectedFamily(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          {activeModal === 'view' && selectedFamily && (
+            <ViewFamilyModal
+              onClose={handleCloseModal}
+              family={selectedFamily}
+            />
+          )}
+
+          {activeModal === 'delete' && selectedFamily && (
+            <div>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  family record for <strong>{selectedFamily.familyName}</strong>.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className='mt-6'>
+                <Button variant="outline" onClick={handleCloseModal}>Cancel</Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteConfirm}
+                >
+                  Delete
+                </Button>
+              </AlertDialogFooter>
+            </div>
+          )}
+        </>
+      </Modal>
     </div>
   );
 }

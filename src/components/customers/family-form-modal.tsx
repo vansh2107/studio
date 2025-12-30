@@ -5,13 +5,6 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -48,14 +41,12 @@ type FamilyFormData = z.infer<typeof familySchema>;
 const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
 interface FamilyFormModalProps {
-  isOpen: boolean;
   onClose: () => void;
   family?: Family | null;
   onSave: (family: Family) => void;
 }
 
 export function FamilyFormModal({
-  isOpen,
   onClose,
   family,
   onSave,
@@ -96,17 +87,6 @@ export function FamilyFormModal({
   const familyHeadName = watch('familyHeadName');
   
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.body.style.pointerEvents = isOpen ? 'none' : 'auto';
-    }
-    return () => {
-      if (typeof document !== 'undefined') {
-        document.body.style.pointerEvents = 'auto';
-      }
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
     if (family) {
       reset({
         ...family,
@@ -134,7 +114,7 @@ export function FamilyFormModal({
     }
     setStep(1);
     setIsSaving(false);
-  }, [family, isOpen, reset]);
+  }, [family, reset]);
 
   useEffect(() => {
     if (familyHeadName) {
@@ -181,10 +161,10 @@ export function FamilyFormModal({
         panFileName: panFile?.name,
         aadhaarFileName: aadhaarFile?.name,
         otherDocumentFileName: otherFile?.name,
-        // In prototype, URLs are just placeholders
-        panPhotoUrl: panFile ? URL.createObjectURL(panFile) : family?.panPhotoUrl,
-        aadhaarPhotoUrl: aadhaarFile ? URL.createObjectURL(aadhaarFile) : family?.aadhaarPhotoUrl,
-        otherDocumentUrl: otherFile ? URL.createObjectURL(otherFile) : family?.otherDocumentUrl,
+        // In prototype, URLs are just placeholders and not actually created
+        panPhotoUrl: panFile ? 'simulated_url' : family?.panPhotoUrl,
+        aadhaarPhotoUrl: aadhaarFile ? 'simulated_url' : family?.aadhaarPhotoUrl,
+        otherDocumentUrl: otherFile ? 'simulated_url' : family?.otherDocumentUrl,
       };
 
       onSave(familyData);
@@ -195,7 +175,6 @@ export function FamilyFormModal({
       });
       
       setIsSaving(false);
-      onClose();
     }, 1000);
   };
 
@@ -242,19 +221,16 @@ export function FamilyFormModal({
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose} modal={false}>
-      <DialogContent
-        className="sm:max-w-2xl"
-      >
-        <DialogHeader>
-          <DialogTitle>
+    <div className="max-h-[80vh] overflow-y-auto pr-2 -mr-2">
+        <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
+          <h2 className="text-lg font-semibold leading-none tracking-tight">
             {family ? 'Edit Family' : 'Create New Family'} - Step {step} / 2
-          </DialogTitle>
-        </DialogHeader>
+          </h2>
+        </div>
 
         <form
           onSubmit={handleSubmit(processSave)}
-          className="grid gap-4 py-4"
+          className="grid gap-4"
         >
           {step === 1 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -424,7 +400,7 @@ export function FamilyFormModal({
           )}
         </form>
 
-        <DialogFooter>
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6">
           {step === 1 && (
             <>
               <Button variant="outline" onClick={onClose} disabled={isSaving}>
@@ -450,8 +426,7 @@ export function FamilyFormModal({
               </Button>
             </>
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+    </div>
   );
 }
