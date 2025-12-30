@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { users, userMappings } from '@/lib/mock-data';
 import { HIERARCHY, Role, PERMISSIONS, PERMISSION_MODULES, Permission, PermissionModule, Permissions } from '@/lib/constants';
 import type { User } from '@/lib/types';
-import { useCollection, useDoc, useFirestore } from '@/firebase';
+import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 
 
@@ -72,8 +72,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const db = useFirestore();
   const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
   
-  const permissionsDocRef = (effectiveUser && db) ? doc(db, 'permissions', effectiveUser.role) : null;
-  const { data: permissions, loading: permissionsLoading } = useDoc<Permissions>(permissionsDocRef);
+  const permissionsDocRef = useMemoFirebase(() => (effectiveUser && db) ? doc(db, 'permissions', effectiveUser.role) : null, [effectiveUser, db]);
+  const { data: permissions, isLoading: permissionsLoading } = useDoc<Permissions>(permissionsDocRef);
 
 
   const login = useCallback((userId: string) => {

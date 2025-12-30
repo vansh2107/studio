@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,7 +43,7 @@ export default function CustomersPage() {
   const { hasPermission } = useCurrentUser();
   const { toast } = useToast();
   const db = useFirestore();
-  const familiesCollection = useMemo(
+  const familiesCollection = useMemoFirebase(
     () => (db ? collection(db, 'families') : null),
     [db]
   );
