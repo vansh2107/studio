@@ -221,7 +221,7 @@ export function FamilyFormModal({
   );
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto pr-2 -mr-2">
+    <div className="max-h-[80vh] overflow-y-auto p-1">
         <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
           <h2 className="text-lg font-semibold leading-none tracking-tight">
             {family ? 'Edit Family' : 'Create New Family'} - Step {step} / 2
@@ -230,11 +230,11 @@ export function FamilyFormModal({
 
         <form
           onSubmit={handleSubmit(processSave)}
-          className="grid gap-4"
+          className="space-y-4"
         >
           {step === 1 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="familyHeadName">Family Head (Full Name)</Label>
                 <Input
                   id="familyHeadName"
@@ -247,7 +247,7 @@ export function FamilyFormModal({
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="familyName">Family Name</Label>
                 <Input
                   id="familyName"
@@ -260,7 +260,7 @@ export function FamilyFormModal({
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="phoneNumber">Phone Number</Label>
                 <Input
                   id="phoneNumber"
@@ -274,7 +274,7 @@ export function FamilyFormModal({
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="emailId">Email ID</Label>
                 <Input
                   id="emailId"
@@ -288,7 +288,7 @@ export function FamilyFormModal({
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label>Date of Birth</Label>
                 <Controller
                   name="dateOfBirth"
@@ -312,7 +312,7 @@ export function FamilyFormModal({
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" side="bottom" align="start">
+                      <PopoverContent className="w-auto p-0 z-[1100]" side="bottom" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value}
@@ -329,7 +329,7 @@ export function FamilyFormModal({
                   </p>
                 )}
               </div>
-               <div className="space-y-2">
+               <div className="space-y-1.5">
                 <Label>Anniversary Date (Optional)</Label>
                 <Controller
                   name="anniversaryDate"
@@ -353,7 +353,7 @@ export function FamilyFormModal({
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" side="bottom" align="start">
+                      <PopoverContent className="w-auto p-0 z-[1100]" side="bottom" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value}
@@ -365,7 +365,7 @@ export function FamilyFormModal({
                   )}
                 />
               </div>
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-1.5 md:col-span-2">
                 <Label htmlFor="address">Address</Label>
                 <Textarea
                   id="address"
