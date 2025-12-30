@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Family } from '@/lib/types';
 import { Download, X } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 
 interface ViewFamilyModalProps {
   onClose: () => void;
@@ -43,6 +44,16 @@ const DocumentLink = ({
   );
 };
 
+const formatDate = (dateString?: string) => {
+  if (!dateString) return 'N/A';
+  try {
+    return format(parseISO(dateString), 'dd MMM yyyy');
+  } catch (e) {
+    return dateString; // Fallback to raw string if parsing fails
+  }
+};
+
+
 export function ViewFamilyModal({
   onClose,
   family,
@@ -74,19 +85,11 @@ export function ViewFamilyModal({
             <DetailItem label="Email ID" value={family.emailId} />
             <DetailItem
               label="Date of Birth"
-              value={
-                family.dateOfBirth
-                  ? new Date(family.dateOfBirth).toLocaleDateString()
-                  : 'N/A'
-              }
+              value={formatDate(family.dateOfBirth)}
             />
             <DetailItem
               label="Anniversary Date"
-              value={
-                family.anniversaryDate
-                  ? new Date(family.anniversaryDate).toLocaleDateString()
-                  : 'N/A'
-              }
+              value={formatDate(family.anniversaryDate)}
             />
             <div className="md:col-span-2">
               <DetailItem label="Address" value={family.address} />

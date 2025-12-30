@@ -32,6 +32,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
 } from '@/components/ui/alert-dialog'; 
+import { format, parseISO } from 'date-fns';
 
 type ActiveModal = 'form' | 'view' | 'delete' | null;
 
@@ -103,6 +104,15 @@ export default function CustomersPage() {
     });
     handleCloseModal();
   };
+  
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    try {
+      return format(parseISO(dateString), 'dd MMM yyyy');
+    } catch (e) {
+      return dateString; // Fallback to raw string if parsing fails
+    }
+  };
 
   const canCreate = hasPermission('CUSTOMER', 'create');
   const canUpdate = hasPermission('CUSTOMER', 'update');
@@ -154,9 +164,7 @@ export default function CustomersPage() {
                     <TableCell>{family.phoneNumber}</TableCell>
                     <TableCell>{family.emailId}</TableCell>
                     <TableCell>
-                      {family.dateOfBirth
-                        ? new Date(family.dateOfBirth).toLocaleDateString()
-                        : 'N/A'}
+                      {formatDate(family.dateOfBirth)}
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

@@ -46,9 +46,9 @@ export interface Family {
   lastName: string;
   phoneNumber: string;
   emailId: string;
-  dateOfBirth: string;
+  dateOfBirth: string; // YYYY-MM-DD
   address: string;
-  anniversaryDate?: string;
+  anniversaryDate?: string; // YYYY-MM-DD
   panPhotoUrl?: string;
   aadhaarPhotoUrl?: string;
   otherDocumentUrl?: string;

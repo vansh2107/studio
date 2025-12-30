@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -10,32 +10,25 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
-  Calendar as CalendarIcon,
   X,
   UploadCloud,
   File as FileIcon,
   Loader2,
 } from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Family } from '@/lib/types';
+import { isValid, parseISO } from 'date-fns';
 
 const familySchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
   emailId: z.string().email('Invalid email address'),
-  dateOfBirth: z.date({ required_error: 'Date of birth is required' }),
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format').refine(date => isValid(parseISO(date)), { message: "Invalid date" }),
   address: z.string().min(1, 'Address is required'),
-  anniversaryDate: z.date().optional(),
+  anniversaryDate: z.string().optional().refine(date => !date || (z.string().regex(/^\d{4}-\d{2}-\d{2}$/).safeParse(date).success && isValid(parseISO(date))), { message: "Invalid date format. Use YYYY-MM-DD or leave empty." }),
 });
+
 
 type FamilyFormData = z.infer<typeof familySchema>;
 
@@ -69,7 +62,6 @@ export function FamilyFormModal({
   const {
     register,
     handleSubmit,
-    control,
     reset,
     formState: { errors },
   } = useForm<FamilyFormData>({
@@ -80,6 +72,8 @@ export function FamilyFormModal({
       phoneNumber: '',
       emailId: '',
       address: '',
+      dateOfBirth: '',
+      anniversaryDate: '',
     },
   });
 
@@ -87,10 +81,8 @@ export function FamilyFormModal({
     if (family) {
       reset({
         ...family,
-        dateOfBirth: family.dateOfBirth ? new Date(family.dateOfBirth) : undefined,
-        anniversaryDate: family.anniversaryDate
-          ? new Date(family.anniversaryDate)
-          : undefined,
+        dateOfBirth: family.dateOfBirth,
+        anniversaryDate: family.anniversaryDate || '',
       });
       setPanFile(family.panFileName ? new File([], family.panFileName) : null);
       setAadhaarFile(family.aadhaarFileName ? new File([], family.aadhaarFileName) : null);
@@ -102,8 +94,8 @@ export function FamilyFormModal({
         phoneNumber: '',
         emailId: '',
         address: '',
-        dateOfBirth: undefined,
-        anniversaryDate: undefined,
+        dateOfBirth: '',
+        anniversaryDate: '',
       });
       setPanFile(null);
       setAadhaarFile(null);
@@ -142,8 +134,7 @@ export function FamilyFormModal({
       const familyData: Family = {
         id: family?.id || `fam-${Date.now()}`,
         ...data,
-        dateOfBirth: data.dateOfBirth.toISOString(),
-        anniversaryDate: data.anniversaryDate?.toISOString(),
+        anniversaryDate: data.anniversaryDate || undefined, // Store as undefined if empty
         panFileName: panFile?.name,
         aadhaarFileName: aadhaarFile?.name,
         otherDocumentFileName: otherFile?.name,
@@ -275,39 +266,13 @@ export function FamilyFormModal({
                 )}
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label>Date of Birth</Label>
-                <Controller
-                  name="dateOfBirth"
-                  control={control}
-                  render={({ field }) => (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={'outline'}
-                          className={cn(
-                            'w-full justify-start text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                          disabled={isSaving}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? (
-                            format(field.value, 'PPP')
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 z-[1001]" side="bottom" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  )}
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Input
+                    id="dateOfBirth"
+                    type="text"
+                    placeholder="YYYY-MM-DD"
+                    {...register('dateOfBirth')}
+                    disabled={isSaving}
                 />
                  {errors.dateOfBirth && (
                   <p className="text-sm text-destructive">
@@ -316,40 +281,19 @@ export function FamilyFormModal({
                 )}
               </div>
                <div className="flex flex-col gap-1.5">
-                <Label>Anniversary Date (Optional)</Label>
-                <Controller
-                  name="anniversaryDate"
-                  control={control}
-                  render={({ field }) => (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={'outline'}
-                          className={cn(
-                            'w-full justify-start text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                          disabled={isSaving}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? (
-                            format(field.value, 'PPP')
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 z-[1001]" side="bottom" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  )}
+                <Label htmlFor="anniversaryDate">Anniversary Date (Optional)</Label>
+                <Input
+                    id="anniversaryDate"
+                    type="text"
+                    placeholder="YYYY-MM-DD"
+                    {...register('anniversaryDate')}
+                    disabled={isSaving}
                 />
+                {errors.anniversaryDate && (
+                  <p className="text-sm text-destructive">
+                    {errors.anniversaryDate.message}
+                  </p>
+                )}
               </div>
               <div className="flex flex-col gap-1.5 md:col-span-2">
                 <Label htmlFor="address">Address</Label>
@@ -416,5 +360,3 @@ export function FamilyFormModal({
     </div>
   );
 }
-
-    
