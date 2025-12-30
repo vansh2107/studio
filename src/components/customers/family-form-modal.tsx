@@ -312,7 +312,7 @@ export function FamilyFormModal({
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent className="w-auto p-0" side="bottom" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value}
@@ -353,7 +353,7 @@ export function FamilyFormModal({
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent className="w-auto p-0" side="bottom" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value}
@@ -430,5 +430,3 @@ export function FamilyFormModal({
     </div>
   );
 }
-
-    
