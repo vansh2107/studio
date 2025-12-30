@@ -1,3 +1,5 @@
+'use client';
+
 import { AppLayout } from '@/components/layout/app-layout';
 import FirebaseClientProvider from '@/firebase/client-provider';
 import { UserProvider } from '@/hooks/use-current-user';
