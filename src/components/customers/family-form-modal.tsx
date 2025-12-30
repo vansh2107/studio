@@ -232,7 +232,11 @@ export function FamilyFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent 
+        className="sm:max-w-2xl"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>
             {family ? 'Edit Family' : 'Create New Family'} - Step {step} / 2
