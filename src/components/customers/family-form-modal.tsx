@@ -198,7 +198,10 @@ export function FamilyFormModal({
   );
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 -mr-4">
+    <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 -mr-4 relative">
+        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0">
+            <X className="h-4 w-4" />
+        </Button>
         <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
           <h2 className="text-lg font-semibold leading-none tracking-tight">
             {family ? 'Edit Family' : 'Create New Family'} - Step {step} / 2

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Family, FamilyMember } from '@/lib/types';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 
 const memberSchema = z.object({
   name: z.string().min(1, 'Member name is required'),
@@ -73,7 +74,10 @@ export function FamilyMemberFormModal({
   };
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 -mr-4">
+    <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 -mr-4 relative">
+        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0">
+            <X className="h-4 w-4" />
+        </Button>
         <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
           <h2 className="text-lg font-semibold leading-none tracking-tight">
             {member ? 'Edit Family Member' : 'Add New Member'}

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -125,7 +126,10 @@ export function ViewFamilyModal({
 
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto pr-2 -mr-2">
+    <div className="max-h-[80vh] overflow-y-auto pr-2 -mr-2 relative">
+      <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0">
+          <X className="h-4 w-4" />
+      </Button>
       <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
         <div className="flex justify-between items-start">
           <div>
@@ -136,9 +140,6 @@ export function ViewFamilyModal({
               Viewing record for {family.firstName} {family.lastName}.
             </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="-mr-2 -mt-2">
-            <X className="h-4 w-4" />
-          </Button>
         </div>
       </div>
       <div className="grid gap-6 py-4">
