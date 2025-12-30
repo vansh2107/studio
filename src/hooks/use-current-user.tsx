@@ -68,34 +68,44 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [impersonatedUser, setImpersonatedUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const { isUserLoading } = useFirebase();
+
   const router = useRouter();
   const pathname = usePathname();
   
   const db = useFirestore();
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem('currentUser');
-    if (storedUserId) {
-      const user = users.find(u => u.id === storedUserId);
-      setCurrentUser(user || null);
+    // This effect now correctly handles the initial user state based on localStorage.
+    // It's separate from the Firebase loading state.
+    try {
+        const storedUserId = localStorage.getItem('currentUser');
+        if (storedUserId) {
+            const user = users.find(u => u.id === storedUserId);
+            setCurrentUser(user || null);
+        }
+    } catch (e) {
+        // localStorage is not available on the server, ignore.
     }
-    setIsLoading(false);
   }, []);
   
   useEffect(() => {
-    if (!isLoading && !currentUser && pathname !== '/login') {
+    // This effect handles routing based on auth state.
+    if (!isUserLoading) {
+      if (!currentUser && pathname !== '/login') {
         router.push('/login');
-    }
-    if (!isLoading && currentUser && pathname === '/login') {
+      } else if (currentUser && pathname === '/login') {
         router.push('/');
+      }
     }
-  }, [currentUser, isLoading, pathname, router]);
+  }, [currentUser, isUserLoading, pathname, router]);
 
 
   const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
   
   const permissionsDocRef = useMemoFirebase(() => {
+    // IMPORTANT: This now correctly waits for both a valid user and db instance.
     if (!effectiveUser || !db) {
       return null;
     }
@@ -156,23 +166,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     canImpersonate: (targetUser: User) => currentUser ? canImpersonate(currentUser, targetUser) : false,
     hasPermission,
     allUsers: users,
-    isLoading: isLoading || (!!effectiveUser && permissionsLoading),
-  }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission, isLoading, permissionsLoading]);
+    isLoading: isUserLoading || (!!effectiveUser && permissionsLoading),
+  }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission, isUserLoading, permissionsLoading]);
 
-  if (value.isLoading && pathname !== '/login') {
+  // This is the auth gate. It shows a skeleton while waiting for Firebase auth to initialize.
+  if (isUserLoading && pathname !== '/login') {
       return <AppLayoutSkeleton />;
   }
   
+  // If not logged in and not on the login page, the effect above will redirect.
+  // We can show the skeleton in the meantime.
   if (!currentUser && pathname !== '/login') {
-    return <AppLayoutSkeleton />; // Or a dedicated loading screen
-  }
-
-  if (!currentUser && pathname === '/login') {
-     return (
-        <UserContext.Provider value={value}>
-            {children}
-        </UserContext.Provider>
-     )
+    return <AppLayoutSkeleton />; 
   }
 
   return (
@@ -191,3 +196,5 @@ export const useCurrentUser = () => {
   }
   return context;
 };
+
+    
