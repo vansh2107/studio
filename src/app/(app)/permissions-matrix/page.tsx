@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, doc, setDoc, writeBatch } from 'firebase/firestore';
@@ -44,7 +44,7 @@ export default function RoleManagementPage() {
   const db = useFirestore();
   const { toast } = useToast();
 
-  const permissionsCollectionRef = db ? collection(db, 'permissions') : null;
+  const permissionsCollectionRef = useMemo(() => db ? collection(db, 'permissions') : null, [db]);
   const { data: permissionsData, loading, error } = useCollection(permissionsCollectionRef);
   
   const [permissions, setPermissions] = useState<Record<Role, Permissions>>({} as Record<Role, Permissions>);
@@ -83,7 +83,7 @@ export default function RoleManagementPage() {
   }, [db, toast]);
   
   useEffect(() => {
-    if (!loading && (permissionsData === null || permissionsData.length === 0)) {
+    if (!loading && permissionsData && permissionsData.length === 0 && !isInitializing) {
         if(db) initializePermissions();
     } else if (permissionsData) {
       const newPermissions = {} as Record<Role, Permissions>;
@@ -92,7 +92,7 @@ export default function RoleManagementPage() {
       });
       setPermissions(newPermissions);
     }
-  }, [permissionsData, loading, db, initializePermissions]);
+  }, [permissionsData, loading, db, initializePermissions, isInitializing]);
 
 
   if (effectiveUser?.role !== 'SUPER_ADMIN') {
