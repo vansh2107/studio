@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { users, userMappings } from '@/lib/mock-data';
 import { HIERARCHY, Role, PERMISSIONS, PERMISSION_MODULES, Permission, PermissionModule, Permissions } from '@/lib/constants';
@@ -64,7 +64,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // --- Provider Component ---
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(users.find(u => u.role === 'SUPER_ADMIN') || null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [impersonatedUser, setImpersonatedUser] = useState<User | null>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -72,14 +72,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const db = useFirestore();
   const { isUserLoading } = useFirebase();
 
+  useEffect(() => {
+    // On initial load, set the default user.
+    // This runs only once on the client after hydration.
+    const defaultUser = users.find(u => u.role === 'SUPER_ADMIN') || null;
+    setCurrentUser(defaultUser);
+  }, []);
+
   const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
   
   const permissionsDocRef = useMemoFirebase(() => {
-    if (!effectiveUser || !db) {
+    // This now correctly waits for both the user to be loaded and the effectiveUser to be non-null.
+    if (isUserLoading || !effectiveUser || !db) {
       return null;
     }
     return doc(db, 'permissions', effectiveUser.role);
-  }, [effectiveUser, db]);
+  }, [effectiveUser, db, isUserLoading]);
   
   const { data: permissions, isLoading: permissionsLoading } = useDoc<Permissions>(permissionsDocRef);
 
@@ -97,9 +105,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setCurrentUser(null);
     setImpersonatedUser(null);
     // In a real app, you'd redirect to a login page.
-    // Here we'll just log in the default user.
-    if (users.length > 0) {
-      login(users[0].id);
+    const defaultUser = users.find(u => u.role === 'SUPER_ADMIN') || null;
+    if (defaultUser) {
+      login(defaultUser.id);
     }
   }, [login]);
 
@@ -124,9 +132,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const hasPermission = useCallback((module: PermissionModule, permission: Permission): boolean => {
     if (!effectiveUser) return false;
     if (effectiveUser.role === 'SUPER_ADMIN') return true;
-    if (isUserLoading || permissionsLoading || !permissions) return false;
+    if (permissionsLoading || !permissions) return false;
     return permissions[module]?.[permission] ?? false;
-  }, [effectiveUser, permissions, permissionsLoading, isUserLoading]);
+  }, [effectiveUser, permissions, permissionsLoading]);
 
 
   const value = useMemo(() => ({
