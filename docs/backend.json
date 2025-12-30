@@ -1,54 +1,95 @@
 {
   "entities": {
-    "role": {
-      "title": "Role",
-      "description": "Defines a user role within the system.",
+    "Family": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Family",
       "type": "object",
+      "description": "Represents a family account within the Ascend Wealth application.",
       "properties": {
-        "name": {
+        "id": {
           "type": "string",
-          "description": "The name of the role (e.g., ADMIN, CUSTOMER)."
+          "description": "Unique identifier for the Family entity."
+        },
+        "familyName": {
+          "type": "string",
+          "description": "The name of the family, typically the head's last name."
+        },
+        "familyHeadName": {
+          "type": "string",
+          "description": "The full name of the family head."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The phone number of the family."
+        },
+        "emailId": {
+          "type": "string",
+          "description": "The email address of the family.",
+          "format": "email"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "The date of birth of the family head.",
+          "format": "date-time"
+        },
+        "address": {
+          "type": "string",
+          "description": "The address of the family."
+        },
+        "anniversaryDate": {
+          "type": "string",
+          "description": "The anniversary date of the family (optional).",
+          "format": "date-time"
+        },
+        "panPhotoUrl": {
+          "type": "string",
+          "description": "URL of the PAN photo document."
+        },
+        "aadhaarPhotoUrl": {
+          "type": "string",
+          "description": "URL of the Aadhaar photo document."
+        },
+        "otherDocumentUrl": {
+          "type": "string",
+          "description": "URL of the other document."
         }
       },
-      "required": ["name"]
-    },
-    "permissionSet": {
-      "title": "Permission Set",
-      "description": "Defines the permissions for a specific role across all modules.",
-      "type": "object",
-      "properties": {
-        "SUPER_ADMIN": { "$ref": "#/entities/modulePermissions" },
-        "ADMIN": { "$ref": "#/entities/modulePermissions" },
-        "ASSOCIATE": { "$ref": "#/entities/modulePermissions" },
-        "CUSTOMER": { "$ref": "#/entities/modulePermissions" },
-        "FAMILY_MANAGER": { "$ref": "#/entities/modulePermissions" },
-        "DOC_VAULT": { "$ref": "#/entities/modulePermissions" }
-      }
-    },
-    "modulePermissions": {
-      "title": "Module Permissions",
-      "description": "Defines the actions a role can perform on a specific module.",
-      "type": "object",
-      "properties": {
-        "view": { "type": "boolean" },
-        "create": { "type": "boolean" },
-        "update": { "type": "boolean" },
-        "delete": { "type": "boolean" },
-        "export": { "type": "boolean" }
-      }
+      "required": [
+        "id",
+        "familyName",
+        "familyHeadName",
+        "phoneNumber",
+        "emailId",
+        "dateOfBirth",
+        "address"
+      ]
     }
   },
   "auth": {
-    "providers": ["anonymous"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "roles/{roleId}": {
-      "schema": { "$ref": "#/entities/role" },
-      "description": "Stores the list of available roles."
-    },
-    "permissions/{roleId}": {
-      "schema": { "$ref": "#/entities/permissionSet" },
-      "description": "Stores the permission matrix for each role."
-    }
+    "structure": [
+      {
+        "path": "/families/{familyId}",
+        "definition": {
+          "entityName": "Family",
+          "schema": {
+            "$ref": "#/backend/entities/Family"
+          },
+          "description": "Stores family data. Includes information such as family head name, contact details, and document URLs.",
+          "params": [
+            {
+              "name": "familyId",
+              "description": "Unique identifier for the family document."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure is designed to manage customer (family) data within the Ascend Wealth application, adhering to strict role-based access control (RBAC) and the principle of Authorization Independence. It leverages path-based ownership for user-owned data and denormalization to avoid `get()` calls in security rules, ensuring atomic operations and simplified rule management.\n\nThe core entities are stored under the `/families` collection. This collection stores all the details of a customer family (Family Head, Name, Contact Details, Addresses and URLs for uploaded documents).\n\nThis design achieves Authorization Independence by storing all data related to a family in a single document within the `families` collection, eliminating the need for hierarchical `get()` calls in security rules. It supports the required QAPs by ensuring secure `list` operations through role-based access control defined in security rules (e.g., only Associates and higher roles can list families, and Associates can only list families assigned to them). Segregation of data based on role is achieved structurally, preventing unauthorized access to sensitive information. Additionally, storing the `familyId` on assets will also provide authorization independence for the assets as they exist within their own collection, and do not need to make 'get()' calls to family documents to confirm ownership.\n\nThis design promotes clarity, security, scalability, and debuggability while adhering to the principles outlined in the prompt."
   }
 }
