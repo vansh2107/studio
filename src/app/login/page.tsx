@@ -13,34 +13,32 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AscendWealthLogo } from '@/components/icons/logo';
-import { signInWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import FirebaseClientProvider from '@/firebase/client-provider';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 function LoginPageContent() {
   const [email, setEmail] = useState('sonia.a@ascend.inc');
-  const [password, setPassword] = useState('password');
+  const [password, setPassword] = useState('password'); // Not used for auth, but we keep the field
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const { login, allUsers } = useCurrentUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const auth = getAuth();
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // The onAuthStateChanged listener in UserProvider will handle the redirect
-    } catch (error: any) {
-      console.error('Login failed:', error);
-      let description = 'An unexpected error occurred. Please try again.';
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        description = 'Invalid email or password. Please check your credentials.';
-      }
+
+    const userToLogin = allUsers.find(u => u.email === email);
+    
+    if (userToLogin) {
+      // Simulate login using our hook
+      login(userToLogin.id);
+      router.push('/');
+    } else {
       toast({
         title: 'Login Failed',
-        description,
+        description: 'Invalid email. Please check your credentials.',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -95,10 +93,10 @@ function LoginPageContent() {
   );
 }
 
+// Keep the top-level export for the page
 export default function LoginPage() {
+    // The UserProvider is necessary here to get access to the `login` function
     return (
-        <FirebaseClientProvider>
-            <LoginPageContent />
-        </FirebaseClientProvider>
+        <LoginPageContent />
     )
 }

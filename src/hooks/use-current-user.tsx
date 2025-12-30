@@ -58,6 +58,7 @@ interface UserContextType {
   canImpersonate: (targetUser: User) => boolean;
   hasPermission: (module: PermissionModule, permission: Permission) => boolean;
   allUsers: User[];
+  isLoading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -67,31 +68,30 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [impersonatedUser, setImpersonatedUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   
   const db = useFirestore();
-  const { user: firebaseUser, isUserLoading } = useFirebase();
 
   useEffect(() => {
-    if (isUserLoading) {
-      return; // Still waiting for auth state
+    const storedUserId = localStorage.getItem('currentUser');
+    if (storedUserId) {
+      const user = users.find(u => u.id === storedUserId);
+      setCurrentUser(user || null);
     }
-    if (!firebaseUser) {
-      // If not logged in and not on the login page, redirect
-      if (pathname !== '/login') {
+    setIsLoading(false);
+  }, []);
+  
+  useEffect(() => {
+    if (!isLoading && !currentUser && pathname !== '/login') {
         router.push('/login');
-      }
-      setCurrentUser(null);
-    } else {
-      // User is logged in, find the corresponding mock user
-      const mockUser = users.find(u => u.email === firebaseUser.email);
-      setCurrentUser(mockUser || null);
-       if (pathname === '/login') {
-         router.push('/');
-       }
     }
-  }, [firebaseUser, isUserLoading, router, pathname]);
+    if (!isLoading && currentUser && pathname === '/login') {
+        router.push('/');
+    }
+  }, [currentUser, isLoading, pathname, router]);
+
 
   const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
   
@@ -104,20 +104,20 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   
   const { data: permissions, isLoading: permissionsLoading } = useDoc<Permissions>(permissionsDocRef);
 
-
   const login = useCallback((userId: string) => {
     const user = users.find(u => u.id === userId);
     if (user) {
-      // This is now handled by Firebase auth, but we keep it for impersonation logic
+      localStorage.setItem('currentUser', user.id);
+      setCurrentUser(user);
     }
   }, []);
 
   const logout = useCallback(() => {
-    const auth = useFirebase().auth;
-    auth.signOut();
+    localStorage.removeItem('currentUser');
     setCurrentUser(null);
     setImpersonatedUser(null);
-  }, []);
+    router.push('/login');
+  }, [router]);
 
   const impersonate = useCallback((userId: string) => {
     if (!currentUser) return;
@@ -151,21 +151,30 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     effectiveUser,
     login,
     logout,
-impersonate,
+    impersonate,
     stopImpersonation,
     canImpersonate: (targetUser: User) => currentUser ? canImpersonate(currentUser, targetUser) : false,
     hasPermission,
     allUsers: users,
-  }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission]);
+    isLoading: isLoading || permissionsLoading,
+  }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission, isLoading, permissionsLoading]);
 
-  if (isUserLoading || (!effectiveUser && pathname !== '/login')) {
+  if (isLoading) {
       return <AppLayoutSkeleton />;
   }
-
-  if (!effectiveUser && pathname === '/login') {
-      return <>{children}</>
-  }
   
+  if (!currentUser && pathname !== '/login') {
+    return <AppLayoutSkeleton />; // Or a dedicated loading screen
+  }
+
+  if (!currentUser && pathname === '/login') {
+     return (
+        <UserContext.Provider value={value}>
+            {children}
+        </UserContext.Provider>
+     )
+  }
+
   return (
     <UserContext.Provider value={value}>
       {children}
