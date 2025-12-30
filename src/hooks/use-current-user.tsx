@@ -7,6 +7,7 @@ import { HIERARCHY, Role, PERMISSIONS, PERMISSION_MODULES, Permission, Permissio
 import type { User } from '@/lib/types';
 import { useDoc, useFirestore, useMemoFirebase, useFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { AppLayoutSkeleton } from '@/components/layout/app-layout';
 
 
 // --- Helper Functions ---
@@ -73,23 +74,33 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const { user: firebaseUser, isUserLoading } = useFirebase();
 
   useEffect(() => {
-    // On initial load, set the default user once firebase auth is resolved.
-    // This runs only once on the client after hydration.
-    if (!isUserLoading && !currentUser) {
-      const defaultUser = users.find(u => u.role === 'SUPER_ADMIN') || null;
-      setCurrentUser(defaultUser);
+    if (isUserLoading) {
+      return; // Still waiting for auth state
     }
-  }, [isUserLoading, currentUser]);
+    if (!firebaseUser) {
+      // If not logged in and not on the login page, redirect
+      if (pathname !== '/login') {
+        router.push('/login');
+      }
+      setCurrentUser(null);
+    } else {
+      // User is logged in, find the corresponding mock user
+      const mockUser = users.find(u => u.email === firebaseUser.email);
+      setCurrentUser(mockUser || null);
+       if (pathname === '/login') {
+         router.push('/');
+       }
+    }
+  }, [firebaseUser, isUserLoading, router, pathname]);
 
   const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
   
   const permissionsDocRef = useMemoFirebase(() => {
-    // This now correctly waits for both the user to be loaded and the effectiveUser to be non-null.
-    if (isUserLoading || !effectiveUser || !db) {
+    if (!effectiveUser || !db) {
       return null;
     }
     return doc(db, 'permissions', effectiveUser.role);
-  }, [effectiveUser, db, isUserLoading]);
+  }, [effectiveUser, db]);
   
   const { data: permissions, isLoading: permissionsLoading } = useDoc<Permissions>(permissionsDocRef);
 
@@ -97,21 +108,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const login = useCallback((userId: string) => {
     const user = users.find(u => u.id === userId);
     if (user) {
-      setCurrentUser(user);
-      setImpersonatedUser(null);
-      router.push('/');
+      // This is now handled by Firebase auth, but we keep it for impersonation logic
     }
-  }, [router]);
+  }, []);
 
   const logout = useCallback(() => {
+    const auth = useFirebase().auth;
+    auth.signOut();
     setCurrentUser(null);
     setImpersonatedUser(null);
-    // In a real app, you'd redirect to a login page.
-    const defaultUser = users.find(u => u.role === 'SUPER_ADMIN') || null;
-    if (defaultUser) {
-      login(defaultUser.id);
-    }
-  }, [login]);
+  }, []);
 
   const impersonate = useCallback((userId: string) => {
     if (!currentUser) return;
@@ -152,6 +158,14 @@ impersonate,
     allUsers: users,
   }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission]);
 
+  if (isUserLoading || (!effectiveUser && pathname !== '/login')) {
+      return <AppLayoutSkeleton />;
+  }
+
+  if (!effectiveUser && pathname === '/login') {
+      return <>{children}</>
+  }
+  
   return (
     <UserContext.Provider value={value}>
       {children}
