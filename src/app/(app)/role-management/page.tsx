@@ -1,6 +1,5 @@
 'use client';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { getRoles, users } from '@/lib/mock-data';
 import {
   Table,
   TableBody,
@@ -9,114 +8,40 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Edit, PlusCircle, Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { PERMISSIONS } from '@/lib/constants';
-import { RoleData, Role } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-
-
-function RoleEditor({ role, onSave, children }: { role?: RoleData, onSave: (data: RoleData) => void, children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const [roleName, setRoleName] = useState(role?.name || '');
-  const [selectedPermissions, setSelectedPermissions] = useState(role?.permissions || []);
-
-  const handlePermissionChange = (permission: string, checked: boolean) => {
-    setSelectedPermissions(prev => 
-      checked ? [...prev, permission] : prev.filter(p => p !== permission)
-    );
-  };
-  
-  const handleSelectAll = (checked: boolean) => {
-    setSelectedPermissions(checked ? [...PERMISSIONS] : []);
-  }
-
-  const handleSave = () => {
-    onSave({ name: roleName as Role, permissions: selectedPermissions });
-    setOpen(false);
-  };
-
-  const isAllSelected = selectedPermissions.length === PERMISSIONS.length;
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{role ? 'Edit Role' : 'Add New Role'}</DialogTitle>
-          <DialogDescription>
-            {role ? `Editing permissions for ${role.name}.` : 'Create a new role and assign permissions.'}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">Role Name</Label>
-            <Input id="name" value={roleName} onChange={e => setRoleName(e.target.value)} className="col-span-3" disabled={!!role} />
-          </div>
-          <div className="space-y-2">
-            <Label>Permissions</Label>
-            <div className="flex items-center space-x-2 p-2 rounded-md bg-card">
-              <Checkbox id="select-all" checked={isAllSelected} onCheckedChange={handleSelectAll} />
-              <Label htmlFor="select-all" className="font-bold">Select All</Label>
-            </div>
-            <div className="grid grid-cols-2 gap-2 p-2 rounded-md bg-card">
-              {PERMISSIONS.map(permission => (
-                <div key={permission} className="flex items-center space-x-2">
-                  <Checkbox 
-                    id={permission} 
-                    checked={selectedPermissions.includes(permission)}
-                    onCheckedChange={(checked) => handlePermissionChange(permission, !!checked)}
-                  />
-                  <Label htmlFor={permission}>{permission}</Label>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleSave}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
+import { useCollection, useDoc } from '@/firebase';
+import { collection, doc, setDoc, getFirestore, writeBatch } from 'firebase/firestore';
+import { PERMISSIONS, PERMISSION_MODULES, ROLES, type Permission, type Role, type PermissionModule, type Permissions } from '@/lib/constants';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 export default function RoleManagementPage() {
   const { effectiveUser } = useCurrentUser();
-  const [roles, setRoles] = useState(getRoles());
+  const db = getFirestore();
+  const permissionsCollectionRef = collection(db, 'permissions');
+  const { data: permissionsData, loading, error } = useCollection(permissionsCollectionRef);
   const { toast } = useToast();
+  
+  const [permissions, setPermissions] = useState<Record<Role, Permissions>>({} as Record<Role, Permissions>);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (permissionsData) {
+      const newPermissions = {} as Record<Role, Permissions>;
+      permissionsData.forEach(doc => {
+        newPermissions[doc.id as Role] = doc.data() as Permissions;
+      });
+      setPermissions(newPermissions);
+    }
+  }, [permissionsData]);
+
 
   if (effectiveUser?.role !== 'SUPER_ADMIN') {
-     return (
-       <Card>
+    return (
+      <Card>
         <CardHeader>
           <CardTitle>Access Denied</CardTitle>
         </CardHeader>
@@ -126,88 +51,110 @@ export default function RoleManagementPage() {
       </Card>
     );
   }
-
-  const isRoleInUse = (roleName: Role) => users.some(user => user.role === roleName);
-
-  const handleSaveRole = (data: RoleData) => {
-    setRoles(prev => {
-      const existing = prev.find(r => r.name === data.name);
-      if (existing) {
-        return prev.map(r => r.name === data.name ? data : r);
-      }
-      return [...prev, data];
-    });
-    toast({ title: "Success", description: `Role "${data.name}" has been saved.` });
-  };
   
-  const handleDeleteRole = (roleName: Role) => {
-    setRoles(prev => prev.filter(r => r.name !== roleName));
-    toast({ title: "Success", description: `Role "${roleName}" has been deleted.` });
+  const handlePermissionChange = async (role: Role, module: PermissionModule, permission: Permission, checked: boolean) => {
+    if (role === 'SUPER_ADMIN') return; // SUPER_ADMIN permissions cannot be changed
+
+    const updatedPermissions = {
+      ...permissions,
+      [role]: {
+        ...permissions[role],
+        [module]: {
+          ...permissions[role][module],
+          [permission]: checked
+        }
+      }
+    };
+    setPermissions(updatedPermissions);
+
+    setIsSaving(true);
+    try {
+      const roleDocRef = doc(db, 'permissions', role);
+      await setDoc(roleDocRef, { [module]: { [permission]: checked } }, { merge: true });
+      toast({
+        title: 'Permission Updated',
+        description: `Successfully updated ${permission} permission for ${role} in ${module}.`,
+      });
+    } catch (e) {
+      console.error("Error updating permission: ", e);
+      toast({
+        title: 'Error',
+        description: 'Failed to update permission.',
+        variant: 'destructive',
+      });
+      // Revert optimistic update on failure
+      setPermissions(permissions);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const getPermissionValue = (role: Role, module: PermissionModule, permission: Permission): boolean => {
+    return permissions[role]?.[module]?.[permission] ?? false;
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Role Management</h1>
-          <p className="text-muted-foreground">Define roles and their permissions across the application.</p>
-        </div>
-        <RoleEditor onSave={handleSaveRole}>
-          <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Role</Button>
-        </RoleEditor>
+      <div>
+        <h1 className="text-3xl font-bold font-headline">Role Permission Matrix</h1>
+        <p className="text-muted-foreground">
+          Manage permissions for each role across different modules.
+        </p>
       </div>
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="min-w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Permissions</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-[150px] font-bold sticky left-0 bg-card">Role</TableHead>
+                  {PERMISSION_MODULES.map((module) => (
+                    <TableHead key={module} colSpan={PERMISSIONS.length} className="text-center">
+                      {module}
+                    </TableHead>
+                  ))}
+                </TableRow>
+                <TableRow>
+                  <TableHead className="sticky left-0 bg-card"></TableHead>
+                  {PERMISSION_MODULES.map((module) =>
+                    PERMISSIONS.map((permission) => (
+                      <TableHead key={`${module}-${permission}`} className="text-center capitalize w-[100px]">
+                        {permission}
+                      </TableHead>
+                    ))
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {roles.map((role) => (
-                  <TableRow key={role.name}>
-                    <TableCell className="font-medium">{role.name}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {role.permissions.map(p => <Badge key={p} variant="outline">{p}</Badge>)}
-                        {role.permissions.length === 0 && <span className="text-muted-foreground text-xs">No permissions</span>}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {role.name !== 'SUPER_ADMIN' ? (
-                        <div className="flex gap-2 justify-end">
-                          <RoleEditor role={role} onSave={handleSaveRole}>
-                            <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
-                          </RoleEditor>
+                {loading && Array.from({length: ROLES.length}).map((_, rowIndex) => (
+                   <TableRow key={rowIndex}>
+                      <TableCell className="font-medium sticky left-0 bg-card">
+                        <Skeleton className="h-5 w-24" />
+                      </TableCell>
+                       {PERMISSION_MODULES.flatMap(module => PERMISSIONS.map(permission => (
+                        <TableCell key={`${module}-${permission}`} className="text-center">
+                           <Skeleton className="h-5 w-5 mx-auto" />
+                        </TableCell>
+                      )))}
+                   </TableRow>
+                ))}
 
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" disabled={isRoleInUse(role.name)}>
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This action cannot be undone. This will permanently delete the <strong>{role.name}</strong> role.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => handleDeleteRole(role.name)}>Delete</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Not editable</span>
-                      )}
-                    </TableCell>
+                {!loading && ROLES.map((role) => (
+                  <TableRow key={role}>
+                    <TableCell className="font-medium sticky left-0 bg-card">{role}</TableCell>
+                    {PERMISSION_MODULES.map((module) =>
+                      PERMISSIONS.map((permission) => (
+                        <TableCell key={`${role}-${module}-${permission}`} className="text-center">
+                          <Checkbox
+                            disabled={role === 'SUPER_ADMIN' || isSaving}
+                            checked={getPermissionValue(role, module, permission)}
+                            onCheckedChange={(checked) => {
+                              handlePermissionChange(role, module, permission, !!checked)
+                            }}
+                          />
+                        </TableCell>
+                      ))
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

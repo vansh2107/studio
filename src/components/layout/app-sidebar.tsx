@@ -30,7 +30,7 @@ const menuItems = [
   { href: '/admins', label: 'Admins', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },
   { href: '/associates', label: 'Associates', icon: Briefcase, roles: ['SUPER_ADMIN', 'ADMIN'] },
   { href: '/customers', label: 'Customers', icon: Users, roles: ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE'] },
-  { href: '/role-management', label: 'Role Management', icon: Shield, roles: ['SUPER_ADMIN'] },
+  { href: '/role-management', label: 'Permissions', icon: Shield, roles: ['SUPER_ADMIN'] },
   { href: '/family-manager', label: 'Family Manager', icon: UserCog, roles: ['CUSTOMER'] },
   { href: '/doc-vault', label: 'Doc Vault', icon: FolderOpen, roles: ['CUSTOMER'] },
 ];
@@ -66,18 +66,17 @@ export function AppSidebar() {
         <SidebarMenu>
           {visibleMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive(item.href)}
-                tooltip={{ children: item.label, side: 'right' }}
-              >
-                <Link href={item.href}>
-                  <item.icon />
-                  <span className={cn(sidebarState === 'collapsed' && 'sr-only')}>
-                    {item.label}
-                  </span>
-                </Link>
-              </SidebarMenuButton>
+              <Link href={item.href}>
+                <SidebarMenuButton
+                  isActive={isActive(item.href)}
+                  tooltip={{ children: item.label, side: 'right' }}
+                >
+                    <item.icon />
+                    <span className={cn(sidebarState === 'collapsed' && 'sr-only')}>
+                      {item.label}
+                    </span>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

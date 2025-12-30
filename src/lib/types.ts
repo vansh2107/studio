@@ -1,5 +1,5 @@
-export type Role = 'SUPER_ADMIN' | 'ADMIN' | 'ASSOCIATE' | 'CUSTOMER';
-export type Permission = 'Create' | 'Edit' | 'Update' | 'Delete' | 'Export';
+import { type Role, type Permission, type AssetCategory } from './constants';
+export type { Role, Permission, AssetCategory };
 
 export interface User {
   id: string;
@@ -20,15 +20,6 @@ export interface FamilyMember {
   relation: string;
   customerId: string;
 }
-
-export type AssetCategory =
-  | 'Stocks'
-  | 'PPF'
-  | 'Mutual Funds'
-  | 'Life Insurance'
-  | 'Term Insurance'
-  | 'Fixed Deposits'
-  | 'Bonds';
 
 export interface Asset {
   id: string;

@@ -1,10 +1,13 @@
-"use client";
+'use client';
 
 import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { User, Role, Permission } from '@/lib/types';
-import { users, roles, userMappings } from '@/lib/mock-data';
-import { HIERARCHY } from '@/lib/constants';
+import { users, userMappings } from '@/lib/mock-data';
+import { HIERARCHY, Role, PERMISSIONS, PERMISSION_MODULES, Permission, PermissionModule, Permissions } from '@/lib/constants';
+import type { User } from '@/lib/types';
+import { useCollection, useDoc, useFirestore } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
+
 
 // --- Helper Functions ---
 
@@ -41,11 +44,6 @@ const canImpersonate = (actor: User, target: User): boolean => {
   return false;
 };
 
-const hasPermission = (user: User, permission: Permission): boolean => {
-  const userRoleData = roles.find(r => r.name === user.role);
-  return userRoleData?.permissions.includes(permission) ?? false;
-};
-
 // --- Context Definition ---
 
 interface UserContextType {
@@ -57,7 +55,7 @@ interface UserContextType {
   impersonate: (userId: string) => void;
   stopImpersonation: () => void;
   canImpersonate: (targetUser: User) => boolean;
-  hasPermission: (permission: Permission) => boolean;
+  hasPermission: (module: PermissionModule, permission: Permission) => boolean;
   allUsers: User[];
 }
 
@@ -70,6 +68,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [impersonatedUser, setImpersonatedUser] = useState<User | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  
+  const db = useFirestore();
+  const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
+  
+  const permissionsDocRef = (effectiveUser && db) ? doc(db, 'permissions', effectiveUser.role) : null;
+  const { data: permissions, loading: permissionsLoading } = useDoc<Permissions>(permissionsDocRef);
+
 
   const login = useCallback((userId: string) => {
     const user = users.find(u => u.id === userId);
@@ -108,7 +113,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setImpersonatedUser(null);
   }, []);
 
-  const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
+  const hasPermission = useCallback((module: PermissionModule, permission: Permission): boolean => {
+    if (!effectiveUser) return false;
+    if (effectiveUser.role === 'SUPER_ADMIN') return true;
+    if (permissionsLoading || !permissions) return false;
+    return permissions[module]?.[permission] ?? false;
+  }, [effectiveUser, permissions, permissionsLoading]);
+
 
   const value = useMemo(() => ({
     currentUser,
@@ -116,12 +127,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     effectiveUser,
     login,
     logout,
-    impersonate,
+impersonate,
     stopImpersonation,
     canImpersonate: (targetUser: User) => currentUser ? canImpersonate(currentUser, targetUser) : false,
-    hasPermission: (permission: Permission) => effectiveUser ? hasPermission(effectiveUser, permission) : false,
+    hasPermission,
     allUsers: users,
-  }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation]);
+  }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission]);
 
   return (
     <UserContext.Provider value={value}>

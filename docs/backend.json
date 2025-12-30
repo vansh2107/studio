@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "permissionSet": {
+      "title": "Permission Set",
+      "description": "Defines the permissions for a specific role.",
+      "type": "object",
+      "properties": {
+        "Admin Modules": {
+          "type": "object",
+          "properties": {
+            "view": { "type": "boolean" },
+            "edit": { "type": "boolean" },
+            "delete": { "type": "boolean" },
+            "download": { "type": "boolean" }
+          }
+        },
+        "Associates": {
+          "type": "object",
+          "properties": {
+            "view": { "type": "boolean" },
+            "edit": { "type": "boolean" },
+            "delete": { "type": "boolean" },
+            "download": { "type": "boolean" }
+          }
+        },
+        "Customers": {
+          "type": "object",
+          "properties": {
+            "view": { "type": "boolean" },
+            "edit": { "type": "boolean" },
+            "delete": { "type": "boolean" },
+            "download": { "type": "boolean" }
+          }
+        },
+        "Whole Family": {
+          "type": "object",
+          "properties": {
+            "view": { "type": "boolean" },
+            "edit": { "type": "boolean" },
+            "delete": { "type": "boolean" },
+            "download": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["anonymous"]
+  },
+  "firestore": {
+    "permissions/{roleId}": {
+      "schema": { "$ref": "#/entities/permissionSet" },
+      "description": "Stores the permission matrix for each role."
+    }
+  }
+}
