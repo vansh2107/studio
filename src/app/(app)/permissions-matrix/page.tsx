@@ -141,8 +141,13 @@ export default function RoleManagementPage() {
         description: 'Failed to update permission.',
         variant: 'destructive',
       });
-       // Revert optimistic update on failure - refetch would be better but this is simpler for now.
+       // Revert optimistic update on failure
       const revertedPermissions = JSON.parse(JSON.stringify(permissions));
+      if (permission) {
+        revertedPermissions[role][module as PermissionModule][permission] = !checked;
+      } else {
+        revertedPermissions[role][module as keyof Omit<Permissions, PermissionModule>] = !checked;
+      }
       setPermissions(revertedPermissions);
     } finally {
       setIsSaving(false);
@@ -152,9 +157,11 @@ export default function RoleManagementPage() {
   const getPermissionValue = (role: Role, module: PermissionModule | keyof Omit<Permissions, PermissionModule>, permission?: Permission): boolean => {
       if (!permissions[role]) return false;
       if (permission) {
-          return permissions[role]?.[module as PermissionModule]?.[permission] ?? false;
+          const mod = permissions[role][module as PermissionModule];
+          return mod ? mod[permission] ?? false : false;
       }
-      return permissions[role]?.[module as keyof Omit<Permissions, PermissionModule>] ?? false;
+      const perm = permissions[role][module as keyof Omit<Permissions, PermissionModule>];
+      return typeof perm === 'boolean' ? perm : false;
   };
   
   const singleActionPermissions: (keyof Omit<Permissions, PermissionModule>)[] = ['EditCustomers', 'DeleteCascade', 'DownloadPDF'];
@@ -163,7 +170,7 @@ export default function RoleManagementPage() {
   const renderSkeletons = () => (
       ROLES.map((role) => (
          <TableRow key={role}>
-            <TableCell className="font-medium sticky left-0 bg-card">
+            <TableCell className="font-medium sticky left-0 bg-card z-10">
               <Skeleton className="h-5 w-24" />
             </TableCell>
              {[...PERMISSION_MODULES.flatMap(m => PERMISSIONS.map(p => `${m}-${p}`)), ...singleActionPermissions].map(key => (
@@ -216,7 +223,7 @@ export default function RoleManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(loading || isInitializing) && renderSkeletons()}
+                {(loading || isInitializing) && Object.keys(permissions).length === 0 && renderSkeletons()}
 
                 {!loading && !isInitializing && Object.keys(permissions).length > 0 && ROLES.map((role) => (
                   <TableRow key={role}>
@@ -255,11 +262,14 @@ export default function RoleManagementPage() {
                     <Button onClick={initializePermissions} variant="link">Initialize default permissions.</Button>
                 </div>
             )}
+             {error && (
+              <div className="p-8 text-center text-destructive">
+                Error loading permissions: {error.message}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-    
