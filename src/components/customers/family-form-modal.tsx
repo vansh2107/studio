@@ -94,6 +94,17 @@ export function FamilyFormModal({
   });
 
   const familyHeadName = watch('familyHeadName');
+  
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.body.style.pointerEvents = isOpen ? 'none' : 'auto';
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.style.pointerEvents = 'auto';
+      }
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (family) {
@@ -231,11 +242,9 @@ export function FamilyFormModal({
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
+    <Dialog open={isOpen} onOpenChange={onClose} modal={false}>
+      <DialogContent
         className="sm:max-w-2xl"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>
