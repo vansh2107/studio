@@ -70,14 +70,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
   
   const db = useFirestore();
-  const { isUserLoading } = useFirebase();
+  const { user: firebaseUser, isUserLoading } = useFirebase();
 
   useEffect(() => {
-    // On initial load, set the default user.
+    // On initial load, set the default user once firebase auth is resolved.
     // This runs only once on the client after hydration.
-    const defaultUser = users.find(u => u.role === 'SUPER_ADMIN') || null;
-    setCurrentUser(defaultUser);
-  }, []);
+    if (!isUserLoading && !currentUser) {
+      const defaultUser = users.find(u => u.role === 'SUPER_ADMIN') || null;
+      setCurrentUser(defaultUser);
+    }
+  }, [isUserLoading, currentUser]);
 
   const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
   
