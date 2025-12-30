@@ -69,5 +69,18 @@ service cloud.firestore {
       allow update: if false; // TODO: Add owner validation (e.g., resource.data.creatorId == request.auth.uid).
       allow delete: if false; // TODO: Add owner validation (e.g., resource.data.creatorId == request.auth.uid).
     }
+
+    // Allow authenticated users to read roles and permissions
+    match /roles/{roleId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow write: if false; // Writes should be managed by secure logic
+    }
+
+    match /permissions/{roleId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow write: if false; // Only super admins should write, handled in-app logic
+    }
   }
 }
