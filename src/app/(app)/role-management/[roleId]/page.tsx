@@ -1,8 +1,6 @@
 'use client';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useRouter, useParams } from 'next/navigation';
-import { useDoc, useFirestore } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Table,
@@ -13,68 +11,87 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { PERMISSION_MODULES, PERMISSIONS, type Permission, type PermissionModule, type Permissions, type Role } from '@/lib/constants';
-import { RoleData } from '@/lib/types';
+import { PERMISSION_MODULES, PERMISSIONS, type Permission, type PermissionModule, type Permissions } from '@/lib/constants';
 import { useMemo, useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Mock data store for permissions
+const mockPermissionsStore: Record<string, Permissions> = {
+  SUPER_ADMIN: {
+    SUPER_ADMIN: { view: true, create: true, update: true, delete: true, export: true },
+    ADMIN: { view: true, create: true, update: true, delete: true, export: true },
+    ASSOCIATE: { view: true, create: true, update: true, delete: true, export: true },
+    CUSTOMER: { view: true, create: true, update: true, delete: true, export: true },
+    FAMILY_MANAGER: { view: true, create: true, update: true, delete: true, export: true },
+    DOC_VAULT: { view: true, create: true, update: true, delete: true, export: true },
+  },
+  ADMIN: {
+    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
+    ADMIN: { view: true, create: true, update: true, delete: false, export: true },
+    ASSOCIATE: { view: true, create: true, update: true, delete: true, export: false },
+    CUSTOMER: { view: true, create: true, update: true, delete: true, export: true },
+    FAMILY_MANAGER: { view: true, create: true, update: true, delete: false, export: true },
+    DOC_VAULT: { view: true, create: true, update: false, delete: false, export: true },
+  },
+  ASSOCIATE: {
+    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
+    ADMIN: { view: false, create: false, update: false, delete: false, export: false },
+    ASSOCIATE: { view: true, create: false, update: true, delete: false, export: false },
+    CUSTOMER: { view: true, create: true, update: true, delete: false, export: true },
+    FAMILY_MANAGER: { view: true, create: false, update: true, delete: false, export: false },
+    DOC_VAULT: { view: true, create: true, update: false, delete: false, export: false },
+  },
+  CUSTOMER: {
+    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
+    ADMIN: { view: false, create: false, update: false, delete: false, export: false },
+    ASSOCIATE: { view: false, create: false, update: false, delete: false, export: false },
+    CUSTOMER: { view: true, create: false, update: false, delete: false, export: true },
+    FAMILY_MANAGER: { view: true, create: true, update: true, delete: true, export: false },
+    DOC_VAULT: { view: true, create: true, update: true, delete: true, export: true },
+  },
+};
+
 
 export default function EditRolePage() {
   const { effectiveUser } = useCurrentUser();
   const router = useRouter();
   const params = useParams();
-  const roleId = params.roleId as string;
+  const roleId = decodeURIComponent(params.roleId as string); // Role name is the ID
   
-  const db = useFirestore();
   const { toast } = useToast();
-
-  const roleDocRef = useMemo(() => (db && roleId) ? doc(db, 'roles', roleId) : null, [db, roleId]);
-  const { data: roleData, loading: roleLoading } = useDoc<RoleData>(roleDocRef);
   
-  const permissionsDocRef = useMemo(() => (db && roleId) ? doc(db, 'permissions', roleId) : null, [db, roleId]);
-  const { data: permissions, loading: permissionsLoading } = useDoc<Permissions>(permissionsDocRef);
-
-  const [localPermissions, setLocalPermissions] = useState<Permissions | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [permissions, setPermissions] = useState<Permissions | null>(null);
 
   useEffect(() => {
-    if (permissions) {
-      setLocalPermissions(permissions);
+    // Simulate fetching data
+    const fetchedPermissions = mockPermissionsStore[roleId];
+    if (fetchedPermissions) {
+      setPermissions(JSON.parse(JSON.stringify(fetchedPermissions))); // Deep copy
     }
-  }, [permissions]);
+  }, [roleId]);
   
-  const handlePermissionChange = async (module: PermissionModule, permission: Permission, checked: boolean) => {
-    if (roleData?.name === 'SUPER_ADMIN' || !db || !localPermissions) return;
+  const handlePermissionChange = (module: PermissionModule, permission: Permission, checked: boolean) => {
+    if (roleId === 'SUPER_ADMIN' || !permissions) return;
 
     const newPermissions = { 
-      ...localPermissions,
+      ...permissions,
       [module]: {
-        ...localPermissions[module],
+        ...permissions[module],
         [permission]: checked,
       }
     };
-    setLocalPermissions(newPermissions);
+    setPermissions(newPermissions);
 
-    setIsSaving(true);
-    try {
-      await setDoc(permissionsDocRef, { [module]: { [permission]: checked } }, { merge: true });
-      toast({
-        title: 'Permission updated',
-        description: `"${module}" -> "${permission}" set to ${checked}.`,
-      });
-    } catch (e) {
-      console.error("Error updating permission: ", e);
-      setLocalPermissions(permissions); // Revert on error
-      toast({
-        title: 'Error',
-        description: 'Failed to update permission.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    // In a real app, this is where you'd save to Firestore.
+    // For the prototype, we just update the local mock store.
+    mockPermissionsStore[roleId] = newPermissions;
+
+    toast({
+      title: 'Permission updated (local)',
+      description: `"${module}" -> "${permission}" set to ${checked}.`,
+    });
   };
   
   if (effectiveUser?.role !== 'SUPER_ADMIN') {
@@ -90,9 +107,6 @@ export default function EditRolePage() {
     );
   }
 
-  const loading = roleLoading || permissionsLoading;
-  const currentPermissions = localPermissions || permissions;
-
   return (
     <div className="space-y-6">
        <Button variant="outline" onClick={() => router.back()} className="mb-4">
@@ -101,10 +115,10 @@ export default function EditRolePage() {
       </Button>
       <div>
         <h1 className="text-3xl font-bold font-headline">
-          Permissions for {loading ? <Skeleton className="h-8 w-32 inline-block" /> : <code>{roleData?.name}</code>}
+          Permissions for <code>{roleId}</code>
         </h1>
         <p className="text-muted-foreground">
-          Manage permissions for the <strong>{roleData?.name}</strong> role. Changes are saved automatically.
+          Manage permissions for the <strong>{roleId}</strong> role. Changes are saved locally for this prototype.
         </p>
       </div>
       <Card>
@@ -120,24 +134,14 @@ export default function EditRolePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {loading && PERMISSION_MODULES.map(module => (
-                  <TableRow key={module}>
-                    <TableCell className="font-medium">{module.replace(/_/g, ' ')}</TableCell>
-                    {PERMISSIONS.map(permission => (
-                      <TableCell key={permission} className="text-center">
-                        <Skeleton className="h-4 w-4 mx-auto" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-                {!loading && currentPermissions && PERMISSION_MODULES.map(module => (
+                {permissions && PERMISSION_MODULES.map(module => (
                   <TableRow key={module}>
                     <TableCell className="font-medium">{module.replace(/_/g, ' ')}</TableCell>
                     {PERMISSIONS.map(permission => (
                       <TableCell key={permission} className="text-center">
                         <Checkbox
-                          disabled={isSaving || roleData?.name === 'SUPER_ADMIN'}
-                          checked={currentPermissions[module]?.[permission] ?? false}
+                          disabled={roleId === 'SUPER_ADMIN'}
+                          checked={permissions[module]?.[permission] ?? false}
                           onCheckedChange={(checked) => {
                             handlePermissionChange(module, permission, !!checked);
                           }}
@@ -149,7 +153,7 @@ export default function EditRolePage() {
               </TableBody>
             </Table>
           </div>
-           {!loading && !currentPermissions && <p className="p-4 text-center text-muted-foreground">No permission set found for this role.</p>}
+           {!permissions && <p className="p-4 text-center text-muted-foreground">No permission set found for this role.</p>}
         </CardContent>
       </Card>
     </div>
