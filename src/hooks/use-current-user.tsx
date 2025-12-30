@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { users, userMappings, families as mockFamilies, permissions as mockPermissions } from '@/lib/mock-data';
+import { users, userMappings, permissions as mockPermissions } from '@/lib/mock-data';
 import { HIERARCHY, Role, Permission, PermissionModule } from '@/lib/constants';
 import type { User } from '@/lib/types';
 import { AppLayoutSkeleton } from '@/components/layout/app-layout';
@@ -141,10 +141,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const rolePermissions = mockPermissions[userRole];
     if (!rolePermissions) return false;
     
-    const modulePermissions = rolePermissions[module];
-    if (!modulePermissions) return false;
-
-    return modulePermissions[permission] ?? false;
+    // This is a simplified check. The mock permission structure doesn't match the required one exactly.
+    // Let's adapt to what we have.
+    switch (permission) {
+      case 'view': return rolePermissions.canView;
+      case 'update': return rolePermissions.canEdit;
+      case 'delete': return rolePermissions.canDelete;
+      case 'create': 
+        if(module === 'CUSTOMER' || module === 'FAMILY_MANAGER') return rolePermissions.canAccessCustomers;
+        return rolePermissions.canManageUsers;
+      default: return false;
+    }
 
   }, [effectiveUser]);
 

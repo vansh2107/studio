@@ -18,34 +18,32 @@ import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('sonia.a@ascend.inc');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('superadmin@demo.app');
+  const [password, setPassword] = useState('SuperAdmin@123');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { login, allUsers } = useCurrentUser();
+  const { login, allUsers, currentUser } = useCurrentUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const userToLogin = allUsers.find(u => u.email === email);
+    const userToLogin = allUsers.find(u => u.email === email && u.password === password);
     
-    // In a prototype, we can ignore the password or have a generic one
     if (userToLogin) {
       login(userToLogin.id);
       router.push('/');
     } else {
       toast({
         title: 'Login Failed',
-        description: 'Invalid email. Please check your credentials.',
+        description: 'Invalid email or password. Please check your credentials.',
         variant: 'destructive',
       });
       setIsLoading(false);
     }
   };
   
-  const { currentUser } = useCurrentUser();
   if (currentUser) {
     router.push('/');
     return null;
@@ -62,7 +60,7 @@ export default function LoginPage() {
             <CardTitle className="text-2xl">Welcome Back</CardTitle>
             <CardDescription>
               Enter your credentials to access your account. <br />
-              (Hint: use sonia.a@ascend.inc and password)
+              (Hint: use superadmin@demo.app and SuperAdmin@123)
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">

@@ -1,5 +1,5 @@
-import { User, RoleData, FamilyMember, Asset, Document, AssetCategory } from './types';
-import { PERMISSIONS, DOC_CATEGORIES } from './constants';
+import { User, RoleData, FamilyMember, Asset, Document, Family } from './types';
+import { PERMISSIONS, DOC_CATEGORIES, ROLES } from './constants';
 import { PlaceHolderImages } from './placeholder-images';
 
 const avatarUrls = PlaceHolderImages
@@ -8,17 +8,56 @@ const avatarUrls = PlaceHolderImages
   .map(img => img.imageUrl);
 
 export const users: User[] = [
-  { id: 'user-sa-1', name: 'Sonia Adminia', email: 'sonia.a@ascend.inc', role: 'SUPER_ADMIN', avatarUrl: avatarUrls[0] },
-  { id: 'user-a-1', name: 'Adam Min', email: 'adam.m@ascend.inc', role: 'ADMIN', avatarUrl: avatarUrls[1] },
-  { id: 'user-a-2', name: 'Anna Ministrator', email: 'anna.m@ascend.inc', role: 'ADMIN', avatarUrl: avatarUrls[2] },
-  { id: 'user-as-1', name: 'Ash Socia', email: 'ash.s@ascend.inc', role: 'ASSOCIATE', avatarUrl: avatarUrls[3] },
-  { id: 'user-as-2', name: 'Asher Socien', email: 'asher.s@ascend.inc', role: 'ASSOCIATE', avatarUrl: avatarUrls[4] },
-  { id: 'user-as-3', name: 'Ashley C. Ociat', email: 'ashley.c@ascend.inc', role: 'ASSOCIATE', avatarUrl: avatarUrls[5] },
-  { id: 'user-c-1', name: 'The Sharma Family', email: 'contact@sharma.fam', role: 'CUSTOMER', avatarUrl: avatarUrls[6] },
-  { id: 'user-c-2', name: 'The Gupta Household', email: 'contact@gupta.fam', role: 'CUSTOMER', avatarUrl: avatarUrls[7] },
-  { id: 'user-c-3', name: 'The Patel Clan', email: 'contact@patel.fam', role: 'CUSTOMER', avatarUrl: avatarUrls[8] },
-  { id: 'user-c-4', name: 'The Singh Estate', email: 'contact@singh.fam', role: 'CUSTOMER', avatarUrl: avatarUrls[9] },
+    { id: 'user-sa-1', name: 'Sonia Adminia', email: 'superadmin@demo.app', password: 'SuperAdmin@123', role: 'SUPER_ADMIN', avatarUrl: avatarUrls[0] },
+    
+    { id: 'user-a-1', name: 'Adam Min', email: 'admin1@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[1] },
+    { id: 'user-a-2', name: 'Anna Ministrator', email: 'admin2@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[2] },
+    
+    { id: 'user-as-1', name: 'Ash Socia', email: 'associate1@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[3] },
+    { id: 'user-as-2', name: 'Asher Socien', email: 'associate2@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[4] },
+    { id: 'user-as-3', name: 'Ashley C. Ociat', email: 'associate3@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[5] },
+    
+    { id: 'user-c-1', name: 'The Mehta Family', email: 'customer1@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[6] },
+    { id: 'user-c-2', name: 'The Sharma Household', email: 'customer2@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[7] },
+    { id: 'user-c-3', name: 'The Patel Clan', email: 'customer3@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[8] },
+    { id: 'user-c-4', name: 'The Singh Estate', email: 'customer4@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[9] },
+    { id: 'user-c-5', name: 'The Kumar Group', email: 'customer5@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[10] },
+    { id: 'user-c-6', name: 'The Reddy Enterprise', email: 'customer6@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[11] },
+    { id: 'user-c-7', name: 'The Das LLC', email: 'customer7@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[12] },
 ];
+
+export const families: Family[] = [
+    {
+      id: 'F001',
+      familyHeadName: 'Rahul Mehta',
+      familyName: 'Mehta',
+      phoneNumber: '9876543210',
+      emailId: 'rahul@example.com',
+      dateOfBirth: '1990-05-12',
+      address: 'Mumbai, India',
+      anniversaryDate: '2018-12-01',
+      panFileName: 'PAN.pdf',
+      aadhaarFileName: 'Aadhaar.pdf',
+      otherDocumentFileName: ''
+    },
+    {
+      id: 'F002',
+      familyHeadName: 'Priya Sharma',
+      familyName: 'Sharma',
+      phoneNumber: '9990011122',
+      emailId: 'priya@example.com',
+      dateOfBirth: '1994-08-20',
+      address: 'Delhi, India',
+      anniversaryDate: undefined,
+      panFileName: '',
+      aadhaarFileName: 'Aadhaar.png',
+      otherDocumentFileName: ''
+    },
+     { id: 'F003', familyName: 'Patel', familyHeadName: 'Mehul Patel', phoneNumber: '9123456780', emailId: 'mehul.p@example.com', dateOfBirth: '1988-03-15', address: 'Ahmedabad, Gujarat' },
+     { id: 'F004', familyName: 'Singh', familyHeadName: 'Harpreet Singh', phoneNumber: '9234567891', emailId: 'harpreet.s@example.com', dateOfBirth: '1985-11-25', address: 'Chandigarh, Punjab' },
+     { id: 'F005', familyName: 'Kumar', familyHeadName: 'Suresh Kumar', phoneNumber: '9345678902', emailId: 'suresh.k@example.com', dateOfBirth: '1982-07-30', address: 'Bengaluru, Karnataka' },
+];
+
 
 export const userMappings: Record<string, string[]> = {
   'user-sa-1': ['user-a-1', 'user-a-2'], // Super Admin sees all Admins
@@ -28,13 +67,6 @@ export const userMappings: Record<string, string[]> = {
   'user-as-2': ['user-c-2', 'user-c-3'],  // Associate 2 sees Customers 2 & 3
   'user-as-3': ['user-c-4'],              // Associate 3 sees Customer 4
 };
-
-export const roles: RoleData[] = [
-  { name: 'SUPER_ADMIN', permissions: [...PERMISSIONS] },
-  { name: 'ADMIN', permissions: ['Create', 'Edit', 'Update', 'Export'] },
-  { name: 'ASSOCIATE', permissions: ['Create', 'Edit', 'Update'] },
-  { name: 'CUSTOMER', permissions: [] },
-];
 
 export const familyMembers: FamilyMember[] = [
   { id: 'fm-1-1', customerId: 'user-c-1', name: 'Rohan Sharma', relation: 'Self' },
@@ -61,6 +93,41 @@ export const documents: Document[] = [
   { id: 'doc-2', customerId: 'user-c-1', memberId: 'fm-1-1', category: 'Life Insurance', name: 'LIC_Policy_Bond.pdf', url: '#' },
   { id: 'doc-3', customerId: 'user-c-4', memberId: 'fm-4-1', category: 'Term Insurance', name: 'HDFC_Term_Policy.pdf', url: '#' },
 ];
+
+export const permissions = {
+    SUPER_ADMIN: {
+        role: "SUPER_ADMIN",
+        canView: true,
+        canEdit: true,
+        canDelete: true,
+        canManageUsers: true,
+        canAccessCustomers: true
+    },
+    ADMIN: {
+        role: "ADMIN",
+        canView: true,
+        canEdit: true,
+        canDelete: false,
+        canManageUsers: false,
+        canAccessCustomers: true
+    },
+    ASSOCIATE: {
+        role: "ASSOCIATE",
+        canView: true,
+        canEdit: false,
+        canDelete: false,
+        canAccessCustomers: true
+    },
+    CUSTOMER: {
+        role: "CUSTOMER",
+        canView: true, // only their own data
+        canEdit: false,
+        canDelete: false,
+        canManageUsers: false,
+        canAccessCustomers: false
+    }
+}
+
 
 // --- Data Accessor Functions (Simulating Backend Logic) ---
 
@@ -92,4 +159,4 @@ export const getDocumentsForCustomer = (customerId: string): Document[] => {
   return documents.filter(d => d.customerId === customerId);
 }
 
-export const getRoles = (): RoleData[] => roles;
+export const getRoles = (): RoleData[] => ROLES.map(r => ({ id: r, name: r }));
