@@ -156,10 +156,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     canImpersonate: (targetUser: User) => currentUser ? canImpersonate(currentUser, targetUser) : false,
     hasPermission,
     allUsers: users,
-    isLoading: isLoading || permissionsLoading,
+    isLoading: isLoading || (!!effectiveUser && permissionsLoading),
   }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission, isLoading, permissionsLoading]);
 
-  if (isLoading) {
+  if (value.isLoading && pathname !== '/login') {
       return <AppLayoutSkeleton />;
   }
   
