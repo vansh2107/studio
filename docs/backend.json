@@ -52,6 +52,18 @@
         "otherDocumentUrl": {
           "type": "string",
           "description": "URL of the other document."
+        },
+        "panFileName": {
+            "type": "string",
+            "description": "File name of the PAN photo document."
+        },
+        "aadhaarFileName": {
+            "type": "string",
+            "description": "File name of the Aadhaar photo document."
+        },
+        "otherDocumentFileName": {
+            "type": "string",
+            "description": "File name of the other document."
         }
       },
       "required": [
@@ -89,7 +101,6 @@
           ]
         }
       }
-    ],
-    "reasoning": "This Firestore structure is designed to manage customer (family) data within the Ascend Wealth application, adhering to strict role-based access control (RBAC) and the principle of Authorization Independence. It leverages path-based ownership for user-owned data and denormalization to avoid `get()` calls in security rules, ensuring atomic operations and simplified rule management.\n\nThe core entities are stored under the `/families` collection. This collection stores all the details of a customer family (Family Head, Name, Contact Details, Addresses and URLs for uploaded documents).\n\nThis design achieves Authorization Independence by storing all data related to a family in a single document within the `families` collection, eliminating the need for hierarchical `get()` calls in security rules. It supports the required QAPs by ensuring secure `list` operations through role-based access control defined in security rules (e.g., only Associates and higher roles can list families, and Associates can only list families assigned to them). Segregation of data based on role is achieved structurally, preventing unauthorized access to sensitive information. Additionally, storing the `familyId` on assets will also provide authorization independence for the assets as they exist within their own collection, and do not need to make 'get()' calls to family documents to confirm ownership.\n\nThis design promotes clarity, security, scalability, and debuggability while adhering to the principles outlined in the prompt."
+    ]
   }
 }

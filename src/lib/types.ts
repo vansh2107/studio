@@ -38,3 +38,20 @@ export interface Document {
   memberId: string;
   customerId: string;
 }
+
+export interface Family {
+  id: string;
+  familyName: string;
+  familyHeadName: string;
+  phoneNumber: string;
+  emailId: string;
+  dateOfBirth: string;
+  address: string;
+  anniversaryDate?: string;
+  panPhotoUrl?: string;
+  aadhaarPhotoUrl?: string;
+  otherDocumentUrl?: string;
+  panFileName?: string;
+  aadhaarFileName?: string;
+  otherDocumentFileName?: string;
+}
