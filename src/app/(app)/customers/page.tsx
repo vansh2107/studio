@@ -44,8 +44,8 @@ export default function CustomersPage() {
   const [loadingFamilies, setLoadingFamilies] = useState(true);
 
   // State management for modals
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
 
@@ -195,7 +195,10 @@ export default function CustomersPage() {
                             )}
                             {canDelete && (
                                 <DropdownMenuItem
-                                  onSelect={() => handleDeleteTrigger(family)}
+                                  onSelect={(e) => {
+                                    e.preventDefault(); // This is important to prevent menu from closing
+                                    handleDeleteTrigger(family);
+                                  }}
                                   className="text-destructive focus:text-destructive"
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />

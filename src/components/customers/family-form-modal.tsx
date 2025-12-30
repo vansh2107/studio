@@ -231,9 +231,8 @@ export function FamilyFormModal({
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose} modal={false}>
-      {isOpen && <div className="fixed inset-0 z-40 bg-black/80" />}
-      <DialogContent className="sm:max-w-2xl z-50">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {family ? 'Edit Family' : 'Create New Family'} - Step {step} / 2
