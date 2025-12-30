@@ -112,7 +112,7 @@ export function FamilyMemberFormModal({
                       <SelectTrigger id="relation">
                         <SelectValue placeholder="Select a relation" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper" side="top">
                         {RELATION_OPTIONS.map(option => (
                            <SelectItem key={option} value={option}>{option}</SelectItem>
                         ))}
