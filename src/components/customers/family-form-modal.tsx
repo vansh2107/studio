@@ -27,8 +27,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Family } from '@/lib/types';
 
 const familySchema = z.object({
-  familyHeadName: z.string().min(1, 'Family head name is required'),
-  familyName: z.string().min(1, 'Family name is required'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
   emailId: z.string().email('Invalid email address'),
   dateOfBirth: z.date({ required_error: 'Date of birth is required' }),
@@ -69,23 +69,19 @@ export function FamilyFormModal({
     register,
     handleSubmit,
     control,
-    watch,
-    setValue,
     reset,
     formState: { errors },
   } = useForm<FamilyFormData>({
     resolver: zodResolver(familySchema),
     defaultValues: {
-      familyHeadName: '',
-      familyName: '',
+      firstName: '',
+      lastName: '',
       phoneNumber: '',
       emailId: '',
       address: '',
     },
   });
 
-  const familyHeadName = watch('familyHeadName');
-  
   useEffect(() => {
     if (family) {
       reset({
@@ -100,8 +96,8 @@ export function FamilyFormModal({
       setOtherFile(family.otherDocumentFileName ? new File([], family.otherDocumentFileName) : null);
     } else {
       reset({
-        familyHeadName: '',
-        familyName: '',
+        firstName: '',
+        lastName: '',
         phoneNumber: '',
         emailId: '',
         address: '',
@@ -115,17 +111,6 @@ export function FamilyFormModal({
     setStep(1);
     setIsSaving(false);
   }, [family, reset]);
-
-  useEffect(() => {
-    if (familyHeadName) {
-      const parts = familyHeadName.trim().split(' ');
-      if (parts.length > 1) {
-        setValue('familyName', parts[parts.length - 1]);
-      } else {
-        setValue('familyName', familyHeadName);
-      }
-    }
-  }, [familyHeadName, setValue]);
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -171,7 +156,7 @@ export function FamilyFormModal({
 
       toast({
         title: family ? 'Family Updated' : 'Family Created',
-        description: `The family "${data.familyName}" has been successfully saved.`,
+        description: `The family "${data.firstName} ${data.lastName}" has been successfully saved.`,
       });
       
       setIsSaving(false);
@@ -221,7 +206,7 @@ export function FamilyFormModal({
   );
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto p-1">
+    <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 -mr-4">
         <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
           <h2 className="text-lg font-semibold leading-none tracking-tight">
             {family ? 'Edit Family' : 'Create New Family'} - Step {step} / 2
@@ -233,30 +218,30 @@ export function FamilyFormModal({
           className="space-y-4"
         >
           {step === 1 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="familyHeadName">Family Head (Full Name)</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
+               <div className="space-y-1.5">
+                <Label htmlFor="firstName">First Name</Label>
                 <Input
-                  id="familyHeadName"
-                  {...register('familyHeadName')}
+                  id="firstName"
+                  {...register('firstName')}
                   disabled={isSaving}
                 />
-                {errors.familyHeadName && (
+                {errors.firstName && (
                   <p className="text-sm text-destructive">
-                    {errors.familyHeadName.message}
+                    {errors.firstName.message}
                   </p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="familyName">Family Name</Label>
+                <Label htmlFor="lastName">Last Name</Label>
                 <Input
-                  id="familyName"
-                  {...register('familyName')}
+                  id="lastName"
+                  {...register('lastName')}
                   disabled={isSaving}
                 />
-                {errors.familyName && (
+                {errors.lastName && (
                   <p className="text-sm text-destructive">
-                    {errors.familyName.message}
+                    {errors.lastName.message}
                   </p>
                 )}
               </div>
@@ -312,7 +297,7 @@ export function FamilyFormModal({
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 z-[1100]" side="bottom" align="start">
+                      <PopoverContent className="w-auto p-0 z-[1001]" side="bottom" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value}
@@ -353,7 +338,7 @@ export function FamilyFormModal({
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 z-[1100]" side="bottom" align="start">
+                      <PopoverContent className="w-auto p-0 z-[1001]" side="bottom" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value}

@@ -5,6 +5,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string;
   role: Role;
   avatarUrl: string;
 }
@@ -41,8 +42,8 @@ export interface Document {
 
 export interface Family {
   id: string;
-  familyName: string;
-  familyHeadName: string;
+  firstName: string;
+  lastName: string;
   phoneNumber: string;
   emailId: string;
   dateOfBirth: string;
@@ -53,6 +54,5 @@ export interface Family {
   otherDocumentUrl?: string;
   panFileName?: string;
   aadhaarFileName?: string;
-
   otherDocumentFileName?: string;
 }

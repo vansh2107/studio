@@ -31,9 +31,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from '@/components/ui/alert-dialog'; // Keep these for styling similarity
+} from '@/components/ui/alert-dialog'; 
 
 type ActiveModal = 'form' | 'view' | 'delete' | null;
 
@@ -89,7 +87,7 @@ export default function CustomersPage() {
 
     toast({
       title: 'Family Deleted',
-      description: `The family "${selectedFamily.familyName}" has been successfully deleted.`,
+      description: `The family "${selectedFamily.firstName} ${selectedFamily.lastName}" has been successfully deleted.`,
     });
 
     handleCloseModal();
@@ -128,8 +126,8 @@ export default function CustomersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Family Name</TableHead>
-                <TableHead>Family Head</TableHead>
+                <TableHead>First Name</TableHead>
+                <TableHead>Last Name</TableHead>
                 <TableHead>Phone Number</TableHead>
                 <TableHead>Email ID</TableHead>
                 <TableHead>Date of Birth</TableHead>
@@ -141,7 +139,7 @@ export default function CustomersPage() {
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -151,8 +149,8 @@ export default function CustomersPage() {
               ) : families.length > 0 ? (
                 families.map(family => (
                   <TableRow key={family.id}>
-                    <TableCell className="font-medium">{family.familyName}</TableCell>
-                    <TableCell>{family.familyHeadName}</TableCell>
+                    <TableCell className="font-medium">{family.firstName}</TableCell>
+                    <TableCell>{family.lastName}</TableCell>
                     <TableCell>{family.phoneNumber}</TableCell>
                     <TableCell>{family.emailId}</TableCell>
                     <TableCell>
@@ -228,7 +226,7 @@ export default function CustomersPage() {
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
                   This action cannot be undone. This will permanently delete the
-                  family record for <strong>{selectedFamily.familyName}</strong>.
+                  record for <strong>{selectedFamily.firstName} {selectedFamily.lastName}</strong>.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter className='mt-6'>

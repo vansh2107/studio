@@ -52,9 +52,9 @@ export function ViewFamilyModal({
       <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
         <div className='flex justify-between items-start'>
             <div>
-                <h2 className="text-lg font-semibold leading-none tracking-tight">Family Details: {family.familyName}</h2>
+                <h2 className="text-lg font-semibold leading-none tracking-tight">Family Details: {family.firstName} {family.lastName}</h2>
                 <p className="text-sm text-muted-foreground">
-                    Viewing record for the {family.familyName} family.
+                    Viewing record for {family.firstName} {family.lastName}.
                 </p>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose} className='-mr-2 -mt-2'>
@@ -68,8 +68,8 @@ export function ViewFamilyModal({
             Personal Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailItem label="Family Head" value={family.familyHeadName} />
-            <DetailItem label="Family Name" value={family.familyName} />
+            <DetailItem label="First Name" value={family.firstName} />
+            <DetailItem label="Last Name" value={family.lastName} />
             <DetailItem label="Phone Number" value={family.phoneNumber} />
             <DetailItem label="Email ID" value={family.emailId} />
             <DetailItem

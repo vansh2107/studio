@@ -1,5 +1,5 @@
 import { User, RoleData, FamilyMember, Asset, Document, Family } from './types';
-import { PERMISSIONS, DOC_CATEGORIES, ROLES } from './constants';
+import { PERMISSIONS, DOC_CATEGORIES, ROLES, PERMISSION_MODULES, Permissions } from './constants';
 import { PlaceHolderImages } from './placeholder-images';
 
 const avatarUrls = PlaceHolderImages
@@ -29,8 +29,8 @@ export const users: User[] = [
 export const families: Family[] = [
     {
       id: 'F001',
-      familyHeadName: 'Rahul Mehta',
-      familyName: 'Mehta',
+      firstName: 'Rahul',
+      lastName: 'Mehta',
       phoneNumber: '9876543210',
       emailId: 'rahul@example.com',
       dateOfBirth: '1990-05-12',
@@ -42,8 +42,8 @@ export const families: Family[] = [
     },
     {
       id: 'F002',
-      familyHeadName: 'Priya Sharma',
-      familyName: 'Sharma',
+      firstName: 'Priya',
+      lastName: 'Sharma',
       phoneNumber: '9990011122',
       emailId: 'priya@example.com',
       dateOfBirth: '1994-08-20',
@@ -53,9 +53,9 @@ export const families: Family[] = [
       aadhaarFileName: 'Aadhaar.png',
       otherDocumentFileName: ''
     },
-     { id: 'F003', familyName: 'Patel', familyHeadName: 'Mehul Patel', phoneNumber: '9123456780', emailId: 'mehul.p@example.com', dateOfBirth: '1988-03-15', address: 'Ahmedabad, Gujarat' },
-     { id: 'F004', familyName: 'Singh', familyHeadName: 'Harpreet Singh', phoneNumber: '9234567891', emailId: 'harpreet.s@example.com', dateOfBirth: '1985-11-25', address: 'Chandigarh, Punjab' },
-     { id: 'F005', familyName: 'Kumar', familyHeadName: 'Suresh Kumar', phoneNumber: '9345678902', emailId: 'suresh.k@example.com', dateOfBirth: '1982-07-30', address: 'Bengaluru, Karnataka' },
+     { id: 'F003', firstName: 'Mehul', lastName: 'Patel', phoneNumber: '9123456780', emailId: 'mehul.p@example.com', dateOfBirth: '1988-03-15', address: 'Ahmedabad, Gujarat' },
+     { id: 'F004', firstName: 'Harpreet', lastName: 'Singh', phoneNumber: '9234567891', emailId: 'harpreet.s@example.com', dateOfBirth: '1985-11-25', address: 'Chandigarh, Punjab' },
+     { id: 'F005', firstName: 'Suresh', lastName: 'Kumar', phoneNumber: '9345678902', emailId: 'suresh.k@example.com', dateOfBirth: '1982-07-30', address: 'Bengaluru, Karnataka' },
 ];
 
 
@@ -94,39 +94,43 @@ export const documents: Document[] = [
   { id: 'doc-3', customerId: 'user-c-4', memberId: 'fm-4-1', category: 'Term Insurance', name: 'HDFC_Term_Policy.pdf', url: '#' },
 ];
 
-export const permissions = {
-    SUPER_ADMIN: {
-        role: "SUPER_ADMIN",
-        canView: true,
-        canEdit: true,
-        canDelete: true,
-        canManageUsers: true,
-        canAccessCustomers: true
-    },
-    ADMIN: {
-        role: "ADMIN",
-        canView: true,
-        canEdit: true,
-        canDelete: false,
-        canManageUsers: false,
-        canAccessCustomers: true
-    },
-    ASSOCIATE: {
-        role: "ASSOCIATE",
-        canView: true,
-        canEdit: false,
-        canDelete: false,
-        canAccessCustomers: true
-    },
-    CUSTOMER: {
-        role: "CUSTOMER",
-        canView: true, // only their own data
-        canEdit: false,
-        canDelete: false,
-        canManageUsers: false,
-        canAccessCustomers: false
-    }
-}
+const mockPermissionsStore: Record<string, Permissions> = {
+  SUPER_ADMIN: {
+    SUPER_ADMIN: { view: true, create: true, update: true, delete: true, export: true },
+    ADMIN: { view: true, create: true, update: true, delete: true, export: true },
+    ASSOCIATE: { view: true, create: true, update: true, delete: true, export: true },
+    CUSTOMER: { view: true, create: true, update: true, delete: true, export: true },
+    FAMILY_MANAGER: { view: true, create: true, update: true, delete: true, export: true },
+    DOC_VAULT: { view: true, create: true, update: true, delete: true, export: true },
+  },
+  ADMIN: {
+    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
+    ADMIN: { view: true, create: true, update: true, delete: false, export: true },
+    ASSOCIATE: { view: true, create: true, update: true, delete: true, export: false },
+    CUSTOMER: { view: true, create: true, update: true, delete: true, export: true },
+    FAMILY_MANAGER: { view: true, create: true, update: true, delete: false, export: true },
+    DOC_VAULT: { view: true, create: true, update: false, delete: false, export: true },
+  },
+  ASSOCIATE: {
+    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
+    ADMIN: { view: false, create: false, update: false, delete: false, export: false },
+    ASSOCIATE: { view: true, create: false, update: true, delete: false, export: false },
+    CUSTOMER: { view: true, create: true, update: true, delete: false, export: true },
+    FAMILY_MANAGER: { view: true, create: false, update: true, delete: false, export: false },
+    DOC_VAULT: { view: true, create: true, update: false, delete: false, export: false },
+  },
+  CUSTOMER: {
+    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
+    ADMIN: { view: false, create: false, update: false, delete: false, export: false },
+    ASSOCIATE: { view: false, create: false, update: false, delete: false, export: false },
+    CUSTOMER: { view: true, create: false, update: false, delete: false, export: true },
+    FAMILY_MANAGER: { view: true, create: true, update: true, delete: true, export: false },
+    DOC_VAULT: { view: true, create: true, update: true, delete: true, export: true },
+  },
+};
+export { mockPermissionsStore };
+
+export const permissions = mockPermissionsStore;
 
 
 // --- Data Accessor Functions (Simulating Backend Logic) ---
