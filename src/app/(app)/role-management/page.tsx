@@ -38,17 +38,15 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { RoleData } from '@/lib/types';
+import { PERMISSION_MODULES, ROLES } from '@/lib/constants';
 
-const defaultPermissions = {
-  SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-  ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-  ASSOCIATE: { view: false, create: false, update: false, delete: false, export: false },
-  CUSTOMER: { view: false, create: false, update: false, delete: false, export: false },
-  FAMILY_MANAGER: { view: false, create: false, update: false, delete: false, export: false },
-  DOC_VAULT: { view: false, create: false, update: false, delete: false, export: false },
-};
+const defaultPermissions = PERMISSION_MODULES.reduce((acc, module) => {
+  acc[module] = { view: false, create: false, update: false, delete: false, export: false };
+  return acc;
+}, {} as any);
+
 
 function AddRoleDialog({ onAdd }: { onAdd: (name: string) => Promise<void> }) {
   const [open, setOpen] = useState(false);
@@ -58,7 +56,7 @@ function AddRoleDialog({ onAdd }: { onAdd: (name: string) => Promise<void> }) {
   const handleSave = async () => {
     if (!name) return;
     setIsSaving(true);
-    await onAdd(name);
+    await onAdd(name.toUpperCase());
     setIsSaving(false);
     setOpen(false);
     setName('');
@@ -96,15 +94,60 @@ export default function RoleManagementPage() {
   const router = useRouter();
   const db = useFirestore();
   const { toast } = useToast();
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const rolesCollection = useMemo(() => db ? collection(db, 'roles') : null, [db]);
   const { data: roles, loading, error } = useCollection<RoleData>(rolesCollection);
 
+  const permissionsCollection = useMemo(() => db ? collection(db, 'permissions') : null, [db]);
+
+  useEffect(() => {
+    if (!loading && roles?.length === 0 && db && !isSeeding) {
+      const seedData = async () => {
+        setIsSeeding(true);
+        toast({ title: "No roles found", description: "Initializing default roles and permissions..." });
+        try {
+          const batch = writeBatch(db);
+          
+          for (const roleName of ROLES) {
+            const roleDocRef = doc(collection(db, 'roles'));
+            batch.set(roleDocRef, { name: roleName });
+            
+            const permissionsDocRef = doc(db, 'permissions', roleDocRef.id);
+            let rolePermissions = JSON.parse(JSON.stringify(defaultPermissions)); // Deep copy
+            if (roleName === 'SUPER_ADMIN') {
+               Object.keys(rolePermissions).forEach(module => {
+                 Object.keys(rolePermissions[module]).forEach(permission => {
+                   rolePermissions[module][permission] = true;
+                 });
+               });
+            }
+            batch.set(permissionsDocRef, rolePermissions);
+          }
+
+          await batch.commit();
+          toast({ title: 'Success', description: 'Default roles and permissions have been created.' });
+        } catch (e) {
+          console.error("Error seeding data: ", e);
+          toast({ title: 'Error', description: 'Could not initialize default roles.', variant: 'destructive' });
+        } finally {
+          setIsSeeding(false);
+        }
+      };
+      seedData();
+    }
+  }, [loading, roles, db, toast, isSeeding]);
+
+
   const handleAddRole = async (name: string) => {
-    if (!db) return;
+    if (!db || !permissionsCollection) return;
+     if (roles?.some(role => role.name === name)) {
+      toast({ title: 'Error', description: `Role "${name}" already exists.`, variant: 'destructive' });
+      return;
+    }
     try {
       const docRef = await addDoc(collection(db, 'roles'), { name });
-      await addDoc(collection(db, 'permissions'), { roleId: docRef.id, ...defaultPermissions });
+      await addDoc(permissionsCollection, { roleId: docRef.id, ...defaultPermissions });
       toast({ title: 'Success', description: `Role "${name}" created.` });
     } catch (e) {
       console.error(e);
@@ -144,6 +187,8 @@ export default function RoleManagementPage() {
     );
   }
 
+  const isLoading = loading || isSeeding;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -160,7 +205,7 @@ export default function RoleManagementPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading && (
+              {isLoading && (
                 <>
                   <TableRow>
                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
@@ -170,9 +215,13 @@ export default function RoleManagementPage() {
                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-8 w-20 inline-block" /></TableCell>
                   </TableRow>
+                   <TableRow>
+                    <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-8 w-20 inline-block" /></TableCell>
+                  </TableRow>
                 </>
               )}
-              {!loading && roles?.map((role) => (
+              {!isLoading && roles?.sort((a, b) => a.name.localeCompare(b.name)).map((role) => (
                 <TableRow key={role.id}>
                   <TableCell className="font-medium">{role.name}</TableCell>
                   <TableCell className="text-right">

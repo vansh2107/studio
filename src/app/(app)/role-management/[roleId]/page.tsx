@@ -15,9 +15,9 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { PERMISSION_MODULES, PERMISSIONS, type Permission, type PermissionModule, type Permissions, type Role, ModulePermissions } from '@/lib/constants';
+import { PERMISSION_MODULES, PERMISSIONS, type Permission, type PermissionModule, type Permissions, type Role } from '@/lib/constants';
 import { RoleData } from '@/lib/types';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -36,23 +36,37 @@ export default function EditRolePage() {
   const permissionsDocRef = useMemo(() => (db && roleId) ? doc(db, 'permissions', roleId) : null, [db, roleId]);
   const { data: permissions, loading: permissionsLoading } = useDoc<Permissions>(permissionsDocRef);
 
+  const [localPermissions, setLocalPermissions] = useState<Permissions | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (permissions) {
+      setLocalPermissions(permissions);
+    }
+  }, [permissions]);
   
   const handlePermissionChange = async (module: PermissionModule, permission: Permission, checked: boolean) => {
-    if (roleData?.name === 'SUPER_ADMIN' || !db || !permissions) return;
+    if (roleData?.name === 'SUPER_ADMIN' || !db || !localPermissions) return;
 
-    const newPermissions = { ...permissions };
-    if (!newPermissions[module]) {
-      newPermissions[module] = {};
-    }
-    newPermissions[module][permission] = checked;
+    const newPermissions = { 
+      ...localPermissions,
+      [module]: {
+        ...localPermissions[module],
+        [permission]: checked,
+      }
+    };
+    setLocalPermissions(newPermissions);
 
     setIsSaving(true);
     try {
       await setDoc(permissionsDocRef, { [module]: { [permission]: checked } }, { merge: true });
-      // The onSnapshot listener in useDoc will update the UI automatically
+      toast({
+        title: 'Permission updated',
+        description: `"${module}" -> "${permission}" set to ${checked}.`,
+      });
     } catch (e) {
       console.error("Error updating permission: ", e);
+      setLocalPermissions(permissions); // Revert on error
       toast({
         title: 'Error',
         description: 'Failed to update permission.',
@@ -77,6 +91,7 @@ export default function EditRolePage() {
   }
 
   const loading = roleLoading || permissionsLoading;
+  const currentPermissions = localPermissions || permissions;
 
   return (
     <div className="space-y-6">
@@ -89,7 +104,7 @@ export default function EditRolePage() {
           Permissions for {loading ? <Skeleton className="h-8 w-32 inline-block" /> : <code>{roleData?.name}</code>}
         </h1>
         <p className="text-muted-foreground">
-          Manage permissions for this role. Changes are saved automatically.
+          Manage permissions for the <strong>{roleData?.name}</strong> role. Changes are saved automatically.
         </p>
       </div>
       <Card>
@@ -98,16 +113,16 @@ export default function EditRolePage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[200px]">Modules</TableHead>
+                  <TableHead className="w-[200px] font-bold">Modules</TableHead>
                   {PERMISSIONS.map(permission => (
-                    <TableHead key={permission} className="text-center capitalize">{permission}</TableHead>
+                    <TableHead key={permission} className="text-center capitalize font-bold">{permission}</TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading && PERMISSION_MODULES.map(module => (
                   <TableRow key={module}>
-                    <TableCell className="font-medium">{module}</TableCell>
+                    <TableCell className="font-medium">{module.replace(/_/g, ' ')}</TableCell>
                     {PERMISSIONS.map(permission => (
                       <TableCell key={permission} className="text-center">
                         <Skeleton className="h-4 w-4 mx-auto" />
@@ -115,14 +130,14 @@ export default function EditRolePage() {
                     ))}
                   </TableRow>
                 ))}
-                {!loading && permissions && PERMISSION_MODULES.map(module => (
+                {!loading && currentPermissions && PERMISSION_MODULES.map(module => (
                   <TableRow key={module}>
                     <TableCell className="font-medium">{module.replace(/_/g, ' ')}</TableCell>
                     {PERMISSIONS.map(permission => (
                       <TableCell key={permission} className="text-center">
                         <Checkbox
                           disabled={isSaving || roleData?.name === 'SUPER_ADMIN'}
-                          checked={permissions[module]?.[permission] ?? false}
+                          checked={currentPermissions[module]?.[permission] ?? false}
                           onCheckedChange={(checked) => {
                             handlePermissionChange(module, permission, !!checked);
                           }}
@@ -134,6 +149,7 @@ export default function EditRolePage() {
               </TableBody>
             </Table>
           </div>
+           {!loading && !currentPermissions && <p className="p-4 text-center text-muted-foreground">No permission set found for this role.</p>}
         </CardContent>
       </Card>
     </div>
