@@ -14,11 +14,12 @@ import { Eye, Edit, Trash2, PlusCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FamilyFormModal } from '@/components/customers/family-form-modal';
 import { ViewFamilyModal } from '@/components/customers/view-family-modal';
+import { FamilyMemberFormModal } from '@/components/customers/family-member-form-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Family } from '@/lib/types';
+import { Family, FamilyMember } from '@/lib/types';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { families as mockFamilies } from '@/lib/mock-data';
+import { families as mockFamilies, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import Modal from '@/components/ui/Modal';
 import {
   AlertDialogHeader,
@@ -34,30 +35,36 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-type ActiveModal = 'form' | 'view' | 'delete' | null;
+
+type ActiveModal = 'form' | 'view' | 'delete' | 'member-form' | null;
 
 export default function CustomersPage() {
   const { hasPermission } = useCurrentUser();
   const { toast } = useToast();
 
   const [families, setFamilies] = useState<Family[]>(mockFamilies);
-  const [loadingFamilies, setLoadingFamilies] = useState(false); // Kept for skeleton demo
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
+  const [loading, setLoading] = useState(false);
 
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
+
 
   // Simulate fetching data
   useMemo(() => {
-    setLoadingFamilies(true);
+    setLoading(true);
     setTimeout(() => {
       setFamilies(mockFamilies);
-      setLoadingFamilies(false);
+      setFamilyMembers(mockFamilyMembers);
+      setLoading(false);
     }, 500);
   }, []);
 
   const handleCloseModal = () => {
     setActiveModal(null);
     setSelectedFamily(null);
+    setSelectedMember(null);
   };
 
   const handleAddNew = () => {
@@ -84,6 +91,7 @@ export default function CustomersPage() {
     if (!selectedFamily) return;
 
     setFamilies(prev => prev.filter(f => f.id !== selectedFamily.id));
+    setFamilyMembers(prev => prev.filter(fm => fm.customerId !== selectedFamily.id)); // Also remove members
 
     toast({
       title: 'Family Deleted',
@@ -106,12 +114,48 @@ export default function CustomersPage() {
     handleCloseModal();
   };
 
+  // --- Member Handlers ---
+  
+  const handleAddMember = (family: Family) => {
+    setSelectedFamily(family);
+    setSelectedMember(null);
+    setActiveModal('member-form');
+  };
+  
+  const handleEditMember = (member: FamilyMember, family: Family) => {
+    setSelectedFamily(family);
+    setSelectedMember(member);
+    setActiveModal('member-form');
+  };
+  
+  const handleSaveMember = (member: FamilyMember) => {
+    setFamilyMembers(prev => {
+        const exists = prev.some(m => m.id === member.id);
+        if (exists) {
+            return prev.map(m => (m.id === member.id ? member : m));
+        }
+        return [...prev, member];
+    });
+    toast({ title: 'Success', description: `Family member "${member.name}" has been saved.` });
+    handleCloseModal();
+  };
+
+  const handleDeleteMember = (memberId: string) => {
+    setFamilyMembers(prev => prev.filter(m => m.id !== memberId));
+    toast({ title: 'Success', description: 'Family member has been deleted.' });
+  };
+
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     try {
-      return format(parseISO(dateString), 'dd MMM yyyy');
+      const date = parseISO(dateString);
+      if (!isNaN(date.getTime())) {
+        return format(date, 'dd MMM yyyy');
+      }
+      return dateString;
     } catch (e) {
-      return dateString; // Fallback to raw string if parsing fails
+      return dateString;
     }
   };
 
@@ -147,35 +191,21 @@ export default function CustomersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {loadingFamilies ? (
+                {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-24" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-24" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-28" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-40" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-24" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-8 w-8" />
-                      </TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="h-8 w-24" /></TableCell>
                     </TableRow>
                   ))
                 ) : families.length > 0 ? (
                   families.map(family => (
                     <TableRow key={family.id}>
-                      <TableCell className="font-medium">
-                        {family.firstName}
-                      </TableCell>
+                      <TableCell className="font-medium">{family.firstName}</TableCell>
                       <TableCell>{family.lastName}</TableCell>
                       <TableCell>{family.phoneNumber}</TableCell>
                       <TableCell>{family.emailId}</TableCell>
@@ -185,55 +215,31 @@ export default function CustomersPage() {
                           {canView && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="hover:text-primary"
-                                  onClick={() => handleView(family)}
-                                  aria-label="View"
-                                >
+                                <Button variant="ghost" size="icon" onClick={() => handleView(family)} aria-label="View">
                                   <Eye className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                <p>View</p>
-                              </TooltipContent>
+                              <TooltipContent><p>View</p></TooltipContent>
                             </Tooltip>
                           )}
                           {canUpdate && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="hover:text-yellow-500"
-                                  onClick={() => handleEdit(family)}
-                                  aria-label="Edit"
-                                >
+                                <Button variant="ghost" size="icon" onClick={() => handleEdit(family)} aria-label="Edit">
                                   <Edit className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Edit</p>
-                              </TooltipContent>
+                              <TooltipContent><p>Edit</p></TooltipContent>
                             </Tooltip>
                           )}
                           {canDelete && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-destructive hover:text-destructive/80"
-                                  onClick={() => handleDeleteTrigger(family)}
-                                  aria-label="Delete"
-                                >
+                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80" onClick={() => handleDeleteTrigger(family)} aria-label="Delete">
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Delete</p>
-                              </TooltipContent>
+                              <TooltipContent><p>Delete</p></TooltipContent>
                             </Tooltip>
                           )}
                         </div>
@@ -262,11 +268,24 @@ export default function CustomersPage() {
                 onSave={handleSave}
               />
             )}
-
+            
             {activeModal === 'view' && selectedFamily && (
               <ViewFamilyModal
                 onClose={handleCloseModal}
                 family={selectedFamily}
+                familyMembers={familyMembers.filter(m => m.customerId === selectedFamily.id)}
+                onAddMember={() => handleAddMember(selectedFamily)}
+                onEditMember={(m) => handleEditMember(m, selectedFamily)}
+                onDeleteMember={handleDeleteMember}
+              />
+            )}
+
+            {activeModal === 'member-form' && selectedFamily && (
+              <FamilyMemberFormModal
+                onClose={handleCloseModal}
+                family={selectedFamily}
+                member={selectedMember}
+                onSave={handleSaveMember}
               />
             )}
 
@@ -275,24 +294,12 @@ export default function CustomersPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    the record for{' '}
-                    <strong>
-                      {selectedFamily.firstName} {selectedFamily.lastName}
-                    </strong>
-                    .
+                    This action cannot be undone. This will permanently delete the record for <strong>{selectedFamily.firstName} {selectedFamily.lastName}</strong> and all associated family members.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="mt-6">
-                  <Button variant="outline" onClick={handleCloseModal}>
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDeleteConfirm}
-                  >
-                    Delete
-                  </Button>
+                  <Button variant="outline" onClick={handleCloseModal}>Cancel</Button>
+                  <Button variant="destructive" onClick={handleDeleteConfirm}>Delete</Button>
                 </AlertDialogFooter>
               </div>
             )}
