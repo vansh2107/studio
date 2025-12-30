@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Family, FamilyMember } from '@/lib/types';
 import { Loader2, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const memberSchema = z.object({
   name: z.string().min(1, 'Member name is required'),
@@ -18,6 +19,9 @@ const memberSchema = z.object({
 });
 
 type MemberFormData = z.infer<typeof memberSchema>;
+
+const RELATION_OPTIONS = ["Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister", "Other"];
+
 
 interface FamilyMemberFormModalProps {
   onClose: () => void;
@@ -39,6 +43,7 @@ export function FamilyMemberFormModal({
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<MemberFormData>({
     resolver: zodResolver(memberSchema),
@@ -99,7 +104,22 @@ export function FamilyMemberFormModal({
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="relation">Relation</Label>
-                <Input id="relation" {...register('relation')} disabled={isSaving} placeholder="e.g., Spouse, Son, Daughter"/>
+                <Controller
+                  name="relation"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSaving}>
+                      <SelectTrigger id="relation">
+                        <SelectValue placeholder="Select a relation" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RELATION_OPTIONS.map(option => (
+                           <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.relation && <p className="text-sm text-destructive">{errors.relation.message}</p>}
               </div>
           </div>
