@@ -294,7 +294,7 @@ export function FamilyFormModal({
                   name="dateOfBirth"
                   control={control}
                   render={({ field }) => (
-                    <Popover>
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <Button
                           variant={'outline'}
@@ -335,7 +335,7 @@ export function FamilyFormModal({
                   name="anniversaryDate"
                   control={control}
                   render={({ field }) => (
-                    <Popover>
+                    <Popover modal={false}>
                       <PopoverTrigger asChild>
                         <Button
                           variant={'outline'}
@@ -430,3 +430,5 @@ export function FamilyFormModal({
     </div>
   );
 }
+
+    
