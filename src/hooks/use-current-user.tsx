@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { users, userMappings } from '@/lib/mock-data';
 import { HIERARCHY, Role, PERMISSIONS, PERMISSION_MODULES, Permission, PermissionModule, Permissions } from '@/lib/constants';
 import type { User } from '@/lib/types';
-import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useDoc, useFirestore, useMemoFirebase, useFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 
 
@@ -70,9 +70,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
   
   const db = useFirestore();
+  const { isUserLoading } = useFirebase();
+
   const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
   
-  const permissionsDocRef = useMemoFirebase(() => (effectiveUser && db) ? doc(db, 'permissions', effectiveUser.role) : null, [effectiveUser, db]);
+  const permissionsDocRef = useMemoFirebase(() => {
+    // Wait for auth to finish and user to be available before creating the doc ref
+    if (isUserLoading || !effectiveUser || !db) {
+      return null;
+    }
+    return doc(db, 'permissions', effectiveUser.role);
+  }, [effectiveUser, db, isUserLoading]);
+  
   const { data: permissions, isLoading: permissionsLoading } = useDoc<Permissions>(permissionsDocRef);
 
 
