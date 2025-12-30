@@ -10,13 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, Eye, Edit, Trash2 } from 'lucide-react';
+import { Eye, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FamilyFormModal } from '@/components/customers/family-form-modal';
 import { ViewFamilyModal } from '@/components/customers/view-family-modal';
@@ -31,8 +25,14 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
-} from '@/components/ui/alert-dialog'; 
+} from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type ActiveModal = 'form' | 'view' | 'delete' | null;
 
@@ -45,7 +45,6 @@ export default function CustomersPage() {
 
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
-
 
   // Simulate fetching data
   useMemo(() => {
@@ -60,7 +59,7 @@ export default function CustomersPage() {
     setActiveModal(null);
     setSelectedFamily(null);
   };
-  
+
   const handleAddNew = () => {
     setSelectedFamily(null);
     setActiveModal('form');
@@ -98,13 +97,15 @@ export default function CustomersPage() {
     setFamilies(prev => {
       const exists = prev.some(f => f.id === savedFamily.id);
       if (exists) {
-        return prev.map(f => f.id === savedFamily.id ? savedFamily : f);
+        return prev.map(f =>
+          f.id === savedFamily.id ? savedFamily : f
+        );
       }
       return [...prev, savedFamily];
     });
     handleCloseModal();
   };
-  
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     try {
@@ -120,136 +121,184 @@ export default function CustomersPage() {
   const canView = hasPermission('CUSTOMER', 'view');
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline">Customer Management</h1>
-        {canCreate && (
-          <Button onClick={handleAddNew}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Family
-          </Button>
-        )}
-      </div>
+    <TooltipProvider>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold font-headline">Customer Management</h1>
+          {canCreate && (
+            <Button onClick={handleAddNew}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              New Family
+            </Button>
+          )}
+        </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>First Name</TableHead>
-                <TableHead>Last Name</TableHead>
-                <TableHead>Phone Number</TableHead>
-                <TableHead>Email ID</TableHead>
-                <TableHead>Date of Birth</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loadingFamilies ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-8 w-8" /></TableCell>
-                  </TableRow>
-                ))
-              ) : families.length > 0 ? (
-                families.map(family => (
-                  <TableRow key={family.id}>
-                    <TableCell className="font-medium">{family.firstName}</TableCell>
-                    <TableCell>{family.lastName}</TableCell>
-                    <TableCell>{family.phoneNumber}</TableCell>
-                    <TableCell>{family.emailId}</TableCell>
-                    <TableCell>
-                      {formatDate(family.dateOfBirth)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>First Name</TableHead>
+                  <TableHead>Last Name</TableHead>
+                  <TableHead>Phone Number</TableHead>
+                  <TableHead>Email ID</TableHead>
+                  <TableHead>Date of Birth</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loadingFamilies ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-28" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-40" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-8 w-8" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : families.length > 0 ? (
+                  families.map(family => (
+                    <TableRow key={family.id}>
+                      <TableCell className="font-medium">
+                        {family.firstName}
+                      </TableCell>
+                      <TableCell>{family.lastName}</TableCell>
+                      <TableCell>{family.phoneNumber}</TableCell>
+                      <TableCell>{family.emailId}</TableCell>
+                      <TableCell>{formatDate(family.dateOfBirth)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
                           {canView && (
-                            <DropdownMenuItem onClick={() => handleView(family)}>
-                              <Eye className="mr-2 h-4 w-4" /> View
-                            </DropdownMenuItem>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:text-primary"
+                                  onClick={() => handleView(family)}
+                                  aria-label="View"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>View</p>
+                              </TooltipContent>
+                            </Tooltip>
                           )}
                           {canUpdate && (
-                            <DropdownMenuItem onClick={() => handleEdit(family)}>
-                              <Edit className="mr-2 h-4 w-4" /> Edit
-                            </DropdownMenuItem>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:text-yellow-500"
+                                  onClick={() => handleEdit(family)}
+                                  aria-label="Edit"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Edit</p>
+                              </TooltipContent>
+                            </Tooltip>
                           )}
                           {canDelete && (
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteTrigger(family)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" /> Delete
-                            </DropdownMenuItem>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-destructive hover:text-destructive/80"
+                                  onClick={() => handleDeleteTrigger(family)}
+                                  aria-label="Delete"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete</p>
+                              </TooltipContent>
+                            </Tooltip>
                           )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      No families found.
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    No families found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-      {/* Unified Modal */}
-      <Modal open={!!activeModal} onClose={handleCloseModal}>
-        <>
-          {activeModal === 'form' && (
-            <FamilyFormModal
-              onClose={handleCloseModal}
-              family={selectedFamily}
-              onSave={handleSave}
-            />
-          )}
+        {/* Unified Modal */}
+        <Modal open={!!activeModal} onClose={handleCloseModal}>
+          <>
+            {activeModal === 'form' && (
+              <FamilyFormModal
+                onClose={handleCloseModal}
+                family={selectedFamily}
+                onSave={handleSave}
+              />
+            )}
 
-          {activeModal === 'view' && selectedFamily && (
-            <ViewFamilyModal
-              onClose={handleCloseModal}
-              family={selectedFamily}
-            />
-          )}
+            {activeModal === 'view' && selectedFamily && (
+              <ViewFamilyModal
+                onClose={handleCloseModal}
+                family={selectedFamily}
+              />
+            )}
 
-          {activeModal === 'delete' && selectedFamily && (
-            <div>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the
-                  record for <strong>{selectedFamily.firstName} {selectedFamily.lastName}</strong>.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter className='mt-6'>
-                <Button variant="outline" onClick={handleCloseModal}>Cancel</Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteConfirm}
-                >
-                  Delete
-                </Button>
-              </AlertDialogFooter>
-            </div>
-          )}
-        </>
-      </Modal>
-    </div>
+            {activeModal === 'delete' && selectedFamily && (
+              <div>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    the record for{' '}
+                    <strong>
+                      {selectedFamily.firstName} {selectedFamily.lastName}
+                    </strong>
+                    .
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="mt-6">
+                  <Button variant="outline" onClick={handleCloseModal}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteConfirm}
+                  >
+                    Delete
+                  </Button>
+                </AlertDialogFooter>
+              </div>
+            )}
+          </>
+        </Modal>
+      </div>
+    </TooltipProvider>
   );
 }
