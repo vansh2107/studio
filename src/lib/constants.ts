@@ -42,3 +42,5 @@ export const DOC_CATEGORIES = [
   'Life Insurance',
   'Term Insurance',
 ];
+
+    
