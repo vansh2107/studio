@@ -30,13 +30,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    // This is the fix: Allow cross-origin requests in development.
-    // The environment is a cloud-based IDE, which Next.js detects as cross-origin.
-    allowedDevOrigins: [
-      'https://*.cloudworkstations.dev',
-    ],
-  }
 };
 
 export default nextConfig;
