@@ -29,7 +29,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,6 +43,13 @@ export default function CustomersPage() {
   const [families, setFamilies] = useState<Family[]>([]);
   const [loadingFamilies, setLoadingFamilies] = useState(true);
 
+  // State management for modals
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
+
+
   useEffect(() => {
     // Simulate fetching data
     setTimeout(() => {
@@ -52,38 +58,39 @@ export default function CustomersPage() {
     }, 500);
   }, []);
 
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
-  const [familyToDelete, setFamilyToDelete] = useState<Family | null>(null);
-
-
   const handleAddNew = () => {
     setSelectedFamily(null);
-    setModalOpen(true);
+    setIsFormModalOpen(true);
   };
 
   const handleEdit = (family: Family) => {
     setSelectedFamily(family);
-    setModalOpen(true);
+    setIsFormModalOpen(true);
   };
 
   const handleView = (family: Family) => {
     setSelectedFamily(family);
-    setViewModalOpen(true);
+    setIsViewModalOpen(true);
   };
+  
+  const handleDeleteTrigger = (family: Family) => {
+    setSelectedFamily(family);
+    setIsDeleteAlertOpen(true);
+  }
 
-  const handleDelete = () => {
-    if (!familyToDelete) return;
+  const handleDeleteConfirm = () => {
+    if (!selectedFamily) return;
     
-    setFamilies(prev => prev.filter(f => f.id !== familyToDelete.id));
+    setFamilies(prev => prev.filter(f => f.id !== selectedFamily.id));
 
     toast({
       title: 'Family Deleted',
-      description: `The family "${familyToDelete.familyName}" has been successfully deleted.`,
+      description: `The family "${selectedFamily.familyName}" has been successfully deleted.`,
     });
-    setFamilyToDelete(null);
+    
+    // Reset state
+    setIsDeleteAlertOpen(false);
+    setSelectedFamily(null);
   };
 
   const handleSave = (savedFamily: Family) => {
@@ -94,6 +101,7 @@ export default function CustomersPage() {
       }
       return [...prev, savedFamily];
     });
+    // The form modal will close itself and reset state via its onOpenChange
   }
 
   const canCreate = hasPermission('CUSTOMER', 'create');
@@ -115,7 +123,6 @@ export default function CustomersPage() {
 
       <Card>
         <CardContent className="p-0">
-          <AlertDialog>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -187,15 +194,13 @@ export default function CustomersPage() {
                               </DropdownMenuItem>
                             )}
                             {canDelete && (
-                              <AlertDialogTrigger asChild>
                                 <DropdownMenuItem
-                                  onSelect={(e) => {e.preventDefault(); setFamilyToDelete(family)}}
+                                  onSelect={() => handleDeleteTrigger(family)}
                                   className="text-destructive focus:text-destructive"
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Delete
                                 </DropdownMenuItem>
-                              </AlertDialogTrigger>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -211,43 +216,52 @@ export default function CustomersPage() {
                 )}
               </TableBody>
             </Table>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the
-                  family record for{' '}
-                  <strong>{familyToDelete?.familyName}</strong>.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setFamilyToDelete(null)}>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  className="bg-destructive hover:bg-destructive/90"
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </CardContent>
       </Card>
-
+      
+      {/* Modals and Dialogs */}
       <FamilyFormModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        isOpen={isFormModalOpen}
+        onClose={() => {
+          setIsFormModalOpen(false);
+          setSelectedFamily(null);
+        }}
         family={selectedFamily}
         onSave={handleSave}
       />
 
       {selectedFamily && (
         <ViewFamilyModal
-          isOpen={viewModalOpen}
-          onClose={() => setViewModalOpen(false)}
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setSelectedFamily(null);
+          }}
           family={selectedFamily}
         />
       )}
+
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              family record for{' '}
+              <strong>{selectedFamily?.familyName}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedFamily(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
