@@ -17,9 +17,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
-function LoginPageContent() {
+export default function LoginPage() {
   const [email, setEmail] = useState('sonia.a@ascend.inc');
-  const [password, setPassword] = useState('password'); // Not used for auth, but we keep the field
+  const [password, setPassword] = useState('password');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -31,8 +31,8 @@ function LoginPageContent() {
 
     const userToLogin = allUsers.find(u => u.email === email);
     
+    // In a prototype, we can ignore the password or have a generic one
     if (userToLogin) {
-      // Simulate login using our hook
       login(userToLogin.id);
       router.push('/');
     } else {
@@ -44,6 +44,12 @@ function LoginPageContent() {
       setIsLoading(false);
     }
   };
+  
+  const { currentUser } = useCurrentUser();
+  if (currentUser) {
+    router.push('/');
+    return null;
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -91,12 +97,4 @@ function LoginPageContent() {
       </Card>
     </div>
   );
-}
-
-// Keep the top-level export for the page
-export default function LoginPage() {
-    // The UserProvider is necessary here to get access to the `login` function
-    return (
-        <LoginPageContent />
-    )
 }

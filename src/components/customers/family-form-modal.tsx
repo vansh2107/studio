@@ -31,8 +31,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { saveFamily } from '@/lib/firebase/firestore';
-import { uploadFile } from '@/lib/firebase/storage';
 import { Family } from '@/lib/types';
 
 const familySchema = z.object({
@@ -53,12 +51,14 @@ interface FamilyFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   family?: Family | null;
+  onSave: (family: Family) => void;
 }
 
 export function FamilyFormModal({
   isOpen,
   onClose,
   family,
+  onSave,
 }: FamilyFormModalProps) {
   const [step, setStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
@@ -157,52 +157,35 @@ export function FamilyFormModal({
     }
   };
 
-  const processSave = async (data: FamilyFormData) => {
+  const processSave = (data: FamilyFormData) => {
     setIsSaving(true);
-    try {
-      let panPhotoUrl = family?.panPhotoUrl;
-      let aadhaarPhotoUrl = family?.aadhaarPhotoUrl;
-      let otherDocumentUrl = family?.otherDocumentUrl;
-
-      if (panFile && panFile.size > 0) {
-        panPhotoUrl = await uploadFile(panFile, `families/${family?.id || Date.now()}/pan`);
-      }
-      if (aadhaarFile && aadhaarFile.size > 0) {
-        aadhaarPhotoUrl = await uploadFile(aadhaarFile, `families/${family?.id || Date.now()}/aadhaar`);
-      }
-      if (otherFile && otherFile.size > 0) {
-        otherDocumentUrl = await uploadFile(otherFile, `families/${family?.id || Date.now()}/other`);
-      }
-
-      const familyData: Omit<Family, 'id'> = {
+    
+    // Simulate saving delay
+    setTimeout(() => {
+      const familyData: Family = {
+        id: family?.id || `fam-${Date.now()}`,
         ...data,
         dateOfBirth: data.dateOfBirth.toISOString(),
         anniversaryDate: data.anniversaryDate?.toISOString(),
-        panPhotoUrl,
-        aadhaarPhotoUrl,
-        otherDocumentUrl,
         panFileName: panFile?.name,
         aadhaarFileName: aadhaarFile?.name,
         otherDocumentFileName: otherFile?.name,
+        // In prototype, URLs are just placeholders
+        panPhotoUrl: panFile ? URL.createObjectURL(panFile) : family?.panPhotoUrl,
+        aadhaarPhotoUrl: aadhaarFile ? URL.createObjectURL(aadhaarFile) : family?.aadhaarPhotoUrl,
+        otherDocumentUrl: otherFile ? URL.createObjectURL(otherFile) : family?.otherDocumentUrl,
       };
 
-      await saveFamily(familyData, family?.id);
+      onSave(familyData);
 
       toast({
         title: family ? 'Family Updated' : 'Family Created',
         description: `The family "${data.familyName}" has been successfully saved.`,
       });
-      onClose();
-    } catch (e: any) {
-      console.error('Save failed:', e);
-      toast({
-        variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description: e.message || 'Could not save family details.',
-      });
-    } finally {
+      
       setIsSaving(false);
-    }
+      onClose();
+    }, 1000);
   };
 
   const handleNext = () => setStep(2);

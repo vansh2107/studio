@@ -34,7 +34,7 @@ export interface Document {
   id: string;
   name: string;
   url: string;
-  category: AssetCategory;
+  category: string; // Keep as string, not AssetCategory for flexibility
   memberId: string;
   customerId: string;
 }
@@ -53,5 +53,6 @@ export interface Family {
   otherDocumentUrl?: string;
   panFileName?: string;
   aadhaarFileName?: string;
+
   otherDocumentFileName?: string;
 }

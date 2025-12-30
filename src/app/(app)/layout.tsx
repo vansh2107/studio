@@ -1,7 +1,6 @@
 'use client';
 
 import { AppLayout } from '@/components/layout/app-layout';
-import { UserProvider } from '@/hooks/use-current-user';
 
 export default function DashboardLayout({
   children,
@@ -9,8 +8,6 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <UserProvider>
-      <AppLayout>{children}</AppLayout>
-    </UserProvider>
+    <AppLayout>{children}</AppLayout>
   );
 }

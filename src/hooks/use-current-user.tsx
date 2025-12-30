@@ -2,13 +2,10 @@
 
 import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { users, userMappings } from '@/lib/mock-data';
-import { HIERARCHY, Role, PERMISSIONS, PERMISSION_MODULES, Permission, PermissionModule, Permissions } from '@/lib/constants';
+import { users, userMappings, families as mockFamilies, permissions as mockPermissions } from '@/lib/mock-data';
+import { HIERARCHY, Role, Permission, PermissionModule } from '@/lib/constants';
 import type { User } from '@/lib/types';
-import { useDoc, useFirestore, useMemoFirebase, useFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import { AppLayoutSkeleton } from '@/components/layout/app-layout';
-
 
 // --- Helper Functions ---
 
@@ -68,62 +65,52 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [impersonatedUser, setImpersonatedUser] = useState<User | null>(null);
-  
-  const { isUserLoading } = useFirebase();
+  const [isLoading, setIsLoading] = useState(true);
 
   const router = useRouter();
   const pathname = usePathname();
-  
-  const db = useFirestore();
 
   useEffect(() => {
-    // This effect now correctly handles the initial user state based on localStorage.
-    // It's separate from the Firebase loading state.
     try {
-        const storedUserId = localStorage.getItem('currentUser');
-        if (storedUserId) {
-            const user = users.find(u => u.id === storedUserId);
-            setCurrentUser(user || null);
-        }
+      const storedUserId = localStorage.getItem('currentUser');
+      if (storedUserId) {
+        const user = users.find(u => u.id === storedUserId);
+        setCurrentUser(user || null);
+      }
     } catch (e) {
-        // localStorage is not available on the server, ignore.
+      // localStorage not available
     }
+    setIsLoading(false);
   }, []);
   
   useEffect(() => {
-    // This effect handles routing based on auth state.
-    if (!isUserLoading) {
+    if (!isLoading) {
       if (!currentUser && pathname !== '/login') {
         router.push('/login');
-      } else if (currentUser && pathname === '/login') {
-        router.push('/');
       }
     }
-  }, [currentUser, isUserLoading, pathname, router]);
-
+  }, [currentUser, isLoading, pathname, router]);
 
   const effectiveUser = useMemo(() => impersonatedUser || currentUser, [impersonatedUser, currentUser]);
-  
-  const permissionsDocRef = useMemoFirebase(() => {
-    // IMPORTANT: This now correctly waits for both a valid user and db instance.
-    if (!effectiveUser || !db) {
-      return null;
-    }
-    return doc(db, 'permissions', effectiveUser.role);
-  }, [effectiveUser, db]);
-  
-  const { data: permissions, isLoading: permissionsLoading } = useDoc<Permissions>(permissionsDocRef);
 
   const login = useCallback((userId: string) => {
     const user = users.find(u => u.id === userId);
     if (user) {
-      localStorage.setItem('currentUser', user.id);
+      try {
+        localStorage.setItem('currentUser', user.id);
+      } catch (e) {
+        // localStorage not available
+      }
       setCurrentUser(user);
     }
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('currentUser');
+    try {
+      localStorage.removeItem('currentUser');
+    } catch(e) {
+      // localStorage not available
+    }
     setCurrentUser(null);
     setImpersonatedUser(null);
     router.push('/login');
@@ -134,7 +121,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const target = users.find(u => u.id === userId);
     if (target && canImpersonate(currentUser, target)) {
       setImpersonatedUser(target);
-      // Redirect to dashboard on impersonation
       if(pathname !== '/') {
         router.push('/');
       }
@@ -146,13 +132,21 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const stopImpersonation = useCallback(() => {
     setImpersonatedUser(null);
   }, []);
-
+  
   const hasPermission = useCallback((module: PermissionModule, permission: Permission): boolean => {
     if (!effectiveUser) return false;
-    if (effectiveUser.role === 'SUPER_ADMIN') return true;
-    if (permissionsLoading || !permissions) return false;
-    return permissions[module]?.[permission] ?? false;
-  }, [effectiveUser, permissions, permissionsLoading]);
+    const userRole = effectiveUser.role;
+    if (userRole === 'SUPER_ADMIN') return true;
+
+    const rolePermissions = mockPermissions[userRole];
+    if (!rolePermissions) return false;
+    
+    const modulePermissions = rolePermissions[module];
+    if (!modulePermissions) return false;
+
+    return modulePermissions[permission] ?? false;
+
+  }, [effectiveUser]);
 
 
   const value = useMemo(() => ({
@@ -166,19 +160,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     canImpersonate: (targetUser: User) => currentUser ? canImpersonate(currentUser, targetUser) : false,
     hasPermission,
     allUsers: users,
-    isLoading: isUserLoading || (!!effectiveUser && permissionsLoading),
-  }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission, isUserLoading, permissionsLoading]);
+    isLoading: isLoading,
+  }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission, isLoading]);
 
-  // This is the auth gate. It shows a skeleton while waiting for Firebase auth to initialize.
-  if (isUserLoading && pathname !== '/login') {
-      return <AppLayoutSkeleton />;
+  if (isLoading) {
+    return <AppLayoutSkeleton />;
   }
-  
-  // If not logged in and not on the login page, the effect above will redirect.
-  // We can show the skeleton in the meantime.
+
   if (!currentUser && pathname !== '/login') {
-    return <AppLayoutSkeleton />; 
+    return <AppLayoutSkeleton />;
   }
+
+  if (currentUser && pathname === '/login') {
+    // This case is handled by redirect logic, but as a fallback, show skeleton.
+    return <AppLayoutSkeleton />;
+  }
+
 
   return (
     <UserContext.Provider value={value}>
@@ -196,5 +193,3 @@ export const useCurrentUser = () => {
   }
   return context;
 };
-
-    

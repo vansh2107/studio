@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -19,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, PlusCircle, Eye, Edit, Trash2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { FamilyFormModal } from '@/components/customers/family-form-modal';
 import { ViewFamilyModal } from '@/components/customers/view-family-modal';
 import {
@@ -31,31 +29,35 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { deleteFamily } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Family } from '@/lib/types';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import { families as mockFamilies } from '@/lib/mock-data';
 
 export default function CustomersPage() {
   const { hasPermission } = useCurrentUser();
   const { toast } = useToast();
-  const db = useFirestore();
-  const familiesCollection = useMemoFirebase(
-    () => (db ? collection(db, 'families') : null),
-    [db]
-  );
-  const {
-    data: families,
-    isLoading: loadingFamilies,
-    error,
-  } = useCollection<Family>(familiesCollection);
+  
+  const [families, setFamilies] = useState<Family[]>([]);
+  const [loadingFamilies, setLoadingFamilies] = useState(true);
+
+  useEffect(() => {
+    // Simulate fetching data
+    setTimeout(() => {
+      setFamilies(mockFamilies);
+      setLoadingFamilies(false);
+    }, 500);
+  }, []);
+
 
   const [modalOpen, setModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
+  const [familyToDelete, setFamilyToDelete] = useState<Family | null>(null);
+
 
   const handleAddNew = () => {
     setSelectedFamily(null);
@@ -72,23 +74,33 @@ export default function CustomersPage() {
     setViewModalOpen(true);
   };
 
-  const handleDelete = async (familyId: string) => {
-    try {
-      await deleteFamily(familyId);
-      toast({
-        title: 'Family Deleted',
-        description: 'The family record has been successfully deleted.',
-      });
-    } catch (e) {
-      toast({
-        title: 'Error Deleting Family',
-        description:
-          'There was a problem deleting the family. Please try again.',
-        variant: 'destructive',
-      });
-      console.error(e);
-    }
+  const openDeleteDialog = (family: Family) => {
+    setFamilyToDelete(family);
+    setDeleteDialogOpen(true);
+  }
+
+  const handleDelete = () => {
+    if (!familyToDelete) return;
+    
+    setFamilies(prev => prev.filter(f => f.id !== familyToDelete.id));
+
+    toast({
+      title: 'Family Deleted',
+      description: `The family "${familyToDelete.familyName}" has been successfully deleted.`,
+    });
+    setDeleteDialogOpen(false);
+    setFamilyToDelete(null);
   };
+
+  const handleSave = (savedFamily: Family) => {
+    setFamilies(prev => {
+      const exists = prev.some(f => f.id === savedFamily.id);
+      if (exists) {
+        return prev.map(f => f.id === savedFamily.id ? savedFamily : f);
+      }
+      return [...prev, savedFamily];
+    });
+  }
 
   const canCreate = hasPermission('CUSTOMER', 'create');
   const canUpdate = hasPermission('CUSTOMER', 'update');
@@ -180,38 +192,13 @@ export default function CustomersPage() {
                             </DropdownMenuItem>
                           )}
                           {canDelete && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem
-                                  onSelect={e => e.preventDefault()}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Are you sure?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This action cannot be undone. This will
-                                    permanently delete the family record for{' '}
-                                    <strong>{family.familyName}</strong>.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDelete(family.id)}
-                                    className="bg-destructive hover:bg-destructive/90"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                            <DropdownMenuItem
+                              onSelect={(e) => { e.preventDefault(); openDeleteDialog(family)}}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -229,11 +216,36 @@ export default function CustomersPage() {
           </Table>
         </CardContent>
       </Card>
+      
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Are you sure?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will
+                permanently delete the family record for{' '}
+                <strong>{familyToDelete?.familyName}</strong>.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
 
       <FamilyFormModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         family={selectedFamily}
+        onSave={handleSave}
       />
 
       {selectedFamily && (
