@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -218,8 +219,8 @@ export function FamilyFormModal({
           className="space-y-4"
         >
           {step === 1 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
-               <div className="space-y-1.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
                   id="firstName"
@@ -232,7 +233,7 @@ export function FamilyFormModal({
                   </p>
                 )}
               </div>
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
                   id="lastName"
@@ -245,7 +246,7 @@ export function FamilyFormModal({
                   </p>
                 )}
               </div>
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label htmlFor="phoneNumber">Phone Number</Label>
                 <Input
                   id="phoneNumber"
@@ -259,7 +260,7 @@ export function FamilyFormModal({
                   </p>
                 )}
               </div>
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label htmlFor="emailId">Email ID</Label>
                 <Input
                   id="emailId"
@@ -273,13 +274,13 @@ export function FamilyFormModal({
                   </p>
                 )}
               </div>
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label>Date of Birth</Label>
                 <Controller
                   name="dateOfBirth"
                   control={control}
                   render={({ field }) => (
-                    <Popover modal={false}>
+                    <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant={'outline'}
@@ -314,13 +315,13 @@ export function FamilyFormModal({
                   </p>
                 )}
               </div>
-               <div className="space-y-1.5">
+               <div className="flex flex-col gap-1.5">
                 <Label>Anniversary Date (Optional)</Label>
                 <Controller
                   name="anniversaryDate"
                   control={control}
                   render={({ field }) => (
-                    <Popover modal={false}>
+                    <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant={'outline'}
@@ -350,7 +351,7 @@ export function FamilyFormModal({
                   )}
                 />
               </div>
-              <div className="space-y-1.5 md:col-span-2">
+              <div className="flex flex-col gap-1.5 md:col-span-2">
                 <Label htmlFor="address">Address</Label>
                 <Textarea
                   id="address"
