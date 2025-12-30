@@ -15,11 +15,8 @@ import { AscendWealthLogo } from '@/components/icons/logo';
 import {
   LayoutDashboard,
   Users,
-  Briefcase,
-  Shield,
   FolderOpen,
   UserCog,
-  ShieldCheck,
 } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { cn } from '@/lib/utils';
@@ -27,10 +24,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE', 'CUSTOMER'] },
-  { href: '/admins', label: 'Admins', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },
-  { href: '/associates', label: 'Associates', icon: Briefcase, roles: ['SUPER_ADMIN', 'ADMIN'] },
   { href: '/customers', label: 'Customers', icon: Users, roles: ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE'] },
-  { href: '/role-management', label: 'Role Management', icon: Shield, roles: ['SUPER_ADMIN'] },
   { href: '/family-manager', label: 'Family Manager', icon: UserCog, roles: ['CUSTOMER'] },
   { href: '/doc-vault', label: 'Doc Vault', icon: FolderOpen, roles: ['CUSTOMER'] },
 ];
@@ -42,7 +36,12 @@ export function AppSidebar() {
   const userRole = effectiveUser?.role;
 
   const isActive = (href: string) => {
-    return pathname === href;
+    // Make dashboard active only on exact match
+    if (href === '/') {
+        return pathname === href;
+    }
+    // For other links, active if path starts with the href
+    return pathname.startsWith(href);
   };
 
   if (!userRole) {

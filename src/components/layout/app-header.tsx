@@ -4,9 +4,13 @@ import {
   Bell,
   ChevronDown,
   LogOut,
-  User,
-  Users,
+  Settings,
+  UserCog,
+  Shield,
+  ShieldCheck,
+  Briefcase,
 } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,6 +21,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -24,6 +29,13 @@ import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { cn } from '@/lib/utils';
 import { HIERARCHY } from '@/lib/constants';
+
+const settingsMenuItems = [
+  { href: '/admins', label: 'Admins', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },
+  { href: '/associates', label: 'Associates', icon: Briefcase, roles: ['SUPER_ADMIN', 'ADMIN'] },
+  { href: '/role-management', label: 'Role Management', icon: Shield, roles: ['SUPER_ADMIN'] },
+];
+
 
 export function AppHeader() {
   const {
@@ -50,6 +62,10 @@ export function AppHeader() {
     }
     return a.name.localeCompare(b.name);
   });
+  
+  const userRole = effectiveUser?.role;
+  const visibleSettingsItems = userRole ? settingsMenuItems.filter(item => item.roles.includes(userRole)) : [];
+
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-card px-4 sm:h-16 sm:px-6">
@@ -64,6 +80,31 @@ export function AppHeader() {
       )}
 
       <div className={cn('flex-1', impersonatedUser && 'hidden md:block')}></div>
+
+      {visibleSettingsItems.length > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Settings className="h-5 w-5" />
+              <span className="sr-only">Settings</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Admin Settings</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {visibleSettingsItems.map(item => (
+                <Link href={item.href} key={item.href} passHref>
+                  <DropdownMenuItem>
+                    <item.icon className="mr-2 h-4 w-4" />
+                    <span>{item.label}</span>
+                  </DropdownMenuItem>
+                </Link>
+              ))}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
 
       <DropdownMenu>
