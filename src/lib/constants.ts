@@ -2,24 +2,24 @@ export const ROLES = ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE', 'CUSTOMER'] as const;
 export type Role = typeof ROLES[number];
 
 export const PERMISSION_MODULES = [
-  'Admin Modules', 
-  'Associates', 
-  'Customers', 
-  'Whole Family'
+  'SUPER_ADMIN',
+  'ADMIN',
+  'ASSOCIATE',
+  'CUSTOMER',
+  'FAMILY_MANAGER',
+  'DOC_VAULT',
 ] as const;
 export type PermissionModule = typeof PERMISSION_MODULES[number];
 
-export const PERMISSIONS = ['view', 'edit', 'delete', 'download'] as const;
+export const PERMISSIONS = ['view', 'create', 'update', 'delete', 'export'] as const;
 export type Permission = typeof PERMISSIONS[number];
 
+export type ModulePermissions = {
+  [P in Permission]?: boolean;
+};
+
 export type Permissions = {
-  [M in PermissionModule]: {
-    [P in Permission]?: boolean;
-  }
-} & {
-  EditCustomers?: boolean;
-  DeleteCascade?: boolean;
-  DownloadPDF?: boolean;
+  [M in PermissionModule]: ModulePermissions;
 };
 
 export const HIERARCHY: Role[] = ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE', 'CUSTOMER'];
@@ -42,5 +42,3 @@ export const DOC_CATEGORIES = [
   'Life Insurance',
   'Term Insurance',
 ];
-
-    

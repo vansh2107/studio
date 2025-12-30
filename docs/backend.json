@@ -1,46 +1,40 @@
 {
   "entities": {
-    "permissionSet": {
-      "title": "Permission Set",
-      "description": "Defines the permissions for a specific role.",
+    "role": {
+      "title": "Role",
+      "description": "Defines a user role within the system.",
       "type": "object",
       "properties": {
-        "Admin Modules": {
-          "type": "object",
-          "properties": {
-            "view": { "type": "boolean" },
-            "edit": { "type": "boolean" },
-            "delete": { "type": "boolean" },
-            "download": { "type": "boolean" }
-          }
-        },
-        "Associates": {
-          "type": "object",
-          "properties": {
-            "view": { "type": "boolean" },
-            "edit": { "type": "boolean" },
-            "delete": { "type": "boolean" },
-            "download": { "type": "boolean" }
-          }
-        },
-        "Customers": {
-          "type": "object",
-          "properties": {
-            "view": { "type": "boolean" },
-            "edit": { "type": "boolean" },
-            "delete": { "type": "boolean" },
-            "download": { "type": "boolean" }
-          }
-        },
-        "Whole Family": {
-          "type": "object",
-          "properties": {
-            "view": { "type": "boolean" },
-            "edit": { "type": "boolean" },
-            "delete": { "type": "boolean" },
-            "download": { "type": "boolean" }
-          }
+        "name": {
+          "type": "string",
+          "description": "The name of the role (e.g., ADMIN, CUSTOMER)."
         }
+      },
+      "required": ["name"]
+    },
+    "permissionSet": {
+      "title": "Permission Set",
+      "description": "Defines the permissions for a specific role across all modules.",
+      "type": "object",
+      "properties": {
+        "SUPER_ADMIN": { "$ref": "#/entities/modulePermissions" },
+        "ADMIN": { "$ref": "#/entities/modulePermissions" },
+        "ASSOCIATE": { "$ref": "#/entities/modulePermissions" },
+        "CUSTOMER": { "$ref": "#/entities/modulePermissions" },
+        "FAMILY_MANAGER": { "$ref": "#/entities/modulePermissions" },
+        "DOC_VAULT": { "$ref": "#/entities/modulePermissions" }
+      }
+    },
+    "modulePermissions": {
+      "title": "Module Permissions",
+      "description": "Defines the actions a role can perform on a specific module.",
+      "type": "object",
+      "properties": {
+        "view": { "type": "boolean" },
+        "create": { "type": "boolean" },
+        "update": { "type": "boolean" },
+        "delete": { "type": "boolean" },
+        "export": { "type": "boolean" }
       }
     }
   },
@@ -48,6 +42,10 @@
     "providers": ["anonymous"]
   },
   "firestore": {
+    "roles/{roleId}": {
+      "schema": { "$ref": "#/entities/role" },
+      "description": "Stores the list of available roles."
+    },
     "permissions/{roleId}": {
       "schema": { "$ref": "#/entities/permissionSet" },
       "description": "Stores the permission matrix for each role."

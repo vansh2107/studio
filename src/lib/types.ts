@@ -1,5 +1,5 @@
-import { type Role, type Permission, type AssetCategory } from './constants';
-export type { Role, Permission, AssetCategory };
+import { type Role, type Permission, type AssetCategory, type Permissions } from './constants';
+export type { Role, Permission, AssetCategory, Permissions };
 
 export interface User {
   id: string;
@@ -10,8 +10,8 @@ export interface User {
 }
 
 export interface RoleData {
+  id: string;
   name: Role;
-  permissions: Permission[];
 }
 
 export interface FamilyMember {
