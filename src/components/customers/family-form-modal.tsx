@@ -232,7 +232,7 @@ export function FamilyFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl" onPointerDownOutside={e => e.preventDefault()}>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {family ? 'Edit Family' : 'Create New Family'} - Step {step} / 2
