@@ -57,7 +57,8 @@ export default function CustomersPage() {
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
-  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
+  
+  const [itemToDelete, setItemToDelete] = useState<DisplayClient | null>(null);
   
   const allDisplayClients: DisplayClient[] = useMemo(() => {
     if (!effectiveUser) return [];
@@ -118,41 +119,43 @@ export default function CustomersPage() {
     setActiveModal(null);
     setSelectedClient(null);
     setSelectedMember(null);
-    setClientToDelete(null);
+    setItemToDelete(null);
   };
 
   const handleAddNew = () => {
     setSelectedClient(null);
     setActiveModal('form');
   };
-
-  const handleEdit = (client: Client) => {
-    setSelectedClient(client);
-    setActiveModal('form');
-  };
-
+  
   const handleView = (client: Client) => {
     setSelectedClient(client);
     setActiveModal('view');
   };
-
-  const handleDeleteTrigger = (client: Client) => {
-    setClientToDelete(client);
+  
+  const handleDeleteTrigger = (item: DisplayClient) => {
+    setItemToDelete(item);
   };
 
   const handleDeleteConfirm = () => {
-    if (!clientToDelete) return;
+    if (!itemToDelete) return;
+    
+    if (itemToDelete.isFamilyHead) {
+       // This is a mock delete, in a real app you'd call an API
+      // setClients(prev => prev.filter(f => f.id !== itemToDelete.id));
+      setFamilyMembers(prev => prev.filter(fm => fm.clientId !== itemToDelete.id)); // Also remove members
 
-    // This is a mock delete, in a real app you'd call an API
-    // setClients(prev => prev.filter(f => f.id !== clientToDelete.id));
-    setFamilyMembers(prev => prev.filter(fm => fm.clientId !== clientToDelete.id)); // Also remove members
+      toast({
+        title: 'Client Deleted',
+        description: `The client "${itemToDelete.firstName} ${itemToDelete.lastName}" has been successfully deleted (mock).`,
+      });
+    } else {
+      // It's a family member
+      setFamilyMembers(prev => prev.filter(m => m.id !== itemToDelete.id));
+      toast({ title: 'Success', description: 'Family member has been deleted.' });
+    }
 
-    toast({
-      title: 'Client Deleted',
-      description: `The client "${clientToDelete.firstName} ${clientToDelete.lastName}" has been successfully deleted (mock).`,
-    });
 
-    setClientToDelete(null);
+    setItemToDelete(null);
   };
 
   const handleSave = (savedFamily: Client) => {
@@ -172,10 +175,18 @@ export default function CustomersPage() {
     setActiveModal('member-form');
   };
   
-  const handleEditMember = (member: FamilyMember, client: Client) => {
-    setSelectedClient(client);
-    setSelectedMember(member);
-    setActiveModal('member-form');
+  const handleEditItem = (item: DisplayClient) => {
+    if (item.isFamilyHead) {
+        setSelectedClient(item as Client);
+        setActiveModal('form');
+    } else {
+        const clientHead = allDisplayClients.find(c => c.isFamilyHead && c.id === (item as FamilyMember).clientId) as Client | undefined;
+        if (clientHead) {
+            setSelectedClient(clientHead);
+            setSelectedMember(item as FamilyMember);
+            setActiveModal('member-form');
+        }
+    }
   };
   
   const handleSaveMember = (member: FamilyMember) => {
@@ -306,16 +317,18 @@ export default function CustomersPage() {
                                   <TooltipContent><p>View Family</p></TooltipContent>
                                 </Tooltip>
                               )}
-                              {isHead && canUpdate && (
+                              
+                              {canUpdate && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(client as Client)} aria-label="Edit">
+                                    <Button variant="ghost" size="icon" onClick={() => handleEditItem(client)} aria-label="Edit">
                                       <Edit className="h-4 w-4 hover:text-yellow-500" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent><p>Edit Family Head</p></TooltipContent>
+                                  <TooltipContent><p>Edit {isHead ? "Family Head" : "Member"}</p></TooltipContent>
                                 </Tooltip>
                               )}
+
                               {customerUser && canImpersonateAny && (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -326,23 +339,25 @@ export default function CustomersPage() {
                                     <TooltipContent><p>Impersonate Client</p></TooltipContent>
                                 </Tooltip>
                               )}
-                               {isHead && canDelete && (
-                                 <AlertDialog open={!!clientToDelete && clientToDelete.id === client.id} onOpenChange={(open) => !open && setClientToDelete(null)}>
+                              
+                               {canDelete && (
+                                 <AlertDialog open={!!itemToDelete && itemToDelete.id === client.id} onOpenChange={(open) => !open && setItemToDelete(null)}>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <AlertDialogTrigger asChild>
-                                           <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => handleDeleteTrigger(client as Client)} aria-label="Delete">
+                                           <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => handleDeleteTrigger(client)} aria-label="Delete">
                                               <Trash2 className="h-4 w-4" />
                                            </Button>
                                         </AlertDialogTrigger>
                                       </TooltipTrigger>
-                                      <TooltipContent><p>Delete Family</p></TooltipContent>
+                                      <TooltipContent><p>Delete {isHead ? "Family" : "Member"}</p></TooltipContent>
                                     </Tooltip>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete the record for <strong>{client.firstName} {client.lastName}</strong> and all associated family members.
+                                                This action cannot be undone. This will permanently delete the record for <strong>{client.firstName} {client.lastName}</strong>
+                                                {isHead && " and all associated family members."}
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
@@ -385,7 +400,7 @@ export default function CustomersPage() {
                 client={selectedClient}
                 familyMembers={familyMembers.filter(m => m.clientId === selectedClient.id)}
                 onAddMember={() => handleAddMember(selectedClient)}
-                onEditMember={(m) => handleEditMember(m, selectedClient)}
+                onEditMember={(m) => handleEditItem(m)}
                 onDeleteMember={handleDeleteMember}
               />
             )}
@@ -404,5 +419,3 @@ export default function CustomersPage() {
     </TooltipProvider>
   );
 }
-
-    

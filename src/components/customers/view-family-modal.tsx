@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Client, FamilyMember } from '@/lib/types';
+import { Client, FamilyMember, DisplayClient } from '@/lib/types';
 import {
   Download,
   X,
