@@ -161,7 +161,7 @@ export default function CustomersPage() {
   
   const findCustomerUser = (family: Family): User | undefined => {
       // This is a mock lookup. In a real app this might be a property on the family or a DB query.
-      return mockUsers.find(u => u.role === 'CUSTOMER' && u.email === family.emailId);
+      return mockUsers.find(u => u.role === 'CUSTOMER' && u.emailId === family.emailId);
   }
 
   const canCreate = hasPermission('CUSTOMER', 'create');
