@@ -1,8 +1,9 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getAssetsForCustomer, getFamilyMembersForCustomer } from '@/lib/mock-data';
-import type { User, AssetCategory, FamilyMember } from '@/lib/types';
+import { getAssetsForClient, getFamilyMembersForClient } from '@/lib/mock-data';
+import type { User, AssetCategory, FamilyMember, Client } from '@/lib/types';
 import { ASSET_CATEGORIES } from '@/lib/constants';
 import { useMemo, useState } from 'react';
 import {
@@ -35,8 +36,8 @@ const categoryIcons: Record<AssetCategory, React.ElementType> = {
 export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
 
-  const assets = useMemo(() => getAssetsForCustomer(user.id), [user.id]);
-  const familyMembers = useMemo(() => getFamilyMembersForCustomer(user.id), [user.id]);
+  const assets = useMemo(() => user.role === 'CUSTOMER' ? getAssetsForClient(user.id) : [], [user]);
+  const familyMembers = useMemo(() => user.role === 'CUSTOMER' ? getFamilyMembersForClient(user.id): [], [user]);
 
   const totalPoliciesValue = useMemo(() => {
     return assets

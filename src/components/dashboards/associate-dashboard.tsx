@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +15,7 @@ import {
   YAxis,
   CartesianGrid,
 } from 'recharts';
-import { getMappedCustomersForAssociate, getAssetsForCustomer } from '@/lib/mock-data';
+import { getClientsForAssociate, getAssetsForClient } from '@/lib/mock-data';
 import type { User } from '@/lib/types';
 import { useMemo } from 'react';
 
@@ -23,12 +24,12 @@ interface AssociateDashboardProps {
 }
 
 export default function AssociateDashboard({ user }: AssociateDashboardProps) {
-  const mappedCustomers = useMemo(() => getMappedCustomersForAssociate(user.id), [user.id]);
+  const mappedCustomers = useMemo(() => user.role === 'ASSOCIATE' ? getClientsForAssociate(user.id) : [], [user]);
   
   const customerAssets = useMemo(() => {
     return mappedCustomers.map(customer => ({
       name: customer.name,
-      totalValue: getAssetsForCustomer(customer.id).reduce((acc, asset) => acc + asset.value, 0)
+      totalValue: getAssetsForClient(customer.id).reduce((acc, asset) => acc + asset.value, 0)
     }));
   }, [mappedCustomers]);
 
@@ -45,7 +46,7 @@ export default function AssociateDashboard({ user }: AssociateDashboardProps) {
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="md:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mapped Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">Mapped Clients</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{mappedCustomers.length}</div>
@@ -57,7 +58,7 @@ export default function AssociateDashboard({ user }: AssociateDashboardProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart className="h-5 w-5" />
-              Customer Asset Value
+              Client Asset Value
             </CardTitle>
           </CardHeader>
           <CardContent>

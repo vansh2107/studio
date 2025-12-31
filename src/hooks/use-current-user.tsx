@@ -1,11 +1,11 @@
 
+
 'use client';
 
 import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { users, userMappings, permissions as mockPermissions } from '@/lib/mock-data';
+import { users, permissions as mockPermissions, User, Client, Associate, Admin, SuperAdmin, RelationshipManager, getRMsForAdmin, getAssociatesForRM, getClientsForAssociate } from '@/lib/mock-data';
 import { HIERARCHY, Role, Permission, PermissionModule } from '@/lib/constants';
-import type { User } from '@/lib/types';
 import { AppLayoutSkeleton } from '@/components/layout/app-layout';
 
 // --- Helper Functions ---
@@ -23,21 +23,30 @@ const canImpersonate = (actor: User, target: User): boolean => {
   // SUPER_ADMIN can impersonate anyone below them
   if (actor.role === 'SUPER_ADMIN') return true;
 
-  // Check mapping
-  let currentMappings = userMappings[actor.id] || [];
-  if (actor.role === 'ADMIN' && target.role === 'ASSOCIATE') {
-    return currentMappings.includes(target.id);
+  if (actor.role === 'ADMIN') {
+    const targetAdminId = (target as RelationshipManager | Associate | Client).role === 'RM'
+      ? (target as RelationshipManager).adminId
+      : (target as Associate).role === 'ASSOCIATE'
+      ? relationshipManagers.find(rm => rm.id === (target as Associate).rmId)?.adminId
+      : (target as Client).role === 'CUSTOMER'
+      ? relationshipManagers.find(rm => rm.id === associates.find(a => a.id === (target as Client).associateId)?.rmId)?.adminId
+      : undefined;
+    return targetAdminId === actor.id;
   }
-  if (actor.role === 'ADMIN' && target.role === 'CUSTOMER') {
-    const associates = currentMappings;
-    for (const associateId of associates) {
-      if ((userMappings[associateId] || []).includes(target.id)) {
-        return true;
-      }
+  
+  if(actor.role === 'RM') {
+      const targetRmId = (target as Associate | Client).role === 'ASSOCIATE'
+        ? (target as Associate).rmId
+        : (target as Client).role === 'CUSTOMER'
+        ? associates.find(a => a.id === (target as Client).associateId)?.rmId
+        : undefined;
+      return targetRmId === actor.id;
+  }
+
+  if (actor.role === 'ASSOCIATE') {
+    if (target.role === 'CUSTOMER') {
+      return (target as Client).associateId === actor.id;
     }
-  }
-  if (actor.role === 'ASSOCIATE' && target.role === 'CUSTOMER') {
-    return currentMappings.includes(target.id);
   }
 
   return false;
@@ -156,6 +165,25 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     // Check if the specific permission is granted
     return modulePermissions[permission] === true;
+  }, [effectiveUser]);
+
+  const { associates, relationshipManagers } = useMemo(() => {
+    if (!effectiveUser) return { associates: [], relationshipManagers: [] };
+
+    switch (effectiveUser.role) {
+      case 'SUPER_ADMIN':
+        return { associates: require('@/lib/mock-data').associates, relationshipManagers: require('@/lib/mock-data').relationshipManagers };
+      case 'ADMIN':
+        const rms = getRMsForAdmin(effectiveUser.id);
+        return {
+          associates: rms.flatMap(rm => getAssociatesForRM(rm.id)),
+          relationshipManagers: rms,
+        };
+       case 'RM':
+        return { associates: getAssociatesForRM(effectiveUser.id), relationshipManagers: [effectiveUser as RelationshipManager] };
+      default:
+        return { associates: [], relationshipManagers: [] };
+    }
   }, [effectiveUser]);
 
 

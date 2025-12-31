@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -18,9 +19,9 @@ import { ViewFamilyModal } from '@/components/customers/view-family-modal';
 import { FamilyMemberFormModal } from '@/components/customers/family-member-form-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Family, FamilyMember, User } from '@/lib/types';
+import { Client, FamilyMember, User } from '@/lib/types';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { families as mockFamilies, familyMembers as mockFamilyMembers, users as mockUsers } from '@/lib/mock-data';
+import { getAllClients, familyMembers as mockFamilyMembers, users as mockUsers, getClientsForAssociate, getAssociatesForRM, getRMsForAdmin } from '@/lib/mock-data';
 import Modal from '@/components/ui/Modal';
 import {
   AlertDialogHeader,
@@ -40,91 +41,102 @@ import {
 type ActiveModal = 'form' | 'view' | 'delete' | 'member-form' | null;
 
 export default function CustomersPage() {
-  const { hasPermission, canImpersonate, impersonate } = useCurrentUser();
+  const { effectiveUser, hasPermission, canImpersonate, impersonate } = useCurrentUser();
   const { toast } = useToast();
 
-  const [families, setFamilies] = useState<Family[]>(mockFamilies);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
-  const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
-
-
-  // Simulate fetching data
-  useMemo(() => {
+  
+    const clients = useMemo(() => {
+    if (!effectiveUser) return [];
     setLoading(true);
-    setTimeout(() => {
-      setFamilies(mockFamilies);
-      setFamilyMembers(mockFamilyMembers);
-      setLoading(false);
-    }, 500);
-  }, []);
+    let clientsToShow: Client[] = [];
+    switch (effectiveUser.role) {
+      case 'SUPER_ADMIN':
+        clientsToShow = getAllClients();
+        break;
+      case 'ADMIN':
+        const rms = getRMsForAdmin(effectiveUser.id);
+        const associatesForAdmin = rms.flatMap(rm => getAssociatesForRM(rm.id));
+        clientsToShow = associatesForAdmin.flatMap(assoc => getClientsForAssociate(assoc.id));
+        break;
+      case 'RM':
+         const associatesForRM = getAssociatesForRM(effectiveUser.id);
+         clientsToShow = associatesForRM.flatMap(assoc => getClientsForAssociate(assoc.id));
+        break;
+      case 'ASSOCIATE':
+        clientsToShow = getClientsForAssociate(effectiveUser.id);
+        break;
+    }
+    setLoading(false);
+    return clientsToShow;
+  }, [effectiveUser]);
+
 
   const handleCloseModal = () => {
     setActiveModal(null);
-    setSelectedFamily(null);
+    setSelectedClient(null);
     setSelectedMember(null);
   };
 
   const handleAddNew = () => {
-    setSelectedFamily(null);
+    setSelectedClient(null);
     setActiveModal('form');
   };
 
-  const handleEdit = (family: Family) => {
-    setSelectedFamily(family);
+  const handleEdit = (client: Client) => {
+    setSelectedClient(client);
     setActiveModal('form');
   };
 
-  const handleView = (family: Family) => {
-    setSelectedFamily(family);
+  const handleView = (client: Client) => {
+    setSelectedClient(client);
     setActiveModal('view');
   };
 
-  const handleDeleteTrigger = (family: Family) => {
-    setSelectedFamily(family);
+  const handleDeleteTrigger = (client: Client) => {
+    setSelectedClient(client);
     setActiveModal('delete');
   };
 
   const handleDeleteConfirm = () => {
-    if (!selectedFamily) return;
+    if (!selectedClient) return;
 
-    setFamilies(prev => prev.filter(f => f.id !== selectedFamily.id));
-    setFamilyMembers(prev => prev.filter(fm => fm.customerId !== selectedFamily.id)); // Also remove members
+    // This is a mock delete, in a real app you'd call an API
+    // setClients(prev => prev.filter(f => f.id !== selectedClient.id));
+    setFamilyMembers(prev => prev.filter(fm => fm.clientId !== selectedClient.id)); // Also remove members
 
     toast({
-      title: 'Family Deleted',
-      description: `The family "${selectedFamily.firstName} ${selectedFamily.lastName}" has been successfully deleted.`,
+      title: 'Client Deleted',
+      description: `The client "${selectedClient.firstName} ${selectedClient.lastName}" has been successfully deleted (mock).`,
     });
 
     handleCloseModal();
   };
 
-  const handleSave = (savedFamily: Family) => {
-    setFamilies(prev => {
-      const exists = prev.some(f => f.id === savedFamily.id);
-      if (exists) {
-        return prev.map(f =>
-          f.id === savedFamily.id ? savedFamily : f
-        );
-      }
-      return [...prev, savedFamily];
-    });
+  const handleSave = (savedFamily: Client) => {
+    // In a real app, this would update the state. For now, we just close the modal.
     handleCloseModal();
+     toast({
+      title: selectedClient ? 'Client Updated' : 'Client Created',
+      description: `The client "${savedFamily.firstName} ${savedFamily.lastName}" has been successfully saved (mock).`,
+    });
   };
 
   // --- Member Handlers ---
   
-  const handleAddMember = (family: Family) => {
-    setSelectedFamily(family);
+  const handleAddMember = (client: Client) => {
+    setSelectedClient(client);
     setSelectedMember(null);
     setActiveModal('member-form');
   };
   
-  const handleEditMember = (member: FamilyMember, family: Family) => {
-    setSelectedFamily(family);
+  const handleEditMember = (member: FamilyMember, client: Client) => {
+    setSelectedClient(client);
     setSelectedMember(member);
     setActiveModal('member-form');
   };
@@ -160,9 +172,8 @@ export default function CustomersPage() {
     }
   };
   
-  const findCustomerUser = (family: Family): User | undefined => {
-      // This is a mock lookup. In a real app this might be a property on the family or a DB query.
-      return mockUsers.find(u => u.role === 'CUSTOMER' && u.name.toLowerCase().includes(family.lastName.toLowerCase()));
+  const findCustomerUser = (client: Client): User | undefined => {
+      return mockUsers.find(u => u.id === client.id);
   }
 
   const canCreate = hasPermission('CUSTOMER', 'create');
@@ -174,11 +185,11 @@ export default function CustomersPage() {
     <TooltipProvider>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold font-headline">Customer Management</h1>
+          <h1 className="text-3xl font-bold font-headline">Client Management</h1>
           {canCreate && (
             <Button onClick={handleAddNew}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              New Family
+              New Client
             </Button>
           )}
         </div>
@@ -208,16 +219,16 @@ export default function CustomersPage() {
                       <TableCell className="text-right"><Skeleton className="h-8 w-24" /></TableCell>
                     </TableRow>
                   ))
-                ) : families.length > 0 ? (
-                  families.map(family => {
-                    const customerUser = findCustomerUser(family);
+                ) : clients.length > 0 ? (
+                  clients.map(client => {
+                    const customerUser = findCustomerUser(client);
                     return (
-                        <TableRow key={family.id}>
-                          <TableCell className="font-medium">{family.firstName}</TableCell>
-                          <TableCell>{family.lastName}</TableCell>
-                          <TableCell>{family.phoneNumber}</TableCell>
-                          <TableCell>{family.emailId}</TableCell>
-                          <TableCell>{formatDate(family.dateOfBirth)}</TableCell>
+                        <TableRow key={client.id}>
+                          <TableCell className="font-medium">{client.firstName}</TableCell>
+                          <TableCell>{client.lastName}</TableCell>
+                          <TableCell>{client.phoneNumber}</TableCell>
+                          <TableCell>{client.email}</TableCell>
+                          <TableCell>{formatDate(client.dateOfBirth)}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                                {customerUser && canImpersonate(customerUser) && (
@@ -227,13 +238,13 @@ export default function CustomersPage() {
                                             <LogIn className="h-4 w-4 text-blue-500 hover:text-blue-400" />
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent><p>Impersonate Customer</p></TooltipContent>
+                                    <TooltipContent><p>Impersonate Client</p></TooltipContent>
                                 </Tooltip>
                               )}
                               {canView && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => handleView(family)} aria-label="View">
+                                    <Button variant="ghost" size="icon" onClick={() => handleView(client)} aria-label="View">
                                       <Eye className="h-4 w-4 hover:text-blue-500" />
                                     </Button>
                                   </TooltipTrigger>
@@ -243,7 +254,7 @@ export default function CustomersPage() {
                               {canUpdate && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(family)} aria-label="Edit">
+                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(client)} aria-label="Edit">
                                       <Edit className="h-4 w-4 hover:text-yellow-500" />
                                     </Button>
                                   </TooltipTrigger>
@@ -253,7 +264,7 @@ export default function CustomersPage() {
                               {canDelete && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => handleDeleteTrigger(family)} aria-label="Delete">
+                                    <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => handleDeleteTrigger(client)} aria-label="Delete">
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
@@ -268,7 +279,7 @@ export default function CustomersPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
-                      No families found.
+                      No clients found.
                     </TableCell>
                   </TableRow>
                 )}
@@ -283,37 +294,37 @@ export default function CustomersPage() {
             {activeModal === 'form' && (
               <FamilyFormModal
                 onClose={handleCloseModal}
-                family={selectedFamily}
+                family={selectedClient}
                 onSave={handleSave}
               />
             )}
             
-            {activeModal === 'view' && selectedFamily && (
+            {activeModal === 'view' && selectedClient && (
               <ViewFamilyModal
                 onClose={handleCloseModal}
-                family={selectedFamily}
-                familyMembers={familyMembers.filter(m => m.customerId === selectedFamily.id)}
-                onAddMember={() => handleAddMember(selectedFamily)}
-                onEditMember={(m) => handleEditMember(m, selectedFamily)}
+                client={selectedClient}
+                familyMembers={familyMembers.filter(m => m.clientId === selectedClient.id)}
+                onAddMember={() => handleAddMember(selectedClient)}
+                onEditMember={(m) => handleEditMember(m, selectedClient)}
                 onDeleteMember={handleDeleteMember}
               />
             )}
 
-            {activeModal === 'member-form' && selectedFamily && (
+            {activeModal === 'member-form' && selectedClient && (
               <FamilyMemberFormModal
                 onClose={handleCloseModal}
-                family={selectedFamily}
+                client={selectedClient}
                 member={selectedMember}
                 onSave={handleSaveMember}
               />
             )}
 
-            {activeModal === 'delete' && selectedFamily && (
+            {activeModal === 'delete' && selectedClient && (
               <div>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the record for <strong>{selectedFamily.firstName} {selectedFamily.lastName}</strong> and all associated family members.
+                    This action cannot be undone. This will permanently delete the record for <strong>{selectedClient.firstName} {selectedClient.lastName}</strong> and all associated family members.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="mt-6">

@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, PieChart } from 'lucide-react';
@@ -19,16 +20,18 @@ import {
   Cell,
   Tooltip,
 } from 'recharts';
-import { getAdmins, getAssociates, getCustomers } from '@/lib/mock-data';
+import { getAllAdmins, getAllRMs, getAllAssociates, getAllClients } from '@/lib/mock-data';
 
-const admins = getAdmins();
-const associates = getAssociates();
-const customers = getCustomers();
+const admins = getAllAdmins();
+const rms = getAllRMs();
+const associates = getAllAssociates();
+const clients = getAllClients();
 
 const totalCounts = [
   { name: 'Admins', count: admins.length, fill: 'hsl(var(--chart-1))' },
+  { name: 'RMs', count: rms.length, fill: 'hsl(var(--chart-4))' },
   { name: 'Associates', count: associates.length, fill: 'hsl(var(--chart-2))' },
-  { name: 'Customers', count: customers.length, fill: 'hsl(var(--chart-3))' },
+  { name: 'Clients', count: clients.length, fill: 'hsl(var(--chart-3))' },
 ];
 
 const chartConfig = {
@@ -39,12 +42,16 @@ const chartConfig = {
     label: 'Admins',
     color: 'hsl(var(--chart-1))',
   },
+  RMs: {
+    label: 'RMs',
+    color: 'hsl(var(--chart-4))',
+  },
   Associates: {
     label: 'Associates',
     color: 'hsl(var(--chart-2))',
   },
-  Customers: {
-    label: 'Customers',
+  Clients: {
+    label: 'Clients',
     color: 'hsl(var(--chart-3))',
   },
 };
@@ -53,13 +60,21 @@ export default function SuperAdminDashboard() {
   return (
     <>
       <h1 className="text-3xl font-bold font-headline">Super Admin Dashboard</h1>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Admins</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{admins.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total RMs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{rms.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -72,10 +87,10 @@ export default function SuperAdminDashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{customers.length}</div>
+            <div className="text-2xl font-bold">{clients.length}</div>
           </CardContent>
         </Card>
       </div>

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Family, FamilyMember } from '@/lib/types';
+import { Client, FamilyMember } from '@/lib/types';
 import { Loader2, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { isValid, parseISO } from 'date-fns';
@@ -33,14 +33,14 @@ const RELATION_OPTIONS = ["Self", "Spouse", "Son", "Daughter", "Father", "Mother
 
 interface FamilyMemberFormModalProps {
   onClose: () => void;
-  family: Family;
+  client: Client;
   member: FamilyMember | null;
   onSave: (member: FamilyMember) => void;
 }
 
 export function FamilyMemberFormModal({
   onClose,
-  family,
+  client,
   member,
   onSave,
 }: FamilyMemberFormModalProps) {
@@ -94,7 +94,7 @@ export function FamilyMemberFormModal({
     setTimeout(() => {
       const memberData: FamilyMember = {
         id: member?.id || `fm-${Date.now()}`,
-        customerId: family.id,
+        clientId: client.id,
         ...data,
         anniversaryDate: data.anniversaryDate || undefined,
       };
@@ -116,7 +116,7 @@ export function FamilyMemberFormModal({
             {member ? 'Edit Family Member' : 'Add New Member'}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {member ? 'Update details for this member.' : `Add a new member to the ${family.firstName} ${family.lastName} family.`}
+            {member ? 'Update details for this member.' : `Add a new member to the ${client.firstName} ${client.lastName} family.`}
           </p>
         </div>
 

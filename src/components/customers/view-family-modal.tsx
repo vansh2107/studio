@@ -2,14 +2,13 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Family, FamilyMember } from '@/lib/types';
+import { Client, FamilyMember } from '@/lib/types';
 import {
   Download,
   X,
   PlusCircle,
   Edit,
   Trash2,
-  ShieldAlert,
   User,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -30,15 +29,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { getFamilyMembersForCustomer } from '@/lib/mock-data';
+import { getFamilyMembersForClient } from '@/lib/mock-data';
 
 interface ViewFamilyModalProps {
   onClose: () => void;
-  family: Family;
+  client: Client;
   familyMembers: FamilyMember[];
   onAddMember: () => void;
   onEditMember: (member: FamilyMember) => void;
@@ -94,7 +92,7 @@ const formatDate = (dateString?: string) => {
 
 export function ViewFamilyModal({
   onClose,
-  family,
+  client,
   familyMembers: initialFamilyMembers,
   onAddMember,
   onEditMember,
@@ -104,8 +102,7 @@ export function ViewFamilyModal({
   const { toast } = useToast();
   const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(null);
 
-  // Since we are now managing members inside this view, let's use state
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(getFamilyMembersForCustomer(family.id));
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(getFamilyMembersForClient(client.id));
 
   const handleDelete = (member: FamilyMember) => {
     // In a real app with assets, you would check here.
@@ -140,10 +137,10 @@ export function ViewFamilyModal({
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-lg font-semibold leading-none tracking-tight">
-              Family Details: {family.firstName} {family.lastName}
+              Client Details: {client.firstName} {client.lastName}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Viewing record for {family.firstName} {family.lastName}.
+              Viewing record for {client.firstName} {client.lastName}.
             </p>
           </div>
         </div>
@@ -154,20 +151,20 @@ export function ViewFamilyModal({
             Personal Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailItem label="First Name" value={family.firstName} />
-            <DetailItem label="Last Name" value={family.lastName} />
-            <DetailItem label="Phone Number" value={family.phoneNumber} />
-            <DetailItem label="Email ID" value={family.emailId} />
+            <DetailItem label="First Name" value={client.firstName} />
+            <DetailItem label="Last Name" value={client.lastName} />
+            <DetailItem label="Phone Number" value={client.phoneNumber} />
+            <DetailItem label="Email ID" value={client.email} />
             <DetailItem
               label="Date of Birth"
-              value={formatDate(family.dateOfBirth)}
+              value={formatDate(client.dateOfBirth)}
             />
             <DetailItem
               label="Anniversary Date"
-              value={formatDate(family.anniversaryDate)}
+              value={formatDate(client.anniversaryDate)}
             />
             <div className="md:col-span-2">
-              <DetailItem label="Address" value={family.address} />
+              <DetailItem label="Address" value={client.address} />
             </div>
           </div>
         </div>
@@ -222,18 +219,18 @@ export function ViewFamilyModal({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <DocumentLink
               label="PAN Photo"
-              url={family.panPhotoUrl}
-              filename={family.panFileName}
+              url={client.panPhotoUrl}
+              filename={client.panFileName}
             />
             <DocumentLink
               label="Aadhaar Photo"
-              url={family.aadhaarPhotoUrl}
-              filename={family.aadhaarFileName}
+              url={client.aadhaarPhotoUrl}
+              filename={client.aadhaarFileName}
             />
             <DocumentLink
               label="Other Document"
-              url={family.otherDocumentUrl}
-              filename={family.otherDocumentFileName}
+              url={client.otherDocumentUrl}
+              filename={client.otherDocumentFileName}
             />
           </div>
         </div>
@@ -257,5 +254,3 @@ export function ViewFamilyModal({
     </div>
   );
 }
-
-    

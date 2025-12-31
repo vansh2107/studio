@@ -16,28 +16,28 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Family } from '@/lib/types';
+import { Client } from '@/lib/types';
 import { isValid, parseISO } from 'date-fns';
 
-const familySchema = z.object({
+const clientSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
-  emailId: z.string().email('Invalid email address'),
+  email: z.string().email('Invalid email address'),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format').refine(date => isValid(parseISO(date)), { message: "Invalid date" }),
   address: z.string().min(1, 'Address is required'),
   anniversaryDate: z.string().optional().refine(date => !date || (z.string().regex(/^\d{4}-\d{2}-\d{2}$/).safeParse(date).success && isValid(parseISO(date))), { message: "Invalid date format. Use YYYY-MM-DD or leave empty." }),
 });
 
 
-type FamilyFormData = z.infer<typeof familySchema>;
+type ClientFormData = z.infer<typeof clientSchema>;
 
 const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
 interface FamilyFormModalProps {
   onClose: () => void;
-  family?: Family | null;
-  onSave: (family: Family) => void;
+  family?: Client | null; // Changed from Family to Client
+  onSave: (family: Client) => void; // Changed from Family to Client
 }
 
 export function FamilyFormModal({
@@ -64,13 +64,13 @@ export function FamilyFormModal({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<FamilyFormData>({
-    resolver: zodResolver(familySchema),
+  } = useForm<ClientFormData>({
+    resolver: zodResolver(clientSchema),
     defaultValues: {
       firstName: '',
       lastName: '',
       phoneNumber: '',
-      emailId: '',
+      email: '',
       address: '',
       dateOfBirth: '',
       anniversaryDate: '',
@@ -92,7 +92,7 @@ export function FamilyFormModal({
         firstName: '',
         lastName: '',
         phoneNumber: '',
-        emailId: '',
+        email: '',
         address: '',
         dateOfBirth: '',
         anniversaryDate: '',
@@ -126,29 +126,32 @@ export function FamilyFormModal({
     }
   };
 
-  const processSave = (data: FamilyFormData) => {
+  const processSave = (data: ClientFormData) => {
     setIsSaving(true);
     
     // Simulate saving delay
     setTimeout(() => {
-      const familyData: Family = {
-        id: family?.id || `fam-${Date.now()}`,
+      const clientData: Client = {
+        id: family?.id || `client-${Date.now()}`,
+        name: `${data.firstName} ${data.lastName}`,
+        role: 'CUSTOMER',
+        associateId: family?.associateId || 'assoc-unassigned', // needs a default or passed in
+        avatarUrl: family?.avatarUrl || '',
         ...data,
         anniversaryDate: data.anniversaryDate || undefined, // Store as undefined if empty
         panFileName: panFile?.name,
         aadhaarFileName: aadhaarFile?.name,
         otherDocumentFileName: otherFile?.name,
-        // In prototype, URLs are just placeholders and not actually created
         panPhotoUrl: panFile ? 'simulated_url' : family?.panPhotoUrl,
         aadhaarPhotoUrl: aadhaarFile ? 'simulated_url' : family?.aadhaarPhotoUrl,
         otherDocumentUrl: otherFile ? 'simulated_url' : family?.otherDocumentUrl,
       };
 
-      onSave(familyData);
+      onSave(clientData);
 
       toast({
-        title: family ? 'Family Updated' : 'Family Created',
-        description: `The family "${data.firstName} ${data.lastName}" has been successfully saved.`,
+        title: family ? 'Client Updated' : 'Client Created',
+        description: `The client "${data.firstName} ${data.lastName}" has been successfully saved.`,
       });
       
       setIsSaving(false);
@@ -204,7 +207,7 @@ export function FamilyFormModal({
         </Button>
         <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
           <h2 className="text-lg font-semibold leading-none tracking-tight">
-            {family ? 'Edit Family' : 'Create New Family'} - Step {step} / 2
+            {family ? 'Edit Client' : 'Create New Client'} - Step {step} / 2
           </h2>
         </div>
 
@@ -259,12 +262,12 @@ export function FamilyFormModal({
                 <Input
                   id="emailId"
                   type="email"
-                  {...register('emailId')}
+                  {...register('email')}
                   disabled={isSaving}
                 />
-                {errors.emailId && (
+                {errors.email && (
                   <p className="text-sm text-destructive">
-                    {errors.emailId.message}
+                    {errors.email.message}
                   </p>
                 )}
               </div>
@@ -349,7 +352,7 @@ export function FamilyFormModal({
                     Saving...
                   </>
                 ) : (
-                  'Save Family'
+                  'Save Client'
                 )}
               </Button>
             </>

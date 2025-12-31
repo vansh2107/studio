@@ -1,6 +1,7 @@
+
 'use client';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { getFamilyMembersForCustomer, getDocumentsForCustomer, Document } from '@/lib/mock-data';
+import { getFamilyMembersForClient, getDocumentsForClient, Document } from '@/lib/mock-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Accordion,
@@ -9,7 +10,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, Trash2, Folder, User as UserIcon } from 'lucide-react';
+import { Upload, FileText, Trash2, Folder } from 'lucide-react';
 import { DOC_CATEGORIES } from '@/lib/constants';
 import { useMemo } from 'react';
 
@@ -17,12 +18,12 @@ export default function DocVaultPage() {
   const { effectiveUser } = useCurrentUser();
 
   const familyMembers = useMemo(() => 
-    effectiveUser ? getFamilyMembersForCustomer(effectiveUser.id) : [],
+    (effectiveUser?.role === 'CUSTOMER') ? getFamilyMembersForClient(effectiveUser.id) : [],
     [effectiveUser]
   );
   
   const documents = useMemo(() =>
-    effectiveUser ? getDocumentsForCustomer(effectiveUser.id) : [],
+    (effectiveUser?.role === 'CUSTOMER') ? getDocumentsForClient(effectiveUser.id) : [],
     [effectiveUser]
   );
 
@@ -60,7 +61,7 @@ export default function DocVaultPage() {
             <AccordionTrigger className="text-lg font-medium hover:no-underline">
               <div className="flex items-center gap-3">
                 <Folder className="h-6 w-6 text-primary"/>
-                {member.name} ({member.relation})
+                {member.firstName} {member.lastName} ({member.relation})
                 <span className="text-sm font-normal text-muted-foreground ml-2">
                   ({getDocCountForMember(member.id)} documents)
                 </span>
@@ -103,8 +104,11 @@ export default function DocVaultPage() {
                     </Card>
                   );
                 })}
-                <div className="text-sm text-muted-foreground pt-2">
-                  Only categories requiring documents are shown.
+                 <div className="pt-4">
+                     <Button variant="outline">
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload New Document for {member.firstName}
+                    </Button>
                 </div>
               </div>
             </AccordionContent>

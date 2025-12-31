@@ -1,4 +1,5 @@
-export const ROLES = ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE', 'CUSTOMER'] as const;
+
+export const ROLES = ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'] as const;
 export type Role = typeof ROLES[number];
 
 export const PERMISSION_MODULES = [
@@ -22,7 +23,7 @@ export type Permissions = {
   [M in PermissionModule]: ModulePermissions;
 };
 
-export const HIERARCHY: Role[] = ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE', 'CUSTOMER'];
+export const HIERARCHY: Role[] = ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'];
 
 export const ASSET_CATEGORIES = [
   'Stocks',

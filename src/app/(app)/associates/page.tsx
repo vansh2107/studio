@@ -1,6 +1,7 @@
+
 'use client';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { getAssociates, getMappedAssociatesForAdmin, User } from '@/lib/mock-data';
+import { getAllAssociates, getAssociatesForRM, getRMsForAdmin } from '@/lib/mock-data';
 import {
   Table,
   TableBody,
@@ -15,21 +16,30 @@ import { LogIn } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMemo } from 'react';
+import { Associate } from '@/lib/types';
 
 export default function AssociatesPage() {
   const { effectiveUser, canImpersonate, impersonate } = useCurrentUser();
 
   const associates = useMemo(() => {
-    if (effectiveUser?.role === 'SUPER_ADMIN') {
-      return getAssociates();
+    if (!effectiveUser) return [];
+
+    switch (effectiveUser.role) {
+      case 'SUPER_ADMIN':
+        return getAllAssociates();
+      case 'ADMIN':
+        const rms = getRMsForAdmin(effectiveUser.id);
+        return rms.flatMap(rm => getAssociatesForRM(rm.id));
+      case 'RM':
+        return getAssociatesForRM(effectiveUser.id);
+      default:
+        return [];
     }
-    if (effectiveUser?.role === 'ADMIN') {
-      return getMappedAssociatesForAdmin(effectiveUser.id);
-    }
-    return [];
   }, [effectiveUser]);
 
-  if (effectiveUser?.role !== 'SUPER_ADMIN' && effectiveUser?.role !== 'ADMIN') {
+  const canViewPage = ['SUPER_ADMIN', 'ADMIN', 'RM'].includes(effectiveUser?.role || '');
+
+  if (!canViewPage) {
     return (
        <Card>
         <CardHeader>

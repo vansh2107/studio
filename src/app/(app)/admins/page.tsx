@@ -1,6 +1,7 @@
+
 'use client';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { getAdmins } from '@/lib/mock-data';
+import { getAllAdmins } from '@/lib/mock-data';
 import {
   Table,
   TableBody,
@@ -17,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AdminsPage() {
   const { effectiveUser, canImpersonate, impersonate } = useCurrentUser();
-  const admins = getAdmins();
+  const admins = getAllAdmins();
 
   if (effectiveUser?.role !== 'SUPER_ADMIN') {
     return (

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +20,7 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { getMappedAssociatesForAdmin, getMappedCustomersForAssociate } from '@/lib/mock-data';
+import { getRMsForAdmin, getAssociatesForRM, getClientsForAssociate } from '@/lib/mock-data';
 import type { User } from '@/lib/types';
 import { useMemo } from 'react';
 
@@ -28,18 +29,24 @@ interface AdminDashboardProps {
 }
 
 export default function AdminDashboard({ user }: AdminDashboardProps) {
-  const mappedAssociates = useMemo(() => getMappedAssociatesForAdmin(user.id), [user.id]);
-  const mappedCustomers = useMemo(() => {
-    return mappedAssociates.flatMap(associate => getMappedCustomersForAssociate(associate.id));
-  }, [mappedAssociates]);
+    
+  const { mappedRMs, mappedAssociates, mappedCustomers } = useMemo(() => {
+    if (user.role !== 'ADMIN') return { mappedRMs: [], mappedAssociates: [], mappedCustomers: [] };
+    const rms = getRMsForAdmin(user.id);
+    const associates = rms.flatMap(rm => getAssociatesForRM(rm.id));
+    const customers = associates.flatMap(assoc => getClientsForAssociate(assoc.id));
+    return { mappedRMs: rms, mappedAssociates: associates, mappedCustomers: customers };
+  }, [user]);
 
   const totalCounts = [
+    { name: 'RMs', count: mappedRMs.length, fill: 'hsl(var(--chart-1))' },
     { name: 'Associates', count: mappedAssociates.length, fill: 'hsl(var(--chart-2))' },
     { name: 'Customers', count: mappedCustomers.length, fill: 'hsl(var(--chart-3))' },
   ];
 
   const chartConfig = {
     count: { label: 'Count' },
+    RMs: { label: 'RMs', color: 'hsl(var(--chart-1))' },
     Associates: { label: 'Associates', color: 'hsl(var(--chart-2))' },
     Customers: { label: 'Customers', color: 'hsl(var(--chart-3))' },
   };
@@ -47,7 +54,15 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
   return (
     <>
       <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Mapped RMs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{mappedRMs.length}</div>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Mapped Associates</CardTitle>
