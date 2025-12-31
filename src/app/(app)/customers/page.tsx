@@ -30,6 +30,8 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
 import {
@@ -42,7 +44,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
 
-type ActiveModal = 'form' | 'view' | 'delete' | 'member-form' | null;
+type ActiveModal = 'form' | 'view' | 'member-form' | null;
 
 export default function CustomersPage() {
   const { effectiveUser, hasPermission, canImpersonate, impersonate } = useCurrentUser();
@@ -51,10 +53,11 @@ export default function CustomersPage() {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
   const [loading, setLoading] = useState(true);
   const [showOnlyHeads, setShowOnlyHeads] = useState(false);
-
+  
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   
   const allDisplayClients: DisplayClient[] = useMemo(() => {
     if (!effectiveUser) return [];
@@ -115,6 +118,7 @@ export default function CustomersPage() {
     setActiveModal(null);
     setSelectedClient(null);
     setSelectedMember(null);
+    setClientToDelete(null);
   };
 
   const handleAddNew = () => {
@@ -133,23 +137,22 @@ export default function CustomersPage() {
   };
 
   const handleDeleteTrigger = (client: Client) => {
-    setSelectedClient(client);
-    setActiveModal('delete');
+    setClientToDelete(client);
   };
 
   const handleDeleteConfirm = () => {
-    if (!selectedClient) return;
+    if (!clientToDelete) return;
 
     // This is a mock delete, in a real app you'd call an API
-    // setClients(prev => prev.filter(f => f.id !== selectedClient.id));
-    setFamilyMembers(prev => prev.filter(fm => fm.clientId !== selectedClient.id)); // Also remove members
+    // setClients(prev => prev.filter(f => f.id !== clientToDelete.id));
+    setFamilyMembers(prev => prev.filter(fm => fm.clientId !== clientToDelete.id)); // Also remove members
 
     toast({
       title: 'Client Deleted',
-      description: `The client "${selectedClient.firstName} ${selectedClient.lastName}" has been successfully deleted (mock).`,
+      description: `The client "${clientToDelete.firstName} ${clientToDelete.lastName}" has been successfully deleted (mock).`,
     });
 
-    handleCloseModal();
+    setClientToDelete(null);
   };
 
   const handleSave = (savedFamily: Client) => {
@@ -264,7 +267,7 @@ export default function CustomersPage() {
                       <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                      <TableCell className="text-right"><Skeleton className="h-8 w-24" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="h-8 w-32" /></TableCell>
                     </TableRow>
                   ))
                 ) : filteredClients.length > 0 ? (
@@ -313,7 +316,7 @@ export default function CustomersPage() {
                               {customerUser && canImpersonate(customerUser) && (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={() => impersonate(customerUser.id)} aria-label="Impersonate Customer">
+                                        <Button variant="ghost" size="icon" onClick={() => impersonate(customerUser.id)} aria-label="Impersonate Client">
                                             <LogIn className="h-4 w-4 text-blue-500 hover:text-blue-400" />
                                         </Button>
                                     </TooltipTrigger>
@@ -321,14 +324,30 @@ export default function CustomersPage() {
                                 </Tooltip>
                               )}
                                {isHead && canDelete && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => handleDeleteTrigger(client as Client)} aria-label="Delete">
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent><p>Delete Family</p></TooltipContent>
-                                </Tooltip>
+                                 <AlertDialog open={!!clientToDelete && clientToDelete.id === client.id} onOpenChange={(open) => !open && setClientToDelete(null)}>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <AlertDialogTrigger asChild>
+                                           <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => handleDeleteTrigger(client as Client)} aria-label="Delete">
+                                              <Trash2 className="h-4 w-4" />
+                                           </Button>
+                                        </AlertDialogTrigger>
+                                      </TooltipTrigger>
+                                      <TooltipContent><p>Delete Family</p></TooltipContent>
+                                    </Tooltip>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete the record for <strong>{client.firstName} {client.lastName}</strong> and all associated family members.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                               )}
                             </div>
                           </TableCell>
@@ -347,7 +366,6 @@ export default function CustomersPage() {
           </CardContent>
         </Card>
 
-        {/* Unified Modal */}
         <Modal open={!!activeModal} onClose={handleCloseModal}>
           <>
             {activeModal === 'form' && (
@@ -377,21 +395,6 @@ export default function CustomersPage() {
                 onSave={handleSaveMember}
               />
             )}
-
-            {activeModal === 'delete' && selectedClient && (
-               <div>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the record for <strong>{selectedClient.firstName} {selectedClient.lastName}</strong> and all associated family members.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter className="mt-6">
-                  <AlertDialogCancel onClick={handleCloseModal}>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                </AlertDialogFooter>
-              </div>
-            )}
           </>
         </Modal>
       </div>
@@ -399,3 +402,4 @@ export default function CustomersPage() {
   );
 }
 
+    
