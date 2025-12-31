@@ -70,13 +70,13 @@ export const userMappings: Record<string, string[]> = {
 };
 
 export const familyMembers: FamilyMember[] = [
-  { id: 'fm-1-1', customerId: 'F001', name: 'Rahul Mehta', relation: 'Self' },
-  { id: 'fm-1-2', customerId: 'F001', name: 'Priya Mehta', relation: 'Spouse' },
-  { id: 'fm-1-3', customerId: 'F001', name: 'Aarav Mehta', relation: 'Son' },
-  { id: 'fm-2-1', customerId: 'F002', name: 'Priya Sharma', relation: 'Self' },
-  { id: 'fm-3-1', customerId: 'F003', name: 'Mehul Patel', relation: 'Self' },
-  { id: 'fm-3-2', customerId: 'F003', name: 'Sonal Patel', relation: 'Spouse' },
-  { id: 'fm-4-1', customerId: 'F004', name: 'Harpreet Singh', relation: 'Self' },
+  { id: 'fm-1-1', customerId: 'F001', firstName: 'Rahul', lastName: 'Mehta', relation: 'Self', phoneNumber: '9876543210', emailId: 'rahul@example.com', dateOfBirth: '1990-05-12', address: 'Mumbai, India' },
+  { id: 'fm-1-2', customerId: 'F001', firstName: 'Priya', lastName: 'Mehta', relation: 'Spouse', phoneNumber: '9876543211', emailId: 'priya.m@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
+  { id: 'fm-1-3', customerId: 'F001', firstName: 'Aarav', lastName: 'Mehta', relation: 'Son', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
+  { id: 'fm-2-1', customerId: 'F002', firstName: 'Priya', lastName: 'Sharma', relation: 'Self', phoneNumber: '9990011122', emailId: 'priya@example.com', dateOfBirth: '1994-08-20', address: 'Delhi, India' },
+  { id: 'fm-3-1', customerId: 'F003', firstName: 'Mehul', lastName: 'Patel', relation: 'Self', phoneNumber: '9123456780', emailId: 'mehul.p@example.com', dateOfBirth: '1988-03-15', address: 'Ahmedabad, Gujarat' },
+  { id: 'fm-3-2', customerId: 'F003', firstName: 'Sonal', lastName: 'Patel', relation: 'Spouse', phoneNumber: '9123456781', emailId: 'sonal.p@example.com', dateOfBirth: '1990-02-22', address: 'Ahmedabad, Gujarat' },
+  { id: 'fm-4-1', customerId: 'F004', firstName: 'Harpreet', lastName: 'Singh', relation: 'Self', phoneNumber: '9234567891', emailId: 'harpreet.s@example.com', dateOfBirth: '1985-11-25', address: 'Chandigarh, Punjab' },
 ];
 
 export const assets: Asset[] = [

@@ -137,7 +137,7 @@ export default function CustomersPage() {
         }
         return [...prev, member];
     });
-    toast({ title: 'Success', description: `Family member "${member.name}" has been saved.` });
+    toast({ title: 'Success', description: `Family member "${member.firstName} ${member.lastName}" has been saved.` });
     handleCloseModal();
   };
 

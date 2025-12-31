@@ -333,14 +333,9 @@ export function FamilyFormModal({
           )}
         </form>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6">
+        <div className="flex justify-end space-x-2 mt-6">
           {step === 1 && (
-            <>
-              <Button variant="outline" onClick={onClose} disabled={isSaving}>
-                Cancel
-              </Button>
-              <Button onClick={handleSubmit(() => handleNext(), () => {})}>Next</Button>
-            </>
+            <Button onClick={handleSubmit(() => handleNext(), () => {})}>Next</Button>
           )}
           {step === 2 && (
             <>

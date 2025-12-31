@@ -193,7 +193,7 @@ export function ViewFamilyModal({
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <User className="h-5 w-5 text-muted-foreground" />
-                        <span className="font-medium">{member.name}</span>
+                        <span className="font-medium">{member.firstName} {member.lastName}</span>
                       </div>
                     </TableCell>
                     <TableCell>{member.relation}</TableCell>
@@ -244,7 +244,7 @@ export function ViewFamilyModal({
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete <strong>{memberToDelete?.name}</strong> from this family account.
+                This will permanently delete <strong>{memberToDelete?.firstName} {memberToDelete?.lastName}</strong> from this family account.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -8,19 +8,27 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Family, FamilyMember } from '@/lib/types';
 import { Loader2, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { isValid, parseISO } from 'date-fns';
 
 const memberSchema = z.object({
-  name: z.string().min(1, 'Member name is required'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
+  emailId: z.string().email('Invalid email address'),
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format').refine(date => isValid(parseISO(date)), { message: "Invalid date" }),
+  address: z.string().min(1, 'Address is required'),
+  anniversaryDate: z.string().optional().refine(date => !date || (z.string().regex(/^\d{4}-\d{2}-\d{2}$/).safeParse(date).success && isValid(parseISO(date))), { message: "Invalid date format. Use YYYY-MM-DD or leave empty." }),
   relation: z.string().min(1, 'Relation is required'),
 });
 
 type MemberFormData = z.infer<typeof memberSchema>;
 
-const RELATION_OPTIONS = ["Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister", "Other"];
+const RELATION_OPTIONS = ["Self", "Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister", "Other"];
 
 
 interface FamilyMemberFormModalProps {
@@ -48,16 +56,34 @@ export function FamilyMemberFormModal({
   } = useForm<MemberFormData>({
     resolver: zodResolver(memberSchema),
     defaultValues: {
-      name: '',
+      firstName: '',
+      lastName: '',
+      phoneNumber: '',
+      emailId: '',
+      dateOfBirth: '',
+      address: '',
+      anniversaryDate: '',
       relation: '',
     },
   });
 
   useEffect(() => {
     if (member) {
-      reset(member);
+       reset({
+        ...member,
+        anniversaryDate: member.anniversaryDate || '',
+      });
     } else {
-      reset({ name: '', relation: '' });
+      reset({
+        firstName: '',
+        lastName: '',
+        phoneNumber: '',
+        emailId: '',
+        dateOfBirth: '',
+        address: '',
+        anniversaryDate: '',
+        relation: '',
+      });
     }
   }, [member, reset]);
 
@@ -70,11 +96,13 @@ export function FamilyMemberFormModal({
         id: member?.id || `fm-${Date.now()}`,
         customerId: family.id,
         ...data,
+        anniversaryDate: data.anniversaryDate || undefined,
       };
 
       onSave(memberData);
       
       setIsSaving(false);
+      onClose();
     }, 1000);
   };
 
@@ -98,9 +126,34 @@ export function FamilyMemberFormModal({
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" {...register('name')} disabled={isSaving} />
-                {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+                <Label htmlFor="firstName">First Name</Label>
+                <Input id="firstName" {...register('firstName')} disabled={isSaving} />
+                {errors.firstName && <p className="text-sm text-destructive">{errors.firstName.message}</p>}
+              </div>
+               <div className="flex flex-col gap-1.5">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input id="lastName" {...register('lastName')} disabled={isSaving} />
+                {errors.lastName && <p className="text-sm text-destructive">{errors.lastName.message}</p>}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Input id="phoneNumber" type="tel" {...register('phoneNumber')} disabled={isSaving} />
+                {errors.phoneNumber && <p className="text-sm text-destructive">{errors.phoneNumber.message}</p>}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="emailId">Email ID</Label>
+                <Input id="emailId" type="email" {...register('emailId')} disabled={isSaving} />
+                {errors.emailId && <p className="text-sm text-destructive">{errors.emailId.message}</p>}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Input id="dateOfBirth" type="text" placeholder="YYYY-MM-DD" {...register('dateOfBirth')} disabled={isSaving} />
+                 {errors.dateOfBirth && <p className="text-sm text-destructive">{errors.dateOfBirth.message}</p>}
+              </div>
+               <div className="flex flex-col gap-1.5">
+                <Label htmlFor="anniversaryDate">Anniversary Date (Optional)</Label>
+                <Input id="anniversaryDate" type="text" placeholder="YYYY-MM-DD" {...register('anniversaryDate')} disabled={isSaving} />
+                {errors.anniversaryDate && <p className="text-sm text-destructive">{errors.anniversaryDate.message}</p>}
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="relation">Relation</Label>
@@ -112,7 +165,7 @@ export function FamilyMemberFormModal({
                       <SelectTrigger id="relation">
                         <SelectValue placeholder="Select a relation" />
                       </SelectTrigger>
-                      <SelectContent position="popper" side="top">
+                      <SelectContent>
                         {RELATION_OPTIONS.map(option => (
                            <SelectItem key={option} value={option}>{option}</SelectItem>
                         ))}
@@ -122,12 +175,14 @@ export function FamilyMemberFormModal({
                 />
                 {errors.relation && <p className="text-sm text-destructive">{errors.relation.message}</p>}
               </div>
+              <div className="flex flex-col gap-1.5 md:col-span-2">
+                <Label htmlFor="address">Address</Label>
+                <Textarea id="address" {...register('address')} disabled={isSaving} />
+                {errors.address && <p className="text-sm text-destructive">{errors.address.message}</p>}
+              </div>
           </div>
         
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6">
-                <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
-                    Cancel
-                </Button>
+            <div className="flex justify-end pt-6">
                 <Button type="submit" disabled={isSaving}>
                     {isSaving ? (
                     <>

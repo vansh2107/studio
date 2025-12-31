@@ -18,10 +18,17 @@ export interface RoleData {
 
 export interface FamilyMember {
   id: string;
-  name: string;
-  relation: string;
   customerId: string;
+  firstName: string;
+  lastName: string;
+  relation: string;
+  phoneNumber: string;
+  emailId: string;
+  dateOfBirth: string; // YYYY-MM-DD
+  address: string;
+  anniversaryDate?: string; // YYYY-MM-DD
 }
+
 
 export interface Asset {
   id: string;
