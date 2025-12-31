@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -13,29 +14,37 @@ type Message = {
   sender: 'user' | 'bot';
 };
 
-// More robust parser
-const parseTaskCommand = (input: string): Partial<Omit<Task, 'id'>> | null => {
-  const createMatch = input.match(/^create task for (.+?) for (.+?)(?: by (.+))?$/i);
-  if (createMatch) {
-    const [, person, task, dueDate] = createMatch;
-    return {
-      person: person.trim(),
-      task: task.trim(),
-      dueDate: dueDate ? dueDate.trim() : 'Not specified',
-    };
-  }
+// More robust parser for "create task for NAME to TASK by DATE"
+const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; error?: string } => {
+    const cleanInput = input.toLowerCase().trim();
 
-  const addMatch = input.match(/^add task (.+?) for (.+?)(?: by (.+))?$/i);
-    if (addMatch) {
-        const [, task, person, dueDate] = addMatch;
-        return {
+    if (!cleanInput.startsWith('create a task for')) {
+        return { error: "Try: create a task for NAME to TASK by DATE/TIME" };
+    }
+
+    // Regex to capture name, task, and optional due date
+    const match = cleanInput.match(/^create a task for (.+?) to (.+?)(?: by (.+))?$/);
+
+    if (!match) {
+        if (cleanInput.match(/^create a task for (.+?) to\s*$/)) {
+            return { error: "Please specify what the task is." };
+        }
+        return { error: "Try: create a task for NAME to TASK by DATE/TIME" };
+    }
+
+    const [, person, task, dueDate] = match;
+
+    if (!person || !task) {
+        return { error: "Try: create a task for NAME to TASK by DATE/TIME" };
+    }
+
+    return {
+        task: {
             person: person.trim(),
             task: task.trim(),
             dueDate: dueDate ? dueDate.trim() : 'Not specified',
-        };
-    }
-    
-  return null;
+        }
+    };
 };
 
 
@@ -64,7 +73,7 @@ export function Chatbot() {
     };
     
     const newMessages = [...messages, userMessage];
-    const taskDetails = parseTaskCommand(inputValue);
+    const { task: taskDetails, error } = parseTaskCommand(inputValue);
     
     if (taskDetails) {
         const fullTask: Task = {
@@ -85,7 +94,7 @@ export function Chatbot() {
     } else {
         const botResponse: Message = {
             id: Date.now() + 1,
-            text: "Sorry — I couldn’t understand. Please use:\nCreate task for NAME for TASK by DATE TIME",
+            text: error || "Sorry — I couldn’t understand that.",
             sender: 'bot'
         };
         newMessages.push(botResponse);
@@ -142,7 +151,7 @@ export function Chatbot() {
               <CardFooter className="p-4 border-t">
                 <div className="flex w-full items-center space-x-2">
                   <Input
-                    placeholder="Create task for..."
+                    placeholder="Create a task for..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}

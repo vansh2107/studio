@@ -24,17 +24,19 @@ type TaskFormData = z.infer<typeof taskSchema>;
 
 interface CreateTaskModalProps {
   onClose: () => void;
-  onSave: (task: Omit<Task, 'id'>) => void;
+  onSave: (task: Omit<Task, 'id'> & { id?: string }) => void;
+  task?: Task | null;
 }
 
-export function CreateTaskModal({ onClose, onSave }: CreateTaskModalProps) {
+export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps) {
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const isEditMode = !!task;
 
   const {
     register,
     handleSubmit,
-    setValue,
+    reset,
     formState: { errors },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -46,14 +48,27 @@ export function CreateTaskModal({ onClose, onSave }: CreateTaskModalProps) {
     },
   });
 
+  useEffect(() => {
+    if (task) {
+      reset(task);
+    } else {
+      reset({
+        person: '',
+        task: '',
+        dueDate: '',
+        description: '',
+      });
+    }
+  }, [task, reset]);
+
   const processSave = (data: TaskFormData) => {
     setIsSaving(true);
     // Simulate save
     setTimeout(() => {
-      onSave(data);
+      onSave({ ...data, id: task?.id });
       toast({
-        title: 'Task Created',
-        description: `The task "${data.task}" has been successfully created.`,
+        title: isEditMode ? 'Task Updated' : 'Task Created',
+        description: `The task "${data.task}" has been successfully saved.`,
       });
       setIsSaving(false);
     }, 500);
@@ -65,9 +80,11 @@ export function CreateTaskModal({ onClose, onSave }: CreateTaskModalProps) {
         <X className="h-4 w-4" />
       </Button>
       <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
-        <h2 className="text-lg font-semibold">Create Task Manually</h2>
+        <h2 className="text-lg font-semibold">
+            {isEditMode ? 'Edit Task' : 'Create Task Manually'}
+        </h2>
         <p className="text-sm text-muted-foreground">
-          Fill in the details to create a new task.
+            {isEditMode ? 'Update the details for this task.' : 'Fill in the details to create a new task.'}
         </p>
       </div>
 
@@ -101,7 +118,7 @@ export function CreateTaskModal({ onClose, onSave }: CreateTaskModalProps) {
             Cancel
           </Button>
           <Button type="submit" disabled={isSaving}>
-            {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : 'Save Task'}
+            {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : isEditMode ? 'Save Changes' : 'Save Task'}
           </Button>
         </div>
       </form>

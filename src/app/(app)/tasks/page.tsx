@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -13,14 +14,16 @@ import {
 import { useTasks } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Edit } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import { Task } from '@/hooks/use-tasks';
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function TasksPage() {
-  const { tasks, addTask } = useTasks();
+  const { tasks, addTask, updateTask } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const getBadgeVariant = (dueDate: string) => {
     const lowerCaseDate = dueDate.toLowerCase();
@@ -29,13 +32,32 @@ export default function TasksPage() {
     return 'outline';
   };
 
-  const handleSaveTask = (task: Omit<Task, 'id'>) => {
-    addTask({ ...task, id: `task-${Date.now()}` });
+  const handleOpenCreateModal = () => {
+    setEditingTask(null);
+    setIsModalOpen(true);
+  };
+  
+  const handleOpenEditModal = (task: Task) => {
+    setEditingTask(task);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
     setIsModalOpen(false);
+    setEditingTask(null);
+  };
+
+  const handleSaveTask = (task: Omit<Task, 'id'> & { id?: string }) => {
+    if (task.id) {
+        updateTask(task.id, task);
+    } else {
+        addTask({ ...task, id: `task-${Date.now()}` });
+    }
+    handleCloseModal();
   };
 
   return (
-    <>
+    <TooltipProvider>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold font-headline">Task Management</h1>
@@ -59,6 +81,7 @@ export default function TasksPage() {
                   <TableHead>Task</TableHead>
                   <TableHead>Due</TableHead>
                   <TableHead>Description</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -73,11 +96,23 @@ export default function TasksPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>{task.description || '—'}</TableCell>
+                      <TableCell className="text-right">
+                         <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)}>
+                                    <Edit className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Edit Task</p>
+                            </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       No tasks created yet. Try the chatbot or the '+' button!
                     </TableCell>
                   </TableRow>
@@ -90,18 +125,19 @@ export default function TasksPage() {
 
       <Button
         className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 h-14 w-14 rounded-full shadow-lg"
-        onClick={() => setIsModalOpen(true)}
+        onClick={handleOpenCreateModal}
       >
         <Plus className="h-6 w-6" />
         <span className="sr-only">Create Task Manually</span>
       </Button>
 
-      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+      <Modal open={isModalOpen} onClose={handleCloseModal}>
         <CreateTaskModal
-          onClose={() => setIsModalOpen(false)}
+          task={editingTask}
+          onClose={handleCloseModal}
           onSave={handleSaveTask}
         />
       </Modal>
-    </>
+    </TooltipProvider>
   );
 }
