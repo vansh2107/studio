@@ -43,3 +43,19 @@ export const DOC_CATEGORIES = [
   'Life Insurance',
   'Term Insurance',
 ];
+
+// New constant for the task categories in the specified order
+export const TASK_CATEGORIES = [
+  'Mutual Funds',
+  'Life Insurance',
+  'General Insurance',
+  'Stocks',
+  'Physical Shares',
+  'Bonds',
+  'PPF',
+  'FDs',
+  'NPS',
+  'LAS'
+] as const;
+
+export type TaskCategory = typeof TASK_CATEGORIES[number];

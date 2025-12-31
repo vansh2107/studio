@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { MessageSquare, Send, X, Bot } from 'lucide-react';
 import { useTasks, Task } from '@/hooks/use-tasks';
 import { AnimatePresence, motion } from 'framer-motion';
+import { getClientsForAssociate, getAllClients, getAssetsForClient } from '@/lib/mock-data';
+import { ASSET_CATEGORIES } from '@/lib/constants';
 
 type Message = {
   id: number;
@@ -16,28 +18,40 @@ type Message = {
 
 
 const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; error?: string } => {
-    const cleanInput = input.toLowerCase().trim();
-
-    if (!cleanInput.startsWith('create task for')) {
-        return { error: 'Please use:\nCreate task for CLIENT for CATEGORY assigned to RM by DATE which is STATUS' };
-    }
-    
+    const cleanInput = input.trim();
     const regex = /create task for (.*?) for (.*?) assigned to (.*?) by (.*?) which is (.*)/i;
-    const match = input.match(regex);
+    const match = cleanInput.match(regex);
 
     if (!match) {
         return { error: 'Please use:\nCreate task for CLIENT for CATEGORY assigned to RM by DATE which is STATUS' };
     }
     
-    const [, clientName, category, rmName, dueDate, status] = match;
+    const [, clientName, category, rmName, dueDate, status] = match.map(m => m.trim());
+    
+    // --- New Validation Logic ---
+    const allClients = getAllClients();
+    const client = allClients.find(c => c.name.toLowerCase() === clientName.toLowerCase());
+
+    if (!client) {
+         return { error: `Client "${clientName}" not found.` };
+    }
+
+    const clientAssets = getAssetsForClient(client.id);
+    const clientCategories = new Set(clientAssets.map(a => a.category));
+
+    if (!clientCategories.has(category as any)) {
+        return { error: `This task category is not applicable for this client.` };
+    }
+    // --- End Validation Logic ---
+
 
     return {
         task: {
-            clientName: clientName?.trim() || 'Not specified',
-            category: category?.trim() || 'Not specified',
-            rmName: rmName?.trim() || 'Not specified',
-            dueDate: dueDate?.trim() || 'Not specified',
-            status: status?.trim() || 'Not specified',
+            clientName: clientName || 'Not specified',
+            category: category || 'Not specified',
+            rmName: rmName || 'Not specified',
+            dueDate: dueDate || 'Not specified',
+            status: status || 'Not specified',
         }
     };
 };
@@ -78,7 +92,7 @@ export function Chatbot() {
             rmName: taskDetails.rmName!,
             dueDate: taskDetails.dueDate!,
             status: taskDetails.status!,
-            description: `Created via chatbot: "${inputValue}"`
+            description: `Created via chatbot`
         };
         addTask(fullTask);
 
