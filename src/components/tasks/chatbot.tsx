@@ -13,37 +13,31 @@ type Message = {
   sender: 'user' | 'bot';
 };
 
-// Simple parser logic
-const parseTaskCommand = (input: string): Partial<Task> | null => {
-  const lowerInput = input.toLowerCase();
-  if (!lowerInput.includes('task for')) {
-    return null;
+// More robust parser
+const parseTaskCommand = (input: string): Partial<Omit<Task, 'id'>> | null => {
+  const createMatch = input.match(/^create task for (.+?) for (.+?)(?: by (.+))?$/i);
+  if (createMatch) {
+    const [, person, task, dueDate] = createMatch;
+    return {
+      person: person.trim(),
+      task: task.trim(),
+      dueDate: dueDate ? dueDate.trim() : 'Not specified',
+    };
   }
 
-  const personMatch = lowerInput.match(/for\s+([a-z]+)/i);
-  const person = personMatch ? personMatch[1].charAt(0).toUpperCase() + personMatch[1].slice(1) : null;
-
-  const titleMatch = lowerInput.match(/to\s+(.+?)(?=\s+by\s+|\s+in\s+|\s+next\s+|\s+today\s*|\s+tomorrow\s*|$)/i);
-  const title = titleMatch ? titleMatch[1].trim() : null;
-  
-  const tomorrowMatch = lowerInput.match(/\b(tomorrow)\b/i);
-  const todayMatch = lowerInput.match(/\b(today)\b/i);
-  const nextWeekMatch = lowerInput.match(/next\s+week/i);
-  const nextMonthMatch = lowerInput.match(/next\s+month/i);
-
-  let dueDate = 'Not specified';
-  if(tomorrowMatch) dueDate = 'Tomorrow';
-  else if(todayMatch) dueDate = 'Today';
-  else if(nextWeekMatch) dueDate = 'Next Week';
-  else if(nextMonthMatch) dueDate = 'Next Month';
-
-
-  if (person && title) {
-    return { person, title, dueDate };
-  }
-
+  const addMatch = input.match(/^add task (.+?) for (.+?)(?: by (.+))?$/i);
+    if (addMatch) {
+        const [, task, person, dueDate] = addMatch;
+        return {
+            person: person.trim(),
+            task: task.trim(),
+            dueDate: dueDate ? dueDate.trim() : 'Not specified',
+        };
+    }
+    
   return null;
 };
+
 
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -76,21 +70,22 @@ export function Chatbot() {
         const fullTask: Task = {
             id: `task-${Date.now()}`,
             person: taskDetails.person!,
-            title: taskDetails.title!,
+            task: taskDetails.task!,
             dueDate: taskDetails.dueDate!,
+            description: `Created via chatbot: "${inputValue}"`
         };
         addTask(fullTask);
 
         const botResponse: Message = {
             id: Date.now() + 1,
-            text: `Task created for ${fullTask.person}: ${fullTask.title} (Due: ${fullTask.dueDate})`,
+            text: `Task created for ${fullTask.person}: ${fullTask.task} (Due: ${fullTask.dueDate})`,
             sender: 'bot'
         };
         newMessages.push(botResponse);
     } else {
         const botResponse: Message = {
             id: Date.now() + 1,
-            text: "Sorry, I didn't understand that. Please use the format: 'create a task for [Name] to [do something] by [time]'.",
+            text: "Sorry — I couldn’t understand. Please use:\nCreate task for NAME for TASK by DATE TIME",
             sender: 'bot'
         };
         newMessages.push(botResponse);
@@ -132,7 +127,7 @@ export function Chatbot() {
                   {messages.map((message) => (
                     <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div
-                        className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                        className={`max-w-[80%] rounded-lg px-4 py-2 whitespace-pre-wrap ${
                           message.sender === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
@@ -147,7 +142,7 @@ export function Chatbot() {
               <CardFooter className="p-4 border-t">
                 <div className="flex w-full items-center space-x-2">
                   <Input
-                    placeholder="Create a task for..."
+                    placeholder="Create task for..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}

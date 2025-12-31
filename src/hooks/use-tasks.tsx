@@ -5,8 +5,9 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 export interface Task {
   id: string;
   person: string;
-  title: string;
+  task: string;
   dueDate: string;
+  description?: string;
 }
 
 interface TaskContextType {
