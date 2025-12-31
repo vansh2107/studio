@@ -10,16 +10,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Eye, Edit, Trash2, PlusCircle } from 'lucide-react';
+import { Eye, Edit, Trash2, LogIn, PlusCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FamilyFormModal } from '@/components/customers/family-form-modal';
 import { ViewFamilyModal } from '@/components/customers/view-family-modal';
 import { FamilyMemberFormModal } from '@/components/customers/family-member-form-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Family, FamilyMember } from '@/lib/types';
+import { Family, FamilyMember, User } from '@/lib/types';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { families as mockFamilies, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
+import { families as mockFamilies, familyMembers as mockFamilyMembers, users as mockUsers } from '@/lib/mock-data';
 import Modal from '@/components/ui/Modal';
 import {
   AlertDialogHeader,
@@ -39,7 +39,7 @@ import {
 type ActiveModal = 'form' | 'view' | 'delete' | 'member-form' | null;
 
 export default function CustomersPage() {
-  const { hasPermission } = useCurrentUser();
+  const { hasPermission, canImpersonate, impersonate } = useCurrentUser();
   const { toast } = useToast();
 
   const [families, setFamilies] = useState<Family[]>(mockFamilies);
@@ -158,6 +158,11 @@ export default function CustomersPage() {
       return dateString;
     }
   };
+  
+  const findCustomerUser = (family: Family): User | undefined => {
+      // This is a mock lookup. In a real app this might be a property on the family or a DB query.
+      return mockUsers.find(u => u.role === 'CUSTOMER' && u.email === family.emailId);
+  }
 
   const canCreate = hasPermission('CUSTOMER', 'create');
   const canUpdate = hasPermission('CUSTOMER', 'update');
@@ -203,49 +208,62 @@ export default function CustomersPage() {
                     </TableRow>
                   ))
                 ) : families.length > 0 ? (
-                  families.map(family => (
-                    <TableRow key={family.id}>
-                      <TableCell className="font-medium">{family.firstName}</TableCell>
-                      <TableCell>{family.lastName}</TableCell>
-                      <TableCell>{family.phoneNumber}</TableCell>
-                      <TableCell>{family.emailId}</TableCell>
-                      <TableCell>{formatDate(family.dateOfBirth)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {canView && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => handleView(family)} aria-label="View">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent><p>View</p></TooltipContent>
-                            </Tooltip>
-                          )}
-                          {canUpdate && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => handleEdit(family)} aria-label="Edit">
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent><p>Edit</p></TooltipContent>
-                            </Tooltip>
-                          )}
-                          {canDelete && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80" onClick={() => handleDeleteTrigger(family)} aria-label="Delete">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent><p>Delete</p></TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  families.map(family => {
+                    const customerUser = findCustomerUser(family);
+                    return (
+                        <TableRow key={family.id}>
+                          <TableCell className="font-medium">{family.firstName}</TableCell>
+                          <TableCell>{family.lastName}</TableCell>
+                          <TableCell>{family.phoneNumber}</TableCell>
+                          <TableCell>{family.emailId}</TableCell>
+                          <TableCell>{formatDate(family.dateOfBirth)}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                               {customerUser && canImpersonate(customerUser) && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" onClick={() => impersonate(customerUser.id)} aria-label="Impersonate">
+                                            <LogIn className="h-4 w-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent><p>Impersonate</p></TooltipContent>
+                                </Tooltip>
+                              )}
+                              {canView && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={() => handleView(family)} aria-label="View">
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent><p>View</p></TooltipContent>
+                                </Tooltip>
+                              )}
+                              {canUpdate && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(family)} aria-label="Edit">
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent><p>Edit</p></TooltipContent>
+                                </Tooltip>
+                              )}
+                              {canDelete && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80" onClick={() => handleDeleteTrigger(family)} aria-label="Delete">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent><p>Delete</p></TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                    )
+                  })
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
