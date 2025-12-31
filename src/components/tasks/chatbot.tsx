@@ -14,35 +14,30 @@ type Message = {
   sender: 'user' | 'bot';
 };
 
-// More robust parser for "create task for NAME to TASK by DATE"
+
 const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; error?: string } => {
     const cleanInput = input.toLowerCase().trim();
 
-    if (!cleanInput.startsWith('create a task for')) {
-        return { error: "Try: create a task for NAME to TASK by DATE/TIME" };
+    if (!cleanInput.startsWith('create task for')) {
+        return { error: 'Please use:\nCreate task for CLIENT for CATEGORY assigned to RM by DATE which is STATUS' };
     }
-
-    // Regex to capture name, task, and optional due date
-    const match = cleanInput.match(/^create a task for (.+?) to (.+?)(?: by (.+))?$/);
+    
+    const regex = /create task for (.*?) for (.*?) assigned to (.*?) by (.*?) which is (.*)/i;
+    const match = input.match(regex);
 
     if (!match) {
-        if (cleanInput.match(/^create a task for (.+?) to\s*$/)) {
-            return { error: "Please specify what the task is." };
-        }
-        return { error: "Try: create a task for NAME to TASK by DATE/TIME" };
+        return { error: 'Please use:\nCreate task for CLIENT for CATEGORY assigned to RM by DATE which is STATUS' };
     }
-
-    const [, person, task, dueDate] = match;
-
-    if (!person || !task) {
-        return { error: "Try: create a task for NAME to TASK by DATE/TIME" };
-    }
+    
+    const [, clientName, category, rmName, dueDate, status] = match;
 
     return {
         task: {
-            person: person.trim(),
-            task: task.trim(),
-            dueDate: dueDate ? dueDate.trim() : 'Not specified',
+            clientName: clientName?.trim() || 'Not specified',
+            category: category?.trim() || 'Not specified',
+            rmName: rmName?.trim() || 'Not specified',
+            dueDate: dueDate?.trim() || 'Not specified',
+            status: status?.trim() || 'Not specified',
         }
     };
 };
@@ -78,16 +73,18 @@ export function Chatbot() {
     if (taskDetails) {
         const fullTask: Task = {
             id: `task-${Date.now()}`,
-            person: taskDetails.person!,
-            task: taskDetails.task!,
+            clientName: taskDetails.clientName!,
+            category: taskDetails.category!,
+            rmName: taskDetails.rmName!,
             dueDate: taskDetails.dueDate!,
+            status: taskDetails.status!,
             description: `Created via chatbot: "${inputValue}"`
         };
         addTask(fullTask);
 
         const botResponse: Message = {
             id: Date.now() + 1,
-            text: `Task created for ${fullTask.person}: ${fullTask.task} (Due: ${fullTask.dueDate})`,
+            text: `Task created for ${fullTask.clientName} under ${fullTask.category}, assigned to ${fullTask.rmName} (Due: ${fullTask.dueDate}, Status: ${fullTask.status})`,
             sender: 'bot'
         };
         newMessages.push(botResponse);
@@ -151,7 +148,7 @@ export function Chatbot() {
               <CardFooter className="p-4 border-t">
                 <div className="flex w-full items-center space-x-2">
                   <Input
-                    placeholder="Create a task for..."
+                    placeholder="Create task for..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}

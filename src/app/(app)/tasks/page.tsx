@@ -25,10 +25,11 @@ export default function TasksPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  const getBadgeVariant = (dueDate: string) => {
-    const lowerCaseDate = dueDate.toLowerCase();
-    if (lowerCaseDate.includes('today')) return 'destructive';
-    if (lowerCaseDate.includes('tomorrow')) return 'secondary';
+  const getStatusBadgeVariant = (status: string) => {
+    const lowerCaseStatus = status.toLowerCase();
+    if (lowerCaseStatus.includes('completed')) return 'default';
+    if (lowerCaseStatus.includes('pending')) return 'destructive';
+    if (lowerCaseStatus.includes('in progress')) return 'secondary';
     return 'outline';
   };
 
@@ -51,7 +52,7 @@ export default function TasksPage() {
     if (task.id) {
         updateTask(task.id, task);
     } else {
-        addTask({ ...task, id: `task-${Date.now()}` });
+        addTask({ ...task, id: `task-${Date.now()}` } as Task);
     }
     handleCloseModal();
   };
@@ -77,9 +78,11 @@ export default function TasksPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Person</TableHead>
-                  <TableHead>Task</TableHead>
-                  <TableHead>Due</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>RM</TableHead>
+                  <TableHead>Due Date</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -88,11 +91,13 @@ export default function TasksPage() {
                 {tasks.length > 0 ? (
                   tasks.map((task) => (
                     <TableRow key={task.id}>
-                      <TableCell className="font-medium">{task.person}</TableCell>
-                      <TableCell>{task.task}</TableCell>
+                      <TableCell className="font-medium">{task.clientName}</TableCell>
+                      <TableCell>{task.category}</TableCell>
+                      <TableCell>{task.rmName}</TableCell>
+                      <TableCell>{task.dueDate}</TableCell>
                       <TableCell>
-                        <Badge variant={getBadgeVariant(task.dueDate)}>
-                          {task.dueDate}
+                        <Badge variant={getStatusBadgeVariant(task.status)}>
+                          {task.status}
                         </Badge>
                       </TableCell>
                       <TableCell>{task.description || '—'}</TableCell>
@@ -112,7 +117,7 @@ export default function TasksPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       No tasks created yet. Try the chatbot or the '+' button!
                     </TableCell>
                   </TableRow>

@@ -5,9 +5,11 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface Task {
   id: string;
-  person: string;
-  task: string;
+  clientName: string;
+  category: string;
+  rmName: string;
   dueDate: string;
+  status: string;
   description?: string;
 }
 

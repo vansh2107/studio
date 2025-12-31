@@ -14,9 +14,11 @@ import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const taskSchema = z.object({
-  person: z.string().min(1, 'Person name is required'),
-  task: z.string().min(1, 'Task is required'),
+  clientName: z.string().min(1, 'Client name is required'),
+  category: z.string().min(1, 'Category is required'),
+  rmName: z.string().min(1, 'RM name is required'),
   dueDate: z.string().min(1, 'Due date is required'),
+  status: z.string().min(1, 'Status is required'),
   description: z.string().optional(),
 });
 
@@ -41,9 +43,11 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      person: '',
-      task: '',
+      clientName: '',
+      category: '',
+      rmName: '',
       dueDate: '',
+      status: '',
       description: '',
     },
   });
@@ -53,9 +57,11 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       reset(task);
     } else {
       reset({
-        person: '',
-        task: '',
+        clientName: '',
+        category: '',
+        rmName: '',
         dueDate: '',
+        status: '',
         description: '',
       });
     }
@@ -68,14 +74,14 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       onSave({ ...data, id: task?.id });
       toast({
         title: isEditMode ? 'Task Updated' : 'Task Created',
-        description: `The task "${data.task}" has been successfully saved.`,
+        description: `The task for "${data.clientName}" has been successfully saved.`,
       });
       setIsSaving(false);
     }, 500);
   };
 
   return (
-    <div className="relative p-1">
+    <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
       <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0">
         <X className="h-4 w-4" />
       </Button>
@@ -91,14 +97,24 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       <form onSubmit={handleSubmit(processSave)} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-                <Label htmlFor="person">Person</Label>
-                <Input id="person" {...register('person')} />
-                {errors.person && <p className="text-sm text-destructive">{errors.person.message}</p>}
+                <Label htmlFor="clientName">Client Name</Label>
+                <Input id="clientName" {...register('clientName')} />
+                {errors.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
             </div>
             <div className="space-y-1">
-                <Label htmlFor="task">Task</Label>
-                <Input id="task" {...register('task')} />
-                {errors.task && <p className="text-sm text-destructive">{errors.task.message}</p>}
+                <Label htmlFor="category">Category</Label>
+                <Input id="category" {...register('category')} />
+                {errors.category && <p className="text-sm text-destructive">{errors.category.message}</p>}
+            </div>
+             <div className="space-y-1">
+                <Label htmlFor="rmName">RM Name</Label>
+                <Input id="rmName" {...register('rmName')} />
+                {errors.rmName && <p className="text-sm text-destructive">{errors.rmName.message}</p>}
+            </div>
+            <div className="space-y-1">
+                <Label htmlFor="status">Status</Label>
+                <Input id="status" {...register('status')} />
+                {errors.status && <p className="text-sm text-destructive">{errors.status.message}</p>}
             </div>
         </div>
 
