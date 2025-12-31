@@ -1,6 +1,8 @@
 'use client';
 
 import { AppLayout } from '@/components/layout/app-layout';
+import { Chatbot } from '@/components/tasks/chatbot';
+import { TaskProvider } from '@/hooks/use-tasks';
 
 export default function DashboardLayout({
   children,
@@ -8,6 +10,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AppLayout>{children}</AppLayout>
+    <TaskProvider>
+      <AppLayout>{children}</AppLayout>
+      <Chatbot />
+    </TaskProvider>
   );
 }
