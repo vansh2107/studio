@@ -130,7 +130,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         <SelectTrigger id="category">
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           {TASK_CATEGORIES.map(cat => {
                             const isEnabled = availableCategories.has(cat as any) || isEditMode;
                             return (
