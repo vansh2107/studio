@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { getFamilyMembersForCustomer } from '@/lib/mock-data';
 
 interface ViewFamilyModalProps {
   onClose: () => void;
@@ -94,7 +95,7 @@ const formatDate = (dateString?: string) => {
 export function ViewFamilyModal({
   onClose,
   family,
-  familyMembers,
+  familyMembers: initialFamilyMembers,
   onAddMember,
   onEditMember,
   onDeleteMember,
@@ -102,6 +103,9 @@ export function ViewFamilyModal({
 
   const { toast } = useToast();
   const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(null);
+
+  // Since we are now managing members inside this view, let's use state
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(getFamilyMembersForCustomer(family.id));
 
   const handleDelete = (member: FamilyMember) => {
     // In a real app with assets, you would check here.
@@ -120,6 +124,8 @@ export function ViewFamilyModal({
   const confirmDelete = () => {
     if(memberToDelete) {
       onDeleteMember(memberToDelete.id);
+      // Also update local state to reflect deletion
+      setFamilyMembers(prev => prev.filter(m => m.id !== memberToDelete.id));
       setMemberToDelete(null);
     }
   }
@@ -251,3 +257,5 @@ export function ViewFamilyModal({
     </div>
   );
 }
+
+    

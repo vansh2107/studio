@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -161,7 +162,7 @@ export default function CustomersPage() {
   
   const findCustomerUser = (family: Family): User | undefined => {
       // This is a mock lookup. In a real app this might be a property on the family or a DB query.
-      return mockUsers.find(u => u.role === 'CUSTOMER' && u.emailId === family.emailId);
+      return mockUsers.find(u => u.role === 'CUSTOMER' && u.name.toLowerCase().includes(family.lastName.toLowerCase()));
   }
 
   const canCreate = hasPermission('CUSTOMER', 'create');
@@ -223,17 +224,17 @@ export default function CustomersPage() {
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="ghost" size="icon" onClick={() => impersonate(customerUser.id)} aria-label="Impersonate">
-                                            <LogIn className="h-4 w-4" />
+                                            <LogIn className="h-4 w-4 text-blue-500 hover:text-blue-400" />
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent><p>Impersonate</p></TooltipContent>
+                                    <TooltipContent><p>Impersonate Customer</p></TooltipContent>
                                 </Tooltip>
                               )}
                               {canView && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <Button variant="ghost" size="icon" onClick={() => handleView(family)} aria-label="View">
-                                      <Eye className="h-4 w-4" />
+                                      <Eye className="h-4 w-4 hover:text-blue-500" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent><p>View</p></TooltipContent>
@@ -243,7 +244,7 @@ export default function CustomersPage() {
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <Button variant="ghost" size="icon" onClick={() => handleEdit(family)} aria-label="Edit">
-                                      <Edit className="h-4 w-4" />
+                                      <Edit className="h-4 w-4 hover:text-yellow-500" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent><p>Edit</p></TooltipContent>
@@ -252,7 +253,7 @@ export default function CustomersPage() {
                               {canDelete && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80" onClick={() => handleDeleteTrigger(family)} aria-label="Delete">
+                                    <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => handleDeleteTrigger(family)} aria-label="Delete">
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
@@ -327,3 +328,5 @@ export default function CustomersPage() {
     </TooltipProvider>
   );
 }
+
+    

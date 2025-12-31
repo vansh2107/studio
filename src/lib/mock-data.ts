@@ -1,3 +1,4 @@
+
 import { User, RoleData, FamilyMember, Asset, Document, Family } from './types';
 import { PERMISSIONS, DOC_CATEGORIES, ROLES, PERMISSION_MODULES, Permissions } from './constants';
 import { PlaceHolderImages } from './placeholder-images';
@@ -17,11 +18,11 @@ export const users: User[] = [
     { id: 'user-as-2', name: 'Asher Socien', email: 'associate2@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[4] },
     { id: 'user-as-3', name: 'Ashley C. Ociat', email: 'associate3@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[5] },
     
-    { id: 'user-c-1', name: 'The Mehta Family', email: 'customer1@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[6] },
-    { id: 'user-c-2', name: 'The Sharma Household', email: 'customer2@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[7] },
-    { id: 'user-c-3', name: 'The Patel Clan', email: 'customer3@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[8] },
-    { id: 'user-c-4', name: 'The Singh Estate', email: 'customer4@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[9] },
-    { id: 'user-c-5', name: 'The Kumar Group', email: 'customer5@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[10] },
+    { id: 'user-c-1', name: 'Rahul Mehta', email: 'customer1@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[6] },
+    { id: 'user-c-2', name: 'Priya Sharma', email: 'customer2@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[7] },
+    { id: 'user-c-3', name: 'Mehul Patel', email: 'customer3@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[8] },
+    { id: 'user-c-4', name: 'Harpreet Singh', email: 'customer4@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[9] },
+    { id: 'user-c-5', name: 'Suresh Kumar', email: 'customer5@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[10] },
     { id: 'user-c-6', name: 'The Reddy Enterprise', email: 'customer6@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[11] },
     { id: 'user-c-7', name: 'The Das LLC', email: 'customer7@demo.app', password: 'Customer@123', role: 'CUSTOMER', avatarUrl: avatarUrls[12] },
 ];
@@ -69,13 +70,13 @@ export const userMappings: Record<string, string[]> = {
 };
 
 export const familyMembers: FamilyMember[] = [
-  { id: 'fm-1-1', customerId: 'user-c-1', name: 'Rohan Sharma', relation: 'Self' },
-  { id: 'fm-1-2', customerId: 'user-c-1', name: 'Priya Sharma', relation: 'Spouse' },
-  { id: 'fm-1-3', customerId: 'user-c-1', name: 'Aarav Sharma', relation: 'Son' },
-  { id: 'fm-2-1', customerId: 'user-c-2', name: 'Anjali Gupta', relation: 'Self' },
-  { id: 'fm-3-1', customerId: 'user-c-3', name: 'Mehul Patel', relation: 'Self' },
-  { id: 'fm-3-2', customerId: 'user-c-3', name: 'Sonal Patel', relation: 'Spouse' },
-  { id: 'fm-4-1', customerId: 'user-c-4', name: 'Harpreet Singh', relation: 'Self' },
+  { id: 'fm-1-1', customerId: 'F001', name: 'Rahul Mehta', relation: 'Self' },
+  { id: 'fm-1-2', customerId: 'F001', name: 'Priya Mehta', relation: 'Spouse' },
+  { id: 'fm-1-3', customerId: 'F001', name: 'Aarav Mehta', relation: 'Son' },
+  { id: 'fm-2-1', customerId: 'F002', name: 'Priya Sharma', relation: 'Self' },
+  { id: 'fm-3-1', customerId: 'F003', name: 'Mehul Patel', relation: 'Self' },
+  { id: 'fm-3-2', customerId: 'F003', name: 'Sonal Patel', relation: 'Spouse' },
+  { id: 'fm-4-1', customerId: 'F004', name: 'Harpreet Singh', relation: 'Self' },
 ];
 
 export const assets: Asset[] = [
@@ -151,8 +152,8 @@ export const getMappedCustomersForAssociate = (associateId: string): User[] => {
   return users.filter(u => customerIds.includes(u.id));
 };
 
-export const getFamilyMembersForCustomer = (customerId: string): FamilyMember[] => {
-  return familyMembers.filter(fm => fm.customerId === customerId);
+export const getFamilyMembersForCustomer = (familyId: string): FamilyMember[] => {
+  return familyMembers.filter(fm => fm.customerId === familyId);
 };
 
 export const getAssetsForCustomer = (customerId: string): Asset[] => {
@@ -164,3 +165,5 @@ export const getDocumentsForCustomer = (customerId: string): Document[] => {
 }
 
 export const getRoles = (): RoleData[] => ROLES.map(r => ({ id: r, name: r }));
+
+    
