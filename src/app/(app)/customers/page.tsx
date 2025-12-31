@@ -23,10 +23,13 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { getAllClients, familyMembers as mockFamilyMembers, users as mockUsers, getClientsForAssociate, getAssociatesForRM, getRMsForAdmin } from '@/lib/mock-data';
 import Modal from '@/components/ui/Modal';
 import {
+  AlertDialog,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
 import {
@@ -80,18 +83,24 @@ export default function CustomersPage() {
     
     const members: DisplayClient[] = familyMembers
         .filter(fm => clientsToShow.some(c => c.id === fm.clientId)) // only show members of visible clients
-        .map(fm => ({
-          ...fm,
-          name: `${fm.firstName} ${fm.lastName}`,
-          role: 'CUSTOMER',
-          associateId: clientsToShow.find(c => c.id === fm.clientId)?.associateId || '',
-          avatarUrl: '', // members don't have avatars in this model
-          isFamilyHead: false,
-          email: fm.emailId,
-        }));
+        .map(fm => {
+          const clientHead = clientsToShow.find(c => c.id === fm.clientId);
+          return {
+            ...fm,
+            name: `${fm.firstName} ${fm.lastName}`,
+            role: 'CUSTOMER',
+            associateId: clientHead?.associateId || '',
+            avatarUrl: '', // members don't have avatars in this model
+            isFamilyHead: false,
+            email: fm.emailId,
+            // Carry over necessary fields from head for display if needed
+            phoneNumber: fm.phoneNumber || clientHead?.phoneNumber || '',
+            dateOfBirth: fm.dateOfBirth || clientHead?.dateOfBirth || '',
+          }
+        });
         
     setLoading(false);
-    return [...heads, ...members];
+    return [...heads, ...members].sort((a,b) => a.lastName.localeCompare(b.lastName));
   }, [effectiveUser, familyMembers]);
 
   const filteredClients = useMemo(() => {
@@ -263,8 +272,9 @@ export default function CustomersPage() {
                     const customerUser = findCustomerUser(client);
                     const isHead = client.isFamilyHead;
                     
-                    // We need to cast to Client for some actions that only apply to heads
-                    const clientHead = isHead ? (client as Client) : getAllClients().find(c => c.id === (client as FamilyMember).clientId);
+                    const clientHead = isHead ? (client as Client) : allDisplayClients.find(c => c.isFamilyHead && c.id === (client as FamilyMember).clientId) as Client | undefined;
+                    
+                    if (!clientHead) return null; // Should not happen if data is consistent
 
                     return (
                         <TableRow key={client.id}>
@@ -279,17 +289,7 @@ export default function CustomersPage() {
                           <TableCell>{client.email}</TableCell>
                           <TableCell>{formatDate(client.dateOfBirth)}</TableCell>
                           <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                               {customerUser && canImpersonate(customerUser) && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={() => impersonate(customerUser.id)} aria-label="Impersonate Customer">
-                                            <LogIn className="h-4 w-4 text-blue-500 hover:text-blue-400" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>Impersonate Client</p></TooltipContent>
-                                </Tooltip>
-                              )}
+                            <div className="flex items-center justify-end gap-1">
                               {canView && clientHead && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -308,6 +308,16 @@ export default function CustomersPage() {
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent><p>Edit Family Head</p></TooltipContent>
+                                </Tooltip>
+                              )}
+                              {customerUser && canImpersonate(customerUser) && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" onClick={() => impersonate(customerUser.id)} aria-label="Impersonate Customer">
+                                            <LogIn className="h-4 w-4 text-blue-500 hover:text-blue-400" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent><p>Impersonate Client</p></TooltipContent>
                                 </Tooltip>
                               )}
                                {isHead && canDelete && (
@@ -369,7 +379,7 @@ export default function CustomersPage() {
             )}
 
             {activeModal === 'delete' && selectedClient && (
-              <div>
+               <div>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
@@ -377,8 +387,8 @@ export default function CustomersPage() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="mt-6">
-                  <Button variant="outline" onClick={handleCloseModal}>Cancel</Button>
-                  <Button variant="destructive" onClick={handleDeleteConfirm}>Delete</Button>
+                  <AlertDialogCancel onClick={handleCloseModal}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                 </AlertDialogFooter>
               </div>
             )}
@@ -388,3 +398,4 @@ export default function CustomersPage() {
     </TooltipProvider>
   );
 }
+
