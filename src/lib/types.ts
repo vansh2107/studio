@@ -52,6 +52,16 @@ export interface Client extends BaseUser {
 // A union type for any user in the system
 export type User = SuperAdmin | Admin | RelationshipManager | Associate | Client;
 
+// A display type for the unified customers list
+export type DisplayClient = (Omit<Client, 'role'> | Omit<FamilyMember, 'emailId'> & { email: string }) & {
+  isFamilyHead: boolean;
+  role: 'CUSTOMER';
+  name: string;
+  associateId: string;
+  avatarUrl: string;
+};
+
+
 export interface RoleData {
   id: string;
   name: Role;

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Client } from '@/lib/types';
-import { isValid, parseISO } from 'date-fns';
+import { isValid, parseISO, format } from 'date-fns';
 
 const clientSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -81,8 +81,8 @@ export function FamilyFormModal({
     if (family) {
       reset({
         ...family,
-        dateOfBirth: family.dateOfBirth,
-        anniversaryDate: family.anniversaryDate || '',
+        dateOfBirth: family.dateOfBirth ? format(parseISO(family.dateOfBirth), 'yyyy-MM-dd') : '',
+        anniversaryDate: family.anniversaryDate ? format(parseISO(family.anniversaryDate), 'yyyy-MM-dd') : '',
       });
       setPanFile(family.panFileName ? new File([], family.panFileName) : null);
       setAadhaarFile(family.aadhaarFileName ? new File([], family.aadhaarFileName) : null);
@@ -148,11 +148,6 @@ export function FamilyFormModal({
       };
 
       onSave(clientData);
-
-      toast({
-        title: family ? 'Client Updated' : 'Client Created',
-        description: `The client "${data.firstName} ${data.lastName}" has been successfully saved.`,
-      });
       
       setIsSaving(false);
     }, 1000);
@@ -207,7 +202,7 @@ export function FamilyFormModal({
         </Button>
         <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
           <h2 className="text-lg font-semibold leading-none tracking-tight">
-            {family ? 'Edit Client' : 'Create New Client'} - Step {step} / 2
+            {family ? 'Edit Family Head' : 'Create New Family Head'} - Step {step} / 2
           </h2>
         </div>
 

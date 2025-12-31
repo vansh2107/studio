@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -19,7 +18,7 @@ import { ViewFamilyModal } from '@/components/customers/view-family-modal';
 import { FamilyMemberFormModal } from '@/components/customers/family-member-form-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Client, FamilyMember, User } from '@/lib/types';
+import { Client, FamilyMember, User, DisplayClient } from '@/lib/types';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { getAllClients, familyMembers as mockFamilyMembers, users as mockUsers, getClientsForAssociate, getAssociatesForRM, getRMsForAdmin } from '@/lib/mock-data';
 import Modal from '@/components/ui/Modal';
@@ -36,6 +35,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 
 type ActiveModal = 'form' | 'view' | 'delete' | 'member-form' | null;
@@ -46,14 +47,16 @@ export default function CustomersPage() {
 
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
   const [loading, setLoading] = useState(true);
+  const [showOnlyHeads, setShowOnlyHeads] = useState(false);
 
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   
-    const clients = useMemo(() => {
+  const allDisplayClients: DisplayClient[] = useMemo(() => {
     if (!effectiveUser) return [];
     setLoading(true);
+    
     let clientsToShow: Client[] = [];
     switch (effectiveUser.role) {
       case 'SUPER_ADMIN':
@@ -72,9 +75,31 @@ export default function CustomersPage() {
         clientsToShow = getClientsForAssociate(effectiveUser.id);
         break;
     }
+    
+    const heads: DisplayClient[] = clientsToShow.map(c => ({ ...c, isFamilyHead: true }));
+    
+    const members: DisplayClient[] = familyMembers
+        .filter(fm => clientsToShow.some(c => c.id === fm.clientId)) // only show members of visible clients
+        .map(fm => ({
+          ...fm,
+          name: `${fm.firstName} ${fm.lastName}`,
+          role: 'CUSTOMER',
+          associateId: clientsToShow.find(c => c.id === fm.clientId)?.associateId || '',
+          avatarUrl: '', // members don't have avatars in this model
+          isFamilyHead: false,
+          email: fm.emailId,
+        }));
+        
     setLoading(false);
-    return clientsToShow;
-  }, [effectiveUser]);
+    return [...heads, ...members];
+  }, [effectiveUser, familyMembers]);
+
+  const filteredClients = useMemo(() => {
+    if (showOnlyHeads) {
+      return allDisplayClients.filter(c => c.isFamilyHead);
+    }
+    return allDisplayClients;
+  }, [allDisplayClients, showOnlyHeads]);
 
 
   const handleCloseModal = () => {
@@ -162,6 +187,7 @@ export default function CustomersPage() {
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     try {
+      // It might be a full ISO string or just YYYY-MM-DD
       const date = parseISO(dateString);
       if (!isNaN(date.getTime())) {
         return format(date, 'dd MMM yyyy');
@@ -172,7 +198,9 @@ export default function CustomersPage() {
     }
   };
   
-  const findCustomerUser = (client: Client): User | undefined => {
+  const findCustomerUser = (client: DisplayClient): User | undefined => {
+      // Can only impersonate family heads who are actual users
+      if (!client.isFamilyHead) return undefined;
       return mockUsers.find(u => u.id === client.id);
   }
 
@@ -189,9 +217,18 @@ export default function CustomersPage() {
           {canCreate && (
             <Button onClick={handleAddNew}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              New Client
+              New Family Head
             </Button>
           )}
+        </div>
+        
+        <div className="flex justify-end items-center space-x-2 py-4">
+            <Label htmlFor="show-heads-only">Show only Family Heads</Label>
+            <Switch
+                id="show-heads-only"
+                checked={showOnlyHeads}
+                onCheckedChange={setShowOnlyHeads}
+            />
         </div>
 
         <Card>
@@ -201,6 +238,7 @@ export default function CustomersPage() {
                 <TableRow>
                   <TableHead>First Name</TableHead>
                   <TableHead>Last Name</TableHead>
+                  <TableHead>Role</TableHead>
                   <TableHead>Phone Number</TableHead>
                   <TableHead>Email ID</TableHead>
                   <TableHead>Date of Birth</TableHead>
@@ -213,19 +251,30 @@ export default function CustomersPage() {
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell className="text-right"><Skeleton className="h-8 w-24" /></TableCell>
                     </TableRow>
                   ))
-                ) : clients.length > 0 ? (
-                  clients.map(client => {
+                ) : filteredClients.length > 0 ? (
+                  filteredClients.map(client => {
                     const customerUser = findCustomerUser(client);
+                    const isHead = client.isFamilyHead;
+                    
+                    // We need to cast to Client for some actions that only apply to heads
+                    const clientHead = isHead ? (client as Client) : getAllClients().find(c => c.id === (client as FamilyMember).clientId);
+
                     return (
                         <TableRow key={client.id}>
                           <TableCell className="font-medium">{client.firstName}</TableCell>
                           <TableCell>{client.lastName}</TableCell>
+                          <TableCell>
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${isHead ? 'bg-primary/20 text-primary' : 'bg-secondary text-secondary-foreground'}`}>
+                                {isHead ? 'Head' : (client as FamilyMember).relation}
+                            </span>
+                          </TableCell>
                           <TableCell>{client.phoneNumber}</TableCell>
                           <TableCell>{client.email}</TableCell>
                           <TableCell>{formatDate(client.dateOfBirth)}</TableCell>
@@ -241,34 +290,34 @@ export default function CustomersPage() {
                                     <TooltipContent><p>Impersonate Client</p></TooltipContent>
                                 </Tooltip>
                               )}
-                              {canView && (
+                              {canView && clientHead && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => handleView(client)} aria-label="View">
+                                    <Button variant="ghost" size="icon" onClick={() => handleView(clientHead)} aria-label="View">
                                       <Eye className="h-4 w-4 hover:text-blue-500" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent><p>View</p></TooltipContent>
+                                  <TooltipContent><p>View Family</p></TooltipContent>
                                 </Tooltip>
                               )}
-                              {canUpdate && (
+                              {isHead && canUpdate && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(client)} aria-label="Edit">
+                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(client as Client)} aria-label="Edit">
                                       <Edit className="h-4 w-4 hover:text-yellow-500" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent><p>Edit</p></TooltipContent>
+                                  <TooltipContent><p>Edit Family Head</p></TooltipContent>
                                 </Tooltip>
                               )}
-                              {canDelete && (
+                               {isHead && canDelete && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => handleDeleteTrigger(client)} aria-label="Delete">
+                                    <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => handleDeleteTrigger(client as Client)} aria-label="Delete">
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent><p>Delete</p></TooltipContent>
+                                  <TooltipContent><p>Delete Family</p></TooltipContent>
                                 </Tooltip>
                               )}
                             </div>
@@ -278,7 +327,7 @@ export default function CustomersPage() {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       No clients found.
                     </TableCell>
                   </TableRow>
