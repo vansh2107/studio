@@ -223,7 +223,7 @@ export default function CustomersPage() {
                                {customerUser && canImpersonate(customerUser) && (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={() => impersonate(customerUser.id)} aria-label="Impersonate">
+                                        <Button variant="ghost" size="icon" onClick={() => impersonate(customerUser.id)} aria-label="Impersonate Customer">
                                             <LogIn className="h-4 w-4 text-blue-500 hover:text-blue-400" />
                                         </Button>
                                     </TooltipTrigger>
@@ -328,5 +328,3 @@ export default function CustomersPage() {
     </TooltipProvider>
   );
 }
-
-    

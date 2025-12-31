@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback, useEffect } from 'react';
@@ -135,24 +136,26 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   
   const hasPermission = useCallback((module: PermissionModule, permission: Permission): boolean => {
     if (!effectiveUser) return false;
-    const userRole = effectiveUser.role;
-    if (userRole === 'SUPER_ADMIN') return true;
 
-    const rolePermissions = mockPermissions[userRole];
-    if (!rolePermissions) return false;
-    
-    // This is a simplified check. The mock permission structure doesn't match the required one exactly.
-    // Let's adapt to what we have.
-    switch (permission) {
-      case 'view': return rolePermissions.canView;
-      case 'update': return rolePermissions.canEdit;
-      case 'delete': return rolePermissions.canDelete;
-      case 'create': 
-        if(module === 'CUSTOMER' || module === 'FAMILY_MANAGER') return rolePermissions.canAccessCustomers;
-        return rolePermissions.canManageUsers;
-      default: return false;
+    // Super Admins have all permissions
+    if (effectiveUser.role === 'SUPER_ADMIN') {
+      return true;
     }
 
+    // Get the permissions for the user's role
+    const rolePermissions = mockPermissions[effectiveUser.role];
+    if (!rolePermissions) {
+      return false;
+    }
+
+    // Get the specific permissions for the given module
+    const modulePermissions = rolePermissions[module];
+    if (!modulePermissions) {
+      return false;
+    }
+
+    // Check if the specific permission is granted
+    return modulePermissions[permission] === true;
   }, [effectiveUser]);
 
 
