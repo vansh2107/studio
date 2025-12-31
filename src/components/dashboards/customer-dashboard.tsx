@@ -14,7 +14,6 @@ import {
   TrendingUp,
   FileText,
 } from 'lucide-react';
-import VisualizeAssetsTool from './visualize-assets-tool';
 
 interface CustomerDashboardProps {
   user: User;
@@ -94,8 +93,6 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
           );
         })}
       </div>
-
-      <VisualizeAssetsTool />
     </>
   );
 }
