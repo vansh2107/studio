@@ -12,15 +12,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Task } from '@/hooks/use-tasks';
 import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 const taskSchema = z.object({
   person: z.string().min(1, 'Person name is required'),
@@ -39,7 +30,6 @@ interface CreateTaskModalProps {
 export function CreateTaskModal({ onClose, onSave }: CreateTaskModalProps) {
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-  const [date, setDate] = useState<Date>()
 
   const {
     register,
@@ -55,13 +45,6 @@ export function CreateTaskModal({ onClose, onSave }: CreateTaskModalProps) {
       description: '',
     },
   });
-  
-  useEffect(() => {
-    if (date) {
-        setValue('dueDate', format(date, "PPP"));
-    }
-  }, [date, setValue]);
-
 
   const processSave = (data: TaskFormData) => {
     setIsSaving(true);
@@ -104,29 +87,7 @@ export function CreateTaskModal({ onClose, onSave }: CreateTaskModalProps) {
 
         <div className="space-y-1">
             <Label htmlFor="dueDate">Due Date & Time</Label>
-             <Popover>
-                <PopoverTrigger asChild>
-                <Button
-                    variant={"outline"}
-                    className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                    )}
-                >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
-                />
-                </PopoverContent>
-            </Popover>
-            <Input type="hidden" {...register('dueDate')} />
+            <Input id="dueDate" {...register('dueDate')} placeholder="e.g., Tomorrow 5pm" />
             {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
         </div>
 
