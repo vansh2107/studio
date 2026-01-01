@@ -1,3 +1,4 @@
+
 'use client';
 
 import SuperAdminDashboard from '@/components/dashboards/super-admin-dashboard';
@@ -33,6 +34,8 @@ export default function DashboardPage() {
       case 'SUPER_ADMIN':
         return <SuperAdminDashboard />;
       case 'ADMIN':
+        return <AdminDashboard user={effectiveUser} />;
+      case 'RM':
         return <AdminDashboard user={effectiveUser} />;
       case 'ASSOCIATE':
         return <AssociateDashboard user={effectiveUser} />;
