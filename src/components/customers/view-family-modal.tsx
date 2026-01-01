@@ -10,6 +10,7 @@ import {
   Edit,
   Trash2,
   User,
+  FileText,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import {
@@ -148,7 +149,7 @@ export function ViewFamilyModal({
       <div className="grid gap-6 py-4">
         <div>
           <h3 className="text-lg font-semibold mb-2 border-b pb-1">
-            Personal Details
+            Personal Details (Family Head)
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <DetailItem label="First Name" value={client.firstName} />
@@ -181,6 +182,7 @@ export function ViewFamilyModal({
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Relation</TableHead>
+                  <TableHead>Documents</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -194,6 +196,13 @@ export function ViewFamilyModal({
                       </div>
                     </TableCell>
                     <TableCell>{member.relation}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {member.panFileName && <FileText className="h-4 w-4" title={member.panFileName} />}
+                        {member.aadhaarFileName && <FileText className="h-4 w-4" title={member.aadhaarFileName} />}
+                        {member.otherDocumentFileName && <FileText className="h-4 w-4" title={member.otherDocumentFileName} />}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
                          <Button variant="ghost" size="icon" onClick={() => onEditMember(member)}><Edit className="h-4 w-4" /></Button>
@@ -204,7 +213,7 @@ export function ViewFamilyModal({
                 ))}
                  {familyMembers.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={3} className="text-center h-24">No members added yet.</TableCell>
+                        <TableCell colSpan={4} className="text-center h-24">No members added yet.</TableCell>
                     </TableRow>
                  )}
               </TableBody>
@@ -214,7 +223,7 @@ export function ViewFamilyModal({
 
         <div>
           <h3 className="text-lg font-semibold mb-2 border-b pb-1">
-            Documents
+            Head's Documents
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <DocumentLink

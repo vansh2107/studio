@@ -78,6 +78,14 @@ export interface FamilyMember {
   dateOfBirth: string; // YYYY-MM-DD
   address: string;
   anniversaryDate?: string; // YYYY-MM-DD
+  panNumber?: string;
+  aadhaarNumber?: string;
+  panFileName?: string;
+  aadhaarFileName?: string;
+  otherDocumentFileName?: string;
+  panPhotoUrl?: string;
+  aadhaarPhotoUrl?: string;
+  otherDocumentUrl?: string;
 }
 
 
