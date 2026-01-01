@@ -17,10 +17,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AdminsPage() {
-  const { effectiveUser, canImpersonate, impersonate } = useCurrentUser();
+  const { effectiveUser, canImpersonate, impersonate, hasPermission } = useCurrentUser();
   const admins = getAllAdmins();
 
-  if (effectiveUser?.role !== 'SUPER_ADMIN') {
+  if (!hasPermission('ADMIN', 'view')) {
     return (
       <Card>
         <CardHeader>

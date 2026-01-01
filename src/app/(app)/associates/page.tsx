@@ -16,9 +16,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AssociatesPage() {
-  const { effectiveUser, canImpersonate, impersonate, associates } = useCurrentUser();
+  const { effectiveUser, canImpersonate, impersonate, associates, hasPermission } = useCurrentUser();
 
-  const canViewPage = ['SUPER_ADMIN', 'ADMIN', 'RM'].includes(effectiveUser?.role || '');
+  const canViewPage = hasPermission('ASSOCIATE', 'view');
 
   if (!canViewPage) {
     return (

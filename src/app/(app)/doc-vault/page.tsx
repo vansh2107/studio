@@ -13,9 +13,11 @@ import { Button } from '@/components/ui/button';
 import { Upload, FileText, Trash2, Folder } from 'lucide-react';
 import { DOC_CATEGORIES } from '@/lib/constants';
 import { useMemo } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DocVaultPage() {
-  const { effectiveUser } = useCurrentUser();
+  const { effectiveUser, hasPermission } = useCurrentUser();
+  const { toast } = useToast();
 
   const familyMembers = useMemo(() => 
     (effectiveUser?.role === 'CUSTOMER') ? getFamilyMembersForClient(effectiveUser.id) : [],
@@ -26,15 +28,19 @@ export default function DocVaultPage() {
     (effectiveUser?.role === 'CUSTOMER') ? getDocumentsForClient(effectiveUser.id) : [],
     [effectiveUser]
   );
+  
+  const canView = hasPermission('DOC_VAULT', 'view');
+  const canCreate = hasPermission('DOC_VAULT', 'create');
+  const canDelete = hasPermission('DOC_VAULT', 'delete');
 
-  if (effectiveUser?.role !== 'CUSTOMER') {
+  if (!canView) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Access Denied</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>This page is only available for customer accounts.</p>
+          <p>You do not have permission to view this page.</p>
         </CardContent>
       </Card>
     );
@@ -46,6 +52,24 @@ export default function DocVaultPage() {
   
   const getDocCountForMember = (memberId: string) => {
     return documents.filter(doc => doc.memberId === memberId).length;
+  }
+
+  const handleUpload = () => {
+      if (!canCreate) {
+          toast({ title: 'Permission Denied', description: 'You do not have permission to upload documents.', variant: 'destructive'});
+          return;
+      }
+      // Mock upload
+      toast({ title: 'Success', description: 'Document upload functionality is a prototype.' });
+  }
+
+  const handleDelete = () => {
+      if (!canDelete) {
+          toast({ title: 'Permission Denied', description: 'You do not have permission to delete documents.', variant: 'destructive'});
+          return;
+      }
+      // Mock delete
+      toast({ title: 'Success', description: 'Document delete functionality is a prototype.' });
   }
 
   return (
@@ -89,26 +113,32 @@ export default function DocVaultPage() {
                                 </a>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
+                                {canDelete && (
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDelete}>
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                )}
                               </div>
                             </li>
                           ))}
                         </ul>
-                        <Button variant="outline" size="sm" className="mt-4">
-                          <Upload className="mr-2 h-4 w-4" />
-                          Upload to {category}
-                        </Button>
+                        {canCreate && (
+                            <Button variant="outline" size="sm" className="mt-4" onClick={handleUpload}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload to {category}
+                            </Button>
+                        )}
                       </CardContent>
                     </Card>
                   );
                 })}
                  <div className="pt-4">
-                     <Button variant="outline">
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload New Document for {member.firstName}
-                    </Button>
+                     {canCreate && (
+                        <Button variant="outline" onClick={handleUpload}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload New Document for {member.firstName}
+                        </Button>
+                     )}
                 </div>
               </div>
             </AccordionContent>

@@ -1,3 +1,4 @@
+
 'use client';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import {
@@ -15,9 +16,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function RMsPage() {
-  const { effectiveUser, canImpersonate, impersonate, relationshipManagers } = useCurrentUser();
+  const { effectiveUser, canImpersonate, impersonate, relationshipManagers, hasPermission } = useCurrentUser();
 
-  const canViewPage = ['SUPER_ADMIN', 'ADMIN'].includes(effectiveUser?.role || '');
+  const canViewPage = hasPermission('RM', 'view');
 
   if (!canViewPage) {
     return (

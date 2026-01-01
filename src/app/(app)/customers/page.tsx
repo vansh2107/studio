@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Eye, Edit, Trash2, LogIn, PlusCircle } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FamilyFormModal } from '@/components/customers/family-form-modal';
 import { ViewFamilyModal } from '@/components/customers/view-family-modal';
 import { FamilyMemberFormModal } from '@/components/customers/family-member-form-modal';
@@ -122,6 +122,10 @@ export default function CustomersPage() {
   };
 
   const handleAddNew = () => {
+    if (!hasPermission('CUSTOMER_ACTIONS', 'create')) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to perform this action.', variant: 'destructive' });
+        return;
+    }
     setSelectedClient(null);
     setActiveModal('form');
   };
@@ -132,6 +136,10 @@ export default function CustomersPage() {
   };
   
   const handleDeleteTrigger = (item: DisplayClient) => {
+    if (!hasPermission('CUSTOMER_ACTIONS', 'delete')) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to perform this action.', variant: 'destructive' });
+        return;
+    }
     setItemToDelete(item);
   };
 
@@ -175,6 +183,10 @@ export default function CustomersPage() {
   };
   
   const handleEditItem = (item: DisplayClient) => {
+    if (!hasPermission('CUSTOMER_ACTIONS', 'edit')) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to perform this action.', variant: 'destructive' });
+        return;
+    }
     if (item.isFamilyHead) {
         setSelectedClient(item as Client);
         setActiveModal('form');
@@ -233,10 +245,21 @@ export default function CustomersPage() {
     return rm;
   };
 
-  const canCreate = hasPermission('CUSTOMER', 'create');
-  const canUpdate = hasPermission('CUSTOMER', 'update');
-  const canDelete = hasPermission('CUSTOMER', 'delete');
+  const canCreate = hasPermission('CUSTOMER_ACTIONS', 'create');
+  const canUpdate = hasPermission('CUSTOMER_ACTIONS', 'edit');
+  const canDelete = hasPermission('CUSTOMER_ACTIONS', 'delete');
   const canView = hasPermission('CUSTOMER', 'view');
+  const canImpersonateCustomer = hasPermission('CUSTOMER_ACTIONS', 'view'); // Using 'view' for impersonation rights
+
+
+  if (!canView) {
+      return (
+        <Card>
+            <CardHeader><CardTitle>Access Denied</CardTitle></CardHeader>
+            <CardContent><p>You do not have permission to view this page.</p></CardContent>
+        </Card>
+      );
+  }
 
 
   return (
@@ -337,7 +360,7 @@ export default function CustomersPage() {
                                 </Tooltip>
                               )}
 
-                              {customerUser && impersonate && (
+                              {customerUser && impersonate && canImpersonateCustomer && (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="ghost" size="icon" onClick={() => impersonate(customerUser.id)} aria-label="Impersonate Client">
@@ -364,7 +387,7 @@ export default function CustomersPage() {
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete the record for <strong>{client.firstName} {client.lastName}</strong>
+                                                This action cannot be undone. This will permanently delete the record for strong>{client.firstName} {client.lastName}</strong>
                                                 {isHead && " and all associated family members."}
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>

@@ -34,6 +34,7 @@ import {
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { getFamilyMembersForClient } from '@/lib/mock-data';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 interface ViewFamilyModalProps {
   onClose: () => void;
@@ -99,14 +100,37 @@ export function ViewFamilyModal({
   onEditMember,
   onDeleteMember,
 }: ViewFamilyModalProps) {
-
+  const { hasPermission } = useCurrentUser();
   const { toast } = useToast();
   const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(null);
 
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(getFamilyMembersForClient(client.id));
 
+  const canCreateMember = hasPermission('CUSTOMER_ACTIONS', 'create');
+  const canUpdateMember = hasPermission('CUSTOMER_ACTIONS', 'edit');
+  const canDeleteMember = hasPermission('CUSTOMER_ACTIONS', 'delete');
+
+  const handleAdd = () => {
+    if (!canCreateMember) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to add a family member.', variant: 'destructive' });
+        return;
+    }
+    onAddMember();
+  };
+
+  const handleEdit = (member: FamilyMember) => {
+     if (!canUpdateMember) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to edit this family member.', variant: 'destructive' });
+        return;
+    }
+    onEditMember(member);
+  }
+
   const handleDelete = (member: FamilyMember) => {
-    // In a real app with assets, you would check here.
+     if (!canDeleteMember) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to delete this family member.', variant: 'destructive' });
+        return;
+    }
     const hasAssets = false; // MOCK
     if (hasAssets) {
        toast({
@@ -173,9 +197,11 @@ export function ViewFamilyModal({
         <div>
           <div className="flex justify-between items-center mb-2 border-b pb-1">
             <h3 className="text-lg font-semibold">Family Members</h3>
-            <Button variant="outline" size="sm" onClick={onAddMember}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Member
-            </Button>
+            {canCreateMember && (
+                <Button variant="outline" size="sm" onClick={handleAdd}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Member
+                </Button>
+            )}
           </div>
            <Table>
               <TableHeader>
@@ -205,8 +231,8 @@ export function ViewFamilyModal({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                         <Button variant="ghost" size="icon" onClick={() => onEditMember(member)}><Edit className="h-4 w-4" /></Button>
-                         <Button variant="ghost" size="icon" onClick={() => handleDelete(member)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        {canUpdateMember && <Button variant="ghost" size="icon" onClick={() => handleEdit(member)}><Edit className="h-4 w-4" /></Button>}
+                        {canDeleteMember && <Button variant="ghost" size="icon" onClick={() => handleDelete(member)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                       </div>
                     </TableCell>
                   </TableRow>

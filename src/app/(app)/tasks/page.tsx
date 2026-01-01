@@ -19,11 +19,19 @@ import Modal from '@/components/ui/Modal';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import { Task } from '@/hooks/use-tasks';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import { useToast } from '@/hooks/use-toast';
 
 export default function TasksPage() {
+  const { hasPermission } = useCurrentUser();
+  const { toast } = useToast();
   const { tasks, addTask, updateTask } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  const canView = hasPermission('TASK', 'view');
+  const canCreate = hasPermission('TASK', 'create');
+  const canUpdate = hasPermission('TASK', 'edit');
 
   const getStatusBadgeVariant = (status: string) => {
     const lowerCaseStatus = status.toLowerCase();
@@ -34,11 +42,19 @@ export default function TasksPage() {
   };
 
   const handleOpenCreateModal = () => {
+    if (!canCreate) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to create tasks.', variant: 'destructive' });
+        return;
+    }
     setEditingTask(null);
     setIsModalOpen(true);
   };
   
   const handleOpenEditModal = (task: Task) => {
+    if (!canUpdate) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to edit tasks.', variant: 'destructive' });
+        return;
+    }
     setEditingTask(task);
     setIsModalOpen(true);
   };
@@ -56,6 +72,15 @@ export default function TasksPage() {
     }
     handleCloseModal();
   };
+
+  if (!canView) {
+      return (
+          <Card>
+              <CardHeader><CardTitle>Access Denied</CardTitle></CardHeader>
+              <CardContent><p>You do not have permission to view this page.</p></CardContent>
+          </Card>
+      );
+  }
 
   return (
     <TooltipProvider>
@@ -102,16 +127,18 @@ export default function TasksPage() {
                       </TableCell>
                       <TableCell>{task.description || '—'}</TableCell>
                       <TableCell className="text-right">
-                         <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)}>
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Edit Task</p>
-                            </TooltipContent>
-                        </Tooltip>
+                         {canUpdate && (
+                             <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)}>
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Edit Task</p>
+                                </TooltipContent>
+                            </Tooltip>
+                         )}
                       </TableCell>
                     </TableRow>
                   ))
@@ -128,13 +155,15 @@ export default function TasksPage() {
         </Card>
       </div>
 
-      <Button
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 h-14 w-14 rounded-full shadow-lg"
-        onClick={handleOpenCreateModal}
-      >
-        <Plus className="h-6 w-6" />
-        <span className="sr-only">Create Task Manually</span>
-      </Button>
+      {canCreate && (
+          <Button
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 h-14 w-14 rounded-full shadow-lg"
+            onClick={handleOpenCreateModal}
+          >
+            <Plus className="h-6 w-6" />
+            <span className="sr-only">Create Task Manually</span>
+          </Button>
+      )}
 
       <Modal open={isModalOpen} onClose={handleCloseModal}>
         <CreateTaskModal
