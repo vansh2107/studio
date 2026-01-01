@@ -27,7 +27,6 @@ import { useSidebar } from '@/components/ui/sidebar';
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'] },
   { href: '/customers', label: 'Customers', icon: Users, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE'] },
-  { href: '/associates', label: 'Associates', icon: Briefcase, roles: ['ASSOCIATE'] },
   { href: '/tasks', label: 'Tasks', icon: ClipboardList, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE'] },
   { href: '/doc-vault', label: 'Doc Vault', icon: FolderOpen, roles: ['CUSTOMER'] },
 ];
