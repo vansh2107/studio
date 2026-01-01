@@ -10,43 +10,50 @@ const avatarUrls = PlaceHolderImages
 
 // --- HIERARCHICAL MOCK DATA ---
 
-// 1. Super Admin (Top Level)
+// 1. Super Admin
 export const superAdmins: SuperAdmin[] = [
-    { id: 'sa-1', name: 'Sonia Adminia', email: 'superadmin@demo.app', password: 'SuperAdmin@123', role: 'SUPER_ADMIN', avatarUrl: avatarUrls[0] },
+    { id: 'sa-1', name: 'Biren Shah', email: 'biren.shah@demo.app', password: 'SuperAdmin@123', role: 'SUPER_ADMIN', avatarUrl: avatarUrls[0] },
 ];
 
 // 2. Admins (Child of Super Admin)
 export const admins: Admin[] = [
-    { id: 'admin-1', name: 'Adam Min', email: 'admin1@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[1], superAdminId: 'sa-1' },
-    { id: 'admin-2', name: 'Anna Ministrator', email: 'admin2@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[2], superAdminId: 'sa-1' },
+    { id: 'admin-1', name: 'Keval Shah', email: 'keval.shah@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[1], superAdminId: 'sa-1' },
+    { id: 'admin-2', name: 'Parth Doshi', email: 'parth.doshi@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[2], superAdminId: 'sa-1' },
 ];
 
 // 3. Relationship Managers (Child of Admin)
 export const relationshipManagers: RelationshipManager[] = [
-    { id: 'rm-1', name: 'Rohan Mehta', email: 'rm1@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[3], adminId: 'admin-1' },
-    { id: 'rm-2', name: 'Kunal Shah', email: 'rm2@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[4], adminId: 'admin-1' },
-    { id: 'rm-3', name: 'Sneha Patil', email: 'rm3@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[5], adminId: 'admin-2' },
-    { id: 'rm-4', name: 'Vikram Singh', email: 'rm4@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[6], adminId: 'admin-2' },
+    // RMs under Keval Shah
+    { id: 'rm-1', name: 'Kashish Nathwani', email: 'kashish.nathwani@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[3], adminId: 'admin-1' },
+    { id: 'rm-2', name: 'Priyesh Shah', email: 'priyesh.shah@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[4], adminId: 'admin-1' },
+    // RMs under Parth Doshi
+    { id: 'rm-3', name: 'Harsh Shah', email: 'harsh.shah@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[5], adminId: 'admin-2' },
+    { id: 'rm-4', name: 'Dhrumi Shah', email: 'dhrumi.shah@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[6], adminId: 'admin-2' },
 ];
 
 // 4. Associates (Child of Relationship Manager)
 export const associates: Associate[] = [
-    { id: 'assoc-1', name: 'Ash Socia', email: 'associate1@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[7], rmId: 'rm-1' },
-    { id: 'assoc-2', name: 'Asher Socien', email: 'associate2@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[8], rmId: 'rm-1' },
-    { id: 'assoc-3', name: 'Ashley C. Ociat', email: 'associate3@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[9], rmId: 'rm-2' },
-    { id: 'assoc-4', name: 'Anjali Sharma', email: 'associate4@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[10], rmId: 'rm-3' },
-    { id: 'assoc-5', name: 'Rajesh Gupta', email: 'associate5@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[11], rmId: 'rm-3' },
-    { id: 'assoc-6', name: 'Pooja Reddy', email: 'associate6@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[12], rmId: 'rm-4' },
+    // Under Kashish Nathwani
+    { id: 'assoc-1', name: 'Associate A1', email: 'a1@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[7], rmId: 'rm-1' },
+    // Under Priyesh Shah
+    { id: 'assoc-2', name: 'Associate A2', email: 'a2@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[8], rmId: 'rm-2' },
+    { id: 'assoc-3', name: 'Associate A3', email: 'a3@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[9], rmId: 'rm-2' },
+    // Under Harsh Shah
+    { id: 'assoc-4', name: 'Associate A4', email: 'a4@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[10], rmId: 'rm-3' },
+    { id: 'assoc-5', name: 'Associate A5', email: 'a5@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[11], rmId: 'rm-3' },
+    // Under Dhrumi Shah
+    { id: 'assoc-6', name: 'Associate A6', email: 'a6@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[12], rmId: 'rm-4' },
 ];
 
 // 5. Clients (Child of Associate)
 export const clients: Client[] = [
+    // Customer for A1
     {
         id: 'client-1',
         name: 'Rahul Mehta',
         firstName: 'Rahul',
         lastName: 'Mehta',
-        email: 'customer1@demo.app',
+        email: 'rahul.mehta@demo.app',
         password: 'Customer@123',
         role: 'CUSTOMER',
         avatarUrl: avatarUrls[13],
@@ -56,47 +63,35 @@ export const clients: Client[] = [
         address: 'Mumbai, India',
         anniversaryDate: '2018-12-01',
     },
+     // Customer for A4
     {
         id: 'client-2',
-        name: 'Priya Sharma',
-        firstName: 'Priya',
-        lastName: 'Sharma',
-        email: 'customer2@demo.app',
-        password: 'Customer@123',
-        role: 'CUSTOMER',
-        avatarUrl: avatarUrls[14],
-        associateId: 'assoc-2',
-        phoneNumber: '9990011122',
-        dateOfBirth: '1994-08-20',
-        address: 'Delhi, India',
-    },
-    {
-        id: 'client-3',
         name: 'Mehul Patel',
         firstName: 'Mehul',
         lastName: 'Patel',
-        email: 'customer3@demo.app',
+        email: 'mehul.patel@demo.app',
         password: 'Customer@123',
         role: 'CUSTOMER',
-        avatarUrl: avatarUrls[0], // Reuse avatars
-        associateId: 'assoc-3',
+        avatarUrl: avatarUrls[14],
+        associateId: 'assoc-4',
         phoneNumber: '9123456780',
         dateOfBirth: '1988-03-15',
         address: 'Ahmedabad, Gujarat',
     },
+    // Customer for A6
     {
-        id: 'client-4',
-        name: 'Harpreet Singh',
-        firstName: 'Harpreet',
-        lastName: 'Singh',
-        email: 'customer4@demo.app',
+        id: 'client-3',
+        name: 'Suresh Kumar',
+        firstName: 'Suresh',
+        lastName: 'Kumar',
+        email: 'suresh.kumar@demo.app',
         password: 'Customer@123',
         role: 'CUSTOMER',
-        avatarUrl: avatarUrls[1], // Reuse avatars
-        associateId: 'assoc-5',
-        phoneNumber: '9234567891',
+        avatarUrl: avatarUrls[0], // Reuse avatars
+        associateId: 'assoc-6',
+        phoneNumber: '9998887771',
         dateOfBirth: '1985-11-25',
-        address: 'Chandigarh, Punjab',
+        address: 'Bangalore, Karnataka',
     },
 ];
 
@@ -112,13 +107,20 @@ export const users: User[] = [
 // --- Other Mock Data (Family, Assets, etc.) ---
 
 export const familyMembers: FamilyMember[] = [
-  { id: 'fm-1-1', clientId: 'client-1', firstName: 'Rahul', lastName: 'Mehta', relation: 'Self', phoneNumber: '9876543210', emailId: 'rahul@example.com', dateOfBirth: '1990-05-12', address: 'Mumbai, India' },
+  // Rahul Mehta's Family
+  { id: 'fm-1-1', clientId: 'client-1', firstName: 'Rahul', lastName: 'Mehta', relation: 'Self', phoneNumber: '9876543210', emailId: 'rahul.mehta@demo.app', dateOfBirth: '1990-05-12', address: 'Mumbai, India' },
   { id: 'fm-1-2', clientId: 'client-1', firstName: 'Anita', lastName: 'Mehta', relation: 'Spouse', phoneNumber: '9876543211', emailId: 'anita.m@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
   { id: 'fm-1-3', clientId: 'client-1', firstName: 'Aarav', lastName: 'Mehta', relation: 'Son', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
-  { id: 'fm-2-1', clientId: 'client-2', firstName: 'Priya', lastName: 'Sharma', relation: 'Self', phoneNumber: '9990011122', emailId: 'priya@example.com', dateOfBirth: '1994-08-20', address: 'Delhi, India' },
-  { id: 'fm-3-1', clientId: 'client-3', firstName: 'Mehul', lastName: 'Patel', relation: 'Self', phoneNumber: '9123456780', emailId: 'mehul.p@example.com', dateOfBirth: '1988-03-15', address: 'Ahmedabad, Gujarat' },
-  { id: 'fm-3-2', clientId: 'client-3', firstName: 'Sonal', lastName: 'Patel', relation: 'Spouse', phoneNumber: '9123456781', emailId: 'sonal.p@example.com', dateOfBirth: '1990-02-22', address: 'Ahmedabad, Gujarat' },
-  { id: 'fm-4-1', clientId: 'client-4', firstName: 'Harpreet', lastName: 'Singh', relation: 'Self', phoneNumber: '9234567891', emailId: 'harpreet.s@example.com', dateOfBirth: '1985-11-25', address: 'Chandigarh, Punjab' },
+  
+  // Mehul Patel's Family
+  { id: 'fm-2-1', clientId: 'client-2', firstName: 'Mehul', lastName: 'Patel', relation: 'Self', phoneNumber: '9123456780', emailId: 'mehul.patel@demo.app', dateOfBirth: '1988-03-15', address: 'Ahmedabad, Gujarat' },
+  { id: 'fm-2-2', clientId: 'client-2', firstName: 'Bhavika', lastName: 'Patel', relation: 'Spouse', phoneNumber: '9123456781', emailId: 'bhavika.p@example.com', dateOfBirth: '1990-02-22', address: 'Ahmedabad, Gujarat' },
+  { id: 'fm-2-3', clientId: 'client-2', firstName: 'Riya', lastName: 'Patel', relation: 'Daughter', phoneNumber: '', emailId: '', dateOfBirth: '2019-07-30', address: 'Ahmedabad, Gujarat' },
+
+  // Suresh Kumar's Family
+  { id: 'fm-3-1', clientId: 'client-3', firstName: 'Suresh', lastName: 'Kumar', relation: 'Self', phoneNumber: '9998887771', emailId: 'suresh.kumar@demo.app', dateOfBirth: '1985-11-25', address: 'Bangalore, Karnataka' },
+  { id: 'fm-3-2', clientId: 'client-3', firstName: 'Neha', lastName: 'Kumar', relation: 'Spouse', phoneNumber: '9998887772', emailId: 'neha.k@example.com', dateOfBirth: '1987-09-18', address: 'Bangalore, Karnataka' },
+  { id: 'fm-3-3', clientId: 'client-3', firstName: 'Rohan', lastName: 'Kumar', relation: 'Son', phoneNumber: '', emailId: '', dateOfBirth: '2015-03-10', address: 'Bangalore, Karnataka' },
 ];
 
 export const assets: Asset[] = [
@@ -126,15 +128,15 @@ export const assets: Asset[] = [
   { id: 'asset-2', clientId: 'client-1', ownerMemberId: 'fm-1-2', category: 'Mutual Funds', name: 'Axis Bluechip Fund', value: 75000 },
   { id: 'asset-3', clientId: 'client-1', ownerMemberId: 'fm-1-1', category: 'Life Insurance', name: 'LIC Jeevan Anand', value: 500000 },
   { id: 'asset-4', clientId: 'client-2', ownerMemberId: 'fm-2-1', category: 'Fixed Deposits', name: 'HDFC Bank FD', value: 200000 },
-  { id: 'asset-5', clientId: 'client-3', ownerMemberId: 'fm-3-2', category: 'Bonds', name: 'Govt. of India 2030', value: 120000 },
+  { id: 'asset-5', clientId: 'client-2', ownerMemberId: 'fm-2-2', category: 'Bonds', name: 'Govt. of India 2030', value: 120000 },
   { id: 'asset-6', clientId: 'client-3', ownerMemberId: 'fm-3-1', category: 'PPF', name: 'Public Provident Fund', value: 85000 },
-  { id: 'asset-7', clientId: 'client-4', ownerMemberId: 'fm-4-1', category: 'Term Insurance', name: 'HDFC Click 2 Protect', value: 1000000 },
+  { id: 'asset-7', clientId: 'client-3', ownerMemberId: 'fm-3-1', category: 'Term Insurance', name: 'HDFC Click 2 Protect', value: 1000000 },
 ];
 
 export const documents: Document[] = [
   { id: 'doc-1', clientId: 'client-1', memberId: 'fm-1-2', category: 'Mutual Funds', name: 'Axis_Bluechip_Statement.pdf', url: '#' },
   { id: 'doc-2', clientId: 'client-1', memberId: 'fm-1-1', category: 'Life Insurance', name: 'LIC_Policy_Bond.pdf', url: '#' },
-  { id: 'doc-3', clientId: 'client-4', memberId: 'fm-4-1', category: 'Term Insurance', name: 'HDFC_Term_Policy.pdf', url: '#' },
+  { id: 'doc-3', clientId: 'client-3', memberId: 'fm-3-1', category: 'Term Insurance', name: 'HDFC_Term_Policy.pdf', url: '#' },
 ];
 
 // --- Permissions ---
