@@ -63,7 +63,7 @@ export const clients: Client[] = [
         address: 'Mumbai, India',
         anniversaryDate: '2018-12-01',
     },
-     // Customer for A4
+     // Customer 1 for A4
     {
         id: 'client-2',
         name: 'Mehul Patel',
@@ -77,6 +77,21 @@ export const clients: Client[] = [
         phoneNumber: '9123456780',
         dateOfBirth: '1988-03-15',
         address: 'Ahmedabad, Gujarat',
+    },
+    // Customer 2 for A4
+    {
+        id: 'client-4',
+        name: 'Nirav Shah',
+        firstName: 'Nirav',
+        lastName: 'Shah',
+        email: 'nirav.shah@demo.app',
+        password: 'Customer@123',
+        role: 'CUSTOMER',
+        avatarUrl: avatarUrls[9],
+        associateId: 'assoc-4',
+        phoneNumber: '9825098250',
+        dateOfBirth: '1985-08-20',
+        address: 'Surat, Gujarat',
     },
     // Customer for A6
     {
@@ -117,6 +132,11 @@ export const familyMembers: FamilyMember[] = [
   { id: 'fm-2-2', clientId: 'client-2', firstName: 'Bhavika', lastName: 'Patel', relation: 'Spouse', phoneNumber: '9123456781', emailId: 'bhavika.p@example.com', dateOfBirth: '1990-02-22', address: 'Ahmedabad, Gujarat' },
   { id: 'fm-2-3', clientId: 'client-2', firstName: 'Riya', lastName: 'Patel', relation: 'Daughter', phoneNumber: '', emailId: '', dateOfBirth: '2019-07-30', address: 'Ahmedabad, Gujarat' },
 
+  // Nirav Shah's Family
+  { id: 'fm-4-1', clientId: 'client-4', firstName: 'Nirav', lastName: 'Shah', relation: 'Self', phoneNumber: '9825098250', emailId: 'nirav.shah@demo.app', dateOfBirth: '1985-08-20', address: 'Surat, Gujarat' },
+  { id: 'fm-4-2', clientId: 'client-4', firstName: 'Pooja', lastName: 'Shah', relation: 'Spouse', phoneNumber: '9825098251', emailId: 'pooja.s@example.com', dateOfBirth: '1988-10-05', address: 'Surat, Gujarat' },
+  { id: 'fm-4-3', clientId: 'client-4', firstName: 'Dev', lastName: 'Shah', relation: 'Son', phoneNumber: '', emailId: '', dateOfBirth: '2018-12-25', address: 'Surat, Gujarat' },
+
   // Suresh Kumar's Family
   { id: 'fm-3-1', clientId: 'client-3', firstName: 'Suresh', lastName: 'Kumar', relation: 'Self', phoneNumber: '9998887771', emailId: 'suresh.kumar@demo.app', dateOfBirth: '1985-11-25', address: 'Bangalore, Karnataka' },
   { id: 'fm-3-2', clientId: 'client-3', firstName: 'Neha', lastName: 'Kumar', relation: 'Spouse', phoneNumber: '9998887772', emailId: 'neha.k@example.com', dateOfBirth: '1987-09-18', address: 'Bangalore, Karnataka' },
@@ -129,6 +149,8 @@ export const assets: Asset[] = [
   { id: 'asset-3', clientId: 'client-1', ownerMemberId: 'fm-1-1', category: 'Life Insurance', name: 'LIC Jeevan Anand', value: 500000 },
   { id: 'asset-4', clientId: 'client-2', ownerMemberId: 'fm-2-1', category: 'Fixed Deposits', name: 'HDFC Bank FD', value: 200000 },
   { id: 'asset-5', clientId: 'client-2', ownerMemberId: 'fm-2-2', category: 'Bonds', name: 'Govt. of India 2030', value: 120000 },
+  { id: 'asset-8', clientId: 'client-4', ownerMemberId: 'fm-4-1', category: 'Stocks', name: 'Tata Motors', value: 250000 },
+  { id: 'asset-9', clientId: 'client-4', ownerMemberId: 'fm-4-1', category: 'Mutual Funds', name: 'SBI Small Cap', value: 125000 },
   { id: 'asset-6', clientId: 'client-3', ownerMemberId: 'fm-3-1', category: 'PPF', name: 'Public Provident Fund', value: 85000 },
   { id: 'asset-7', clientId: 'client-3', ownerMemberId: 'fm-3-1', category: 'Term Insurance', name: 'HDFC Click 2 Protect', value: 1000000 },
 ];
@@ -136,6 +158,7 @@ export const assets: Asset[] = [
 export const documents: Document[] = [
   { id: 'doc-1', clientId: 'client-1', memberId: 'fm-1-2', category: 'Mutual Funds', name: 'Axis_Bluechip_Statement.pdf', url: '#' },
   { id: 'doc-2', clientId: 'client-1', memberId: 'fm-1-1', category: 'Life Insurance', name: 'LIC_Policy_Bond.pdf', url: '#' },
+  { id: 'doc-4', clientId: 'client-4', memberId: 'fm-4-1', category: 'Stocks', name: 'Tata_Motors_Shares.pdf', url: '#' },
   { id: 'doc-3', clientId: 'client-3', memberId: 'fm-3-1', category: 'Term Insurance', name: 'HDFC_Term_Policy.pdf', url: '#' },
 ];
 
@@ -250,3 +273,5 @@ export const getMappedAssociatesForAdmin = (adminId: string): (Associate)[] => {
 export const getMappedCustomersForAssociate = (associateId: string): Client[] => {
   return getClientsForAssociate(associateId);
 };
+
+    
