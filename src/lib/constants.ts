@@ -69,3 +69,10 @@ export const TASK_STATUSES = [
 ] as const;
 
 export type TaskStatus = typeof TASK_STATUSES[number];
+
+export const RM_NAMES = [
+  'Kashish Nathwani',
+  'Priyesh Shah',
+  'Harsh Shah',
+  'Dhrumi Shah',
+] as const;

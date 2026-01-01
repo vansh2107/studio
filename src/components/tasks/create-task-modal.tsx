@@ -13,7 +13,7 @@ import { Task } from '@/hooks/use-tasks';
 import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TASK_CATEGORIES, TASK_STATUSES } from '@/lib/constants';
+import { TASK_CATEGORIES, TASK_STATUSES, RM_NAMES } from '@/lib/constants';
 
 const taskSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
@@ -130,7 +130,24 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
                <div className="space-y-1">
                   <Label htmlFor="rmName">RM Name</Label>
-                  <Input id="rmName" {...register('rmName')} />
+                  <Controller
+                    name="rmName"
+                    control={control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                        <SelectTrigger id="rmName">
+                          <SelectValue placeholder="Select RM" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {RM_NAMES.map(rm => (
+                             <SelectItem key={rm} value={rm}>
+                                {rm}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {errors.rmName && <p className="text-sm text-destructive">{errors.rmName.message}</p>}
               </div>
 
