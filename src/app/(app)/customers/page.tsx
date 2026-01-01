@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Client, FamilyMember, User, DisplayClient } from '@/lib/types';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { getAllClients, familyMembers as mockFamilyMembers, users as mockUsers, getClientsForAssociate, getAssociatesForRM, getRMsForAdmin } from '@/lib/mock-data';
+import { getAllClients, familyMembers as mockFamilyMembers, users as mockUsers, getClientsForAssociate, getAssociatesForRM, getRMsForAdmin, associates as allAssociates, relationshipManagers as allRMs } from '@/lib/mock-data';
 import Modal from '@/components/ui/Modal';
 import {
   AlertDialog,
@@ -47,7 +47,7 @@ import { Switch } from '@/components/ui/switch';
 type ActiveModal = 'form' | 'view' | 'member-form' | null;
 
 export default function CustomersPage() {
-  const { effectiveUser, impersonate } = useCurrentUser();
+  const { effectiveUser, impersonate, hasPermission } = useCurrentUser();
   const { toast } = useToast();
 
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
@@ -93,8 +93,7 @@ export default function CustomersPage() {
             ...fm,
             name: `${fm.firstName} ${fm.lastName}`,
             role: 'CUSTOMER',
-            associateId: clientHead?.associateId || '',
-            avatarUrl: '', // members don't have avatars in this model
+            associateId: clientHead?.associateId || '', // members don't have avatars in this model
             isFamilyHead: false,
             email: fm.emailId,
             // Carry over necessary fields from head for display if needed
@@ -227,12 +226,17 @@ export default function CustomersPage() {
       return mockUsers.find(u => u.id === client.id);
   }
 
-  // Deferring permissions check for now
-  const canCreate = true;
-  const canUpdate = true;
-  const canDelete = true;
-  const canView = true;
-  const canImpersonateAny = true;
+  const getRmForClient = (client: DisplayClient) => {
+    const associate = allAssociates.find(a => a.id === client.associateId);
+    if (!associate) return null;
+    const rm = allRMs.find(r => r.id === associate.rmId);
+    return rm;
+  };
+
+  const canCreate = hasPermission('CUSTOMER', 'create');
+  const canUpdate = hasPermission('CUSTOMER', 'update');
+  const canDelete = hasPermission('CUSTOMER', 'delete');
+  const canView = hasPermission('CUSTOMER', 'view');
 
 
   return (
@@ -268,6 +272,7 @@ export default function CustomersPage() {
                   <TableHead>Phone Number</TableHead>
                   <TableHead>Email ID</TableHead>
                   <TableHead>Date of Birth</TableHead>
+                  <TableHead>Assigned RM</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -281,6 +286,7 @@ export default function CustomersPage() {
                       <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell className="text-right"><Skeleton className="h-8 w-32" /></TableCell>
                     </TableRow>
                   ))
@@ -288,6 +294,7 @@ export default function CustomersPage() {
                   filteredClients.map(client => {
                     const customerUser = findCustomerUser(client);
                     const isHead = client.isFamilyHead;
+                    const rm = getRmForClient(client);
                     
                     const clientHead = isHead ? (client as Client) : allDisplayClients.find(c => c.isFamilyHead && c.id === (client as FamilyMember).clientId) as Client | undefined;
                     
@@ -305,6 +312,7 @@ export default function CustomersPage() {
                           <TableCell>{client.phoneNumber}</TableCell>
                           <TableCell>{client.email}</TableCell>
                           <TableCell>{formatDate(client.dateOfBirth)}</TableCell>
+                          <TableCell>{rm?.name || 'Not Assigned'}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
                               {canView && clientHead && (
@@ -329,7 +337,7 @@ export default function CustomersPage() {
                                 </Tooltip>
                               )}
 
-                              {customerUser && canImpersonateAny && (
+                              {customerUser && impersonate && (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="ghost" size="icon" onClick={() => impersonate(customerUser.id)} aria-label="Impersonate Client">
@@ -374,7 +382,7 @@ export default function CustomersPage() {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
+                    <TableCell colSpan={8} className="h-24 text-center">
                       No clients found.
                     </TableCell>
                   </TableRow>
