@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -17,15 +18,17 @@ import {
   Users,
   FolderOpen,
   ClipboardList,
+  Briefcase,
 } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/components/ui/sidebar';
 
 const menuItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE', 'CUSTOMER'] },
-  { href: '/customers', label: 'Customers', icon: Users, roles: ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE'] },
-  { href: '/tasks', label: 'Tasks', icon: ClipboardList, roles: ['SUPER_ADMIN', 'ADMIN', 'ASSOCIATE'] },
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'] },
+  { href: '/customers', label: 'Customers', icon: Users, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE'] },
+  { href: '/associates', label: 'Associates', icon: Briefcase, roles: ['RM'] },
+  { href: '/tasks', label: 'Tasks', icon: ClipboardList, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE'] },
   { href: '/doc-vault', label: 'Doc Vault', icon: FolderOpen, roles: ['CUSTOMER'] },
 ];
 

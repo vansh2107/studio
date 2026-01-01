@@ -4,7 +4,7 @@
 
 import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { users, permissions as mockPermissions, User, Client, Associate, Admin, SuperAdmin, RelationshipManager, getRMsForAdmin, getAssociatesForRM, getClientsForAssociate, getAllRMs } from '@/lib/mock-data';
+import { users, permissions as mockPermissions, User, Client, Associate, Admin, SuperAdmin, RelationshipManager, getRMsForAdmin, getAssociatesForRM, getClientsForAssociate, getAllRMs, getAllAssociates as allAssociatesData } from '@/lib/mock-data';
 import { HIERARCHY, Role, Permission, PermissionModule } from '@/lib/constants';
 import { AppLayoutSkeleton } from '@/components/layout/app-layout';
 
@@ -178,7 +178,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     switch (effectiveUser.role) {
       case 'SUPER_ADMIN':
-        return { associates: require('@/lib/mock-data').associates, relationshipManagers: require('@/lib/mock-data').relationshipManagers };
+        return { associates: allAssociatesData(), relationshipManagers: getAllRMs() };
       case 'ADMIN':
         const rms = getRMsForAdmin(effectiveUser.id);
         return {

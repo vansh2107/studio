@@ -2,7 +2,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, PieChart } from 'lucide-react';
+import { BarChart, PieChart, Users, Briefcase } from 'lucide-react';
 import {
   ChartContainer,
   ChartTooltip,
@@ -31,15 +31,25 @@ interface AdminDashboardProps {
 export default function AdminDashboard({ user }: AdminDashboardProps) {
     
   const { mappedRMs, mappedAssociates, mappedCustomers } = useMemo(() => {
-    if (user.role !== 'ADMIN') return { mappedRMs: [], mappedAssociates: [], mappedCustomers: [] };
-    const rms = getRMsForAdmin(user.id);
-    const associates = rms.flatMap(rm => getAssociatesForRM(rm.id));
-    const customers = associates.flatMap(assoc => getClientsForAssociate(assoc.id));
-    return { mappedRMs: rms, mappedAssociates: associates, mappedCustomers: customers };
+    if (user.role === 'ADMIN') {
+        const rms = getRMsForAdmin(user.id);
+        const associates = rms.flatMap(rm => getAssociatesForRM(rm.id));
+        const customers = associates.flatMap(assoc => getClientsForAssociate(assoc.id));
+        return { mappedRMs: rms, mappedAssociates: associates, mappedCustomers: customers };
+    }
+     if (user.role === 'RM') {
+        const associates = getAssociatesForRM(user.id);
+        const customers = associates.flatMap(assoc => getClientsForAssociate(assoc.id));
+        return { mappedRMs: [], mappedAssociates: associates, mappedCustomers: customers };
+    }
+    return { mappedRMs: [], mappedAssociates: [], mappedCustomers: [] };
   }, [user]);
 
-  const totalCounts = [
+  const totalCounts = user.role === 'ADMIN' ? [
     { name: 'RMs', count: mappedRMs.length, fill: 'hsl(var(--chart-1))' },
+    { name: 'Associates', count: mappedAssociates.length, fill: 'hsl(var(--chart-2))' },
+    { name: 'Customers', count: mappedCustomers.length, fill: 'hsl(var(--chart-3))' },
+  ] : [
     { name: 'Associates', count: mappedAssociates.length, fill: 'hsl(var(--chart-2))' },
     { name: 'Customers', count: mappedCustomers.length, fill: 'hsl(var(--chart-3))' },
   ];
@@ -50,6 +60,61 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     Associates: { label: 'Associates', color: 'hsl(var(--chart-2))' },
     Customers: { label: 'Customers', color: 'hsl(var(--chart-3))' },
   };
+
+  if (user.role === 'RM') {
+      return (
+          <>
+            <h1 className="text-3xl font-bold font-headline">RM Dashboard</h1>
+             <div className="grid gap-4 md:grid-cols-2">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Associates</CardTitle>
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{mappedAssociates.length}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+                     <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{mappedCustomers.length}</div>
+                  </CardContent>
+                </Card>
+             </div>
+             { (mappedAssociates.length > 0 || mappedCustomers.length > 0) && (
+                <div className="grid gap-4">
+                    <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                        <BarChart className="h-5 w-5" />
+                        User Distribution
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                        <RechartsBarChart data={totalCounts} accessibilityLayer>
+                            <CartesianGrid vertical={false} />
+                            <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
+                            <YAxis />
+                            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                            <Bar dataKey="count" radius={4}>
+                            {totalCounts.map((entry) => (
+                                <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                            ))}
+                            </Bar>
+                        </RechartsBarChart>
+                        </ChartContainer>
+                    </CardContent>
+                    </Card>
+                </div>
+             )}
+          </>
+      )
+  }
 
   return (
     <>
