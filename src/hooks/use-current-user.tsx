@@ -4,7 +4,7 @@
 
 import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { users, permissions as mockPermissions, User, Client, Associate, Admin, SuperAdmin, RelationshipManager, getRMsForAdmin, getAssociatesForRM, getClientsForAssociate } from '@/lib/mock-data';
+import { users, permissions as mockPermissions, User, Client, Associate, Admin, SuperAdmin, RelationshipManager, getRMsForAdmin, getAssociatesForRM, getClientsForAssociate, getAllRMs } from '@/lib/mock-data';
 import { HIERARCHY, Role, Permission, PermissionModule } from '@/lib/constants';
 import { AppLayoutSkeleton } from '@/components/layout/app-layout';
 
@@ -24,21 +24,24 @@ const canImpersonate = (actor: User, target: User): boolean => {
   if (actor.role === 'SUPER_ADMIN') return true;
 
   if (actor.role === 'ADMIN') {
+    const allRMs = getAllRMs();
+    const allAssociates = require('@/lib/mock-data').associates;
     const targetAdminId = (target as RelationshipManager | Associate | Client).role === 'RM'
       ? (target as RelationshipManager).adminId
       : (target as Associate).role === 'ASSOCIATE'
-      ? relationshipManagers.find(rm => rm.id === (target as Associate).rmId)?.adminId
+      ? allRMs.find(rm => rm.id === (target as Associate).rmId)?.adminId
       : (target as Client).role === 'CUSTOMER'
-      ? relationshipManagers.find(rm => rm.id === associates.find(a => a.id === (target as Client).associateId)?.rmId)?.adminId
+      ? allRMs.find(rm => rm.id === allAssociates.find(a => a.id === (target as Client).associateId)?.rmId)?.adminId
       : undefined;
     return targetAdminId === actor.id;
   }
   
   if(actor.role === 'RM') {
+      const allAssociates = require('@/lib/mock-data').associates;
       const targetRmId = (target as Associate | Client).role === 'ASSOCIATE'
         ? (target as Associate).rmId
         : (target as Client).role === 'CUSTOMER'
-        ? associates.find(a => a.id === (target as Client).associateId)?.rmId
+        ? allAssociates.find(a => a.id === (target as Client).associateId)?.rmId
         : undefined;
       return targetRmId === actor.id;
   }
@@ -66,6 +69,8 @@ interface UserContextType {
   hasPermission: (module: PermissionModule, permission: Permission) => boolean;
   allUsers: User[];
   isLoading: boolean;
+  associates: Associate[];
+  relationshipManagers: RelationshipManager[];
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -112,6 +117,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         // localStorage not available
       }
       setCurrentUser(user);
+      setImpersonatedUser(null);
     }
   }, []);
 
@@ -199,7 +205,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     hasPermission,
     allUsers: users,
     isLoading: isLoading,
-  }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission, isLoading]);
+    associates,
+    relationshipManagers,
+  }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission, isLoading, associates, relationshipManagers]);
 
   if (isLoading) {
     return <AppLayoutSkeleton />;

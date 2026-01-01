@@ -9,6 +9,7 @@ import {
   Shield,
   ShieldCheck,
   Briefcase,
+  UserSquare,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,8 @@ import { HIERARCHY } from '@/lib/constants';
 
 const settingsMenuItems = [
   { href: '/admins', label: 'Admins', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },
-  { href: '/associates', label: 'Associates', icon: Briefcase, roles: ['SUPER_ADMIN', 'ADMIN'] },
+  { href: '/rms', label: 'RMs', icon: UserSquare, roles: ['SUPER_ADMIN', 'ADMIN'] },
+  { href: '/associates', label: 'Associates', icon: Briefcase, roles: ['SUPER_ADMIN', 'ADMIN', 'RM'] },
   { href: '/role-management', label: 'Role Management', icon: Shield, roles: ['SUPER_ADMIN'] },
 ];
 
