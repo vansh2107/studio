@@ -7,8 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { MessageSquare, Send, X, Bot } from 'lucide-react';
 import { useTasks, Task } from '@/hooks/use-tasks';
 import { AnimatePresence, motion } from 'framer-motion';
-import { getClientsForAssociate, getAllClients, getAssetsForClient } from '@/lib/mock-data';
-import { ASSET_CATEGORIES } from '@/lib/constants';
 
 type Message = {
   id: number;
@@ -28,23 +26,6 @@ const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; er
     
     const [, clientName, category, rmName, dueDate, status] = match.map(m => m.trim());
     
-    // --- New Validation Logic ---
-    const allClients = getAllClients();
-    const client = allClients.find(c => c.name.toLowerCase() === clientName.toLowerCase());
-
-    if (!client) {
-         return { error: `Client "${clientName}" not found.` };
-    }
-
-    const clientAssets = getAssetsForClient(client.id);
-    const clientCategories = new Set(clientAssets.map(a => a.category));
-
-    if (!clientCategories.has(category as any)) {
-        return { error: `This task category is not applicable for this client.` };
-    }
-    // --- End Validation Logic ---
-
-
     return {
         task: {
             clientName: clientName || 'Not specified',
@@ -130,7 +111,7 @@ export function Chatbot() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="fixed bottom-24 right-5 z-[1000] w-full max-w-sm"
+            className="fixed bottom-24 right-5 z-50 w-full max-w-sm"
           >
             <Card className="flex flex-col h-[500px] shadow-2xl">
               <CardHeader className="flex flex-row items-center justify-between">
@@ -178,7 +159,7 @@ export function Chatbot() {
       </AnimatePresence>
 
       <Button
-        className="fixed bottom-5 right-5 z-[1000] h-16 w-16 rounded-full shadow-lg"
+        className="fixed bottom-5 right-5 z-50 h-16 w-16 rounded-full shadow-lg"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,9 +13,7 @@ import { Task } from '@/hooks/use-tasks';
 import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TASK_CATEGORIES } from '@/lib/constants';
-import { getAllClients, getAssetsForClient } from '@/lib/mock-data';
 
 const taskSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
@@ -44,7 +42,6 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     handleSubmit,
     reset,
     control,
-    watch,
     formState: { errors },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -57,17 +54,6 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       description: '',
     },
   });
-
-  const selectedClientName = watch('clientName');
-
-  const availableCategories = useMemo(() => {
-    if (!selectedClientName) return new Set();
-    const client = getAllClients().find(c => c.name === selectedClientName);
-    if (!client) return new Set();
-    const assets = getAssetsForClient(client.id);
-    return new Set(assets.map(a => a.category));
-  }, [selectedClientName]);
-  
 
   useEffect(() => {
     if (task) {
@@ -98,7 +84,6 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   };
 
   return (
-    <TooltipProvider>
       <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
         <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0">
           <X className="h-4 w-4" />
@@ -130,30 +115,12 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         <SelectTrigger id="category">
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
-                        <SelectContent position="popper">
-                          {TASK_CATEGORIES.map(cat => {
-                            const isEnabled = availableCategories.has(cat as any) || isEditMode;
-                            return (
-                               <Tooltip key={cat}>
-                                <TooltipTrigger asChild>
-                                    <div className={!isEnabled ? 'cursor-not-allowed' : ''}>
-                                        <SelectItem
-                                            value={cat}
-                                            disabled={!isEnabled}
-                                            className={!isEnabled ? 'text-muted-foreground' : ''}
-                                        >
-                                            {cat}
-                                        </SelectItem>
-                                    </div>
-                                </TooltipTrigger>
-                                {!isEnabled && (
-                                    <TooltipContent>
-                                        <p>This category is not available for this client.</p>
-                                    </TooltipContent>
-                                )}
-                               </Tooltip>
-                            )
-                          })}
+                        <SelectContent>
+                          {TASK_CATEGORIES.map(cat => (
+                            <SelectItem key={cat} value={cat}>
+                                {cat}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     )}
@@ -194,6 +161,5 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
           </div>
         </form>
       </div>
-    </TooltipProvider>
   );
 }
