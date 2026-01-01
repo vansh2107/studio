@@ -13,7 +13,7 @@ import { Task } from '@/hooks/use-tasks';
 import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TASK_CATEGORIES } from '@/lib/constants';
+import { TASK_CATEGORIES, TASK_STATUSES } from '@/lib/constants';
 
 const taskSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
@@ -50,7 +50,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       category: '',
       rmName: '',
       dueDate: '',
-      status: '',
+      status: 'Pending',
       description: '',
     },
   });
@@ -64,7 +64,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         category: '',
         rmName: '',
         dueDate: '',
-        status: '',
+        status: 'Pending',
         description: '',
       });
     }
@@ -85,7 +85,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
   return (
       <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
-        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0">
+        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 z-[1002]">
           <X className="h-4 w-4" />
         </Button>
         <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
@@ -117,7 +117,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         </SelectTrigger>
                         <SelectContent>
                           {TASK_CATEGORIES.map(cat => (
-                            <SelectItem key={cat} value={cat}>
+                             <SelectItem key={cat} value={cat}>
                                 {cat}
                             </SelectItem>
                           ))}
@@ -133,22 +133,40 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   <Input id="rmName" {...register('rmName')} />
                   {errors.rmName && <p className="text-sm text-destructive">{errors.rmName.message}</p>}
               </div>
-              <div className="space-y-1">
-                  <Label htmlFor="status">Status</Label>
-                  <Input id="status" {...register('status')} />
-                  {errors.status && <p className="text-sm text-destructive">{errors.status.message}</p>}
-              </div>
-          </div>
 
-          <div className="space-y-1">
-              <Label htmlFor="dueDate">Due Date & Time</Label>
-              <Input id="dueDate" {...register('dueDate')} placeholder="e.g., Tomorrow 5pm" />
-              {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
+               <div className="space-y-1">
+                  <Label htmlFor="dueDate">Due Date & Time</Label>
+                  <Input id="dueDate" {...register('dueDate')} placeholder="e.g., Tomorrow 5pm" />
+                  {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
+              </div>
           </div>
 
           <div className="space-y-1">
             <Label htmlFor="description">Description (Optional)</Label>
             <Textarea id="description" {...register('description')} />
+          </div>
+
+          <div className="space-y-1">
+              <Label htmlFor="status">Status</Label>
+               <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="Select a status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TASK_STATUSES.map(cat => (
+                        <SelectItem key={cat} value={cat}>
+                            {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.status && <p className="text-sm text-destructive">{errors.status.message}</p>}
           </div>
           
           <div className="flex justify-end gap-2 pt-4">

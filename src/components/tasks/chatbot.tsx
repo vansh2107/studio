@@ -16,7 +16,7 @@ type Message = {
 
 
 const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; error?: string } => {
-    const cleanInput = input.trim();
+    const cleanInput = input.trim().toLowerCase();
     const regex = /create task for (.*?) for (.*?) assigned to (.*?) by (.*?) which is (.*)/i;
     const match = cleanInput.match(regex);
 

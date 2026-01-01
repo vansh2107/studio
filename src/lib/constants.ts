@@ -59,3 +59,13 @@ export const TASK_CATEGORIES = [
 ] as const;
 
 export type TaskCategory = typeof TASK_CATEGORIES[number];
+
+export const TASK_STATUSES = [
+  'Pending',
+  'In Progress',
+  'Completed',
+  'Rejected',
+  'Cancelled',
+] as const;
+
+export type TaskStatus = typeof TASK_STATUSES[number];
