@@ -61,13 +61,23 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
   ] : [
     { name: 'Associates', count: mappedAssociates.length, fill: 'hsl(var(--chart-2))' },
     { name: 'Customers', count: mappedCustomers.length, fill: 'hsl(var(--chart-3))' },
+    { name: 'Families', count: totalFamilies, fill: 'hsl(var(--chart-4))' },
+    { name: 'Tasks', count: relevantTasks.length, fill: 'hsl(var(--chart-5))' },
   ];
+  
+  const pieChartData = user.role === 'RM' ? [
+      { name: 'Associates', count: mappedAssociates.length, fill: 'hsl(var(--chart-2))' },
+      { name: 'Customers', count: mappedCustomers.length, fill: 'hsl(var(--chart-3))' },
+  ] : totalCounts;
+
 
   const chartConfig = {
     count: { label: 'Count' },
     RMs: { label: 'RMs', color: 'hsl(var(--chart-1))' },
     Associates: { label: 'Associates', color: 'hsl(var(--chart-2))' },
     Customers: { label: 'Customers', color: 'hsl(var(--chart-3))' },
+    Families: { label: 'Families', color: 'hsl(var(--chart-4))' },
+    Tasks: { label: 'Tasks', color: 'hsl(var(--chart-5))' },
   };
 
   if (user.role === 'RM') {
@@ -112,6 +122,52 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                   </CardContent>
                 </Card>
              </div>
+             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                <Card className="lg:col-span-4">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                    <BarChart className="h-5 w-5" />
+                    User Counts
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                    <RechartsBarChart data={totalCounts} accessibilityLayer>
+                        <CartesianGrid vertical={false} />
+                        <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
+                        <YAxis />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                        <Bar dataKey="count" radius={4}>
+                        {totalCounts.map((entry) => (
+                            <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                        ))}
+                        </Bar>
+                    </RechartsBarChart>
+                    </ChartContainer>
+                </CardContent>
+                </Card>
+                <Card className="lg:col-span-3">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                    <PieChart className="h-5 w-5" />
+                    User Distribution
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
+                    <RechartsPieChart>
+                        <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                        <Pie data={pieChartData} dataKey="count" nameKey="name" innerRadius={60}>
+                        {pieChartData.map((entry) => (
+                            <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                        ))}
+                        </Pie>
+                        <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+                    </RechartsPieChart>
+                    </ChartContainer>
+                </CardContent>
+                </Card>
+            </div>
           </>
       )
   }
