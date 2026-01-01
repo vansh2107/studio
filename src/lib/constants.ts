@@ -5,14 +5,17 @@ export type Role = typeof ROLES[number];
 export const PERMISSION_MODULES = [
   'SUPER_ADMIN',
   'ADMIN',
+  'RM',
   'ASSOCIATE',
   'CUSTOMER',
-  'FAMILY_MANAGER',
   'DOC_VAULT',
+  'TASK',
+  'CHATBOT',
+  'CUSTOMER_ACTIONS'
 ] as const;
 export type PermissionModule = typeof PERMISSION_MODULES[number];
 
-export const PERMISSIONS = ['view', 'create', 'update', 'delete', 'export'] as const;
+export const PERMISSIONS = ['view', 'edit', 'delete', 'create', 'export'] as const;
 export type Permission = typeof PERMISSIONS[number];
 
 export type ModulePermissions = {
@@ -20,7 +23,7 @@ export type ModulePermissions = {
 };
 
 export type Permissions = {
-  [M in PermissionModule]: ModulePermissions;
+  [M in PermissionModule]?: ModulePermissions;
 };
 
 export const HIERARCHY: Role[] = ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'];

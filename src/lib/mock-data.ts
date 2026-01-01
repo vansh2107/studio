@@ -12,19 +12,19 @@ const avatarUrls = PlaceHolderImages
 
 // 1. Super Admin
 export const superAdmins: SuperAdmin[] = [
-    { id: 'sa-1', name: 'Biren Shah', email: 'biren.shah@demo.app', password: 'SuperAdmin@123', role: 'SUPER_ADMIN', avatarUrl: avatarUrls[0] },
+    { id: 'sa-1', name: 'Biren Shah', email: 'superadmin@demo.app', password: 'SuperAdmin@123', role: 'SUPER_ADMIN', avatarUrl: avatarUrls[0] },
 ];
 
 // 2. Admins (Child of Super Admin)
 export const admins: Admin[] = [
-    { id: 'admin-1', name: 'Keval Shah', email: 'keval.shah@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[1], superAdminId: 'sa-1' },
+    { id: 'admin-1', name: 'Keval Shah', email: 'admin@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[1], superAdminId: 'sa-1' },
     { id: 'admin-2', name: 'Parth Doshi', email: 'parth.doshi@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[2], superAdminId: 'sa-1' },
 ];
 
 // 3. Relationship Managers (Child of Admin)
 export const relationshipManagers: RelationshipManager[] = [
     // RMs under Keval Shah
-    { id: 'rm-1', name: 'Kashish Nathwani', email: 'kashish.nathwani@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[3], adminId: 'admin-1' },
+    { id: 'rm-1', name: 'Kashish Nathwani', email: 'rm@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[3], adminId: 'admin-1' },
     { id: 'rm-2', name: 'Priyesh Shah', email: 'priyesh.shah@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[4], adminId: 'admin-1' },
     // RMs under Parth Doshi
     { id: 'rm-3', name: 'Harsh Shah', email: 'harsh.shah@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[5], adminId: 'admin-2' },
@@ -34,7 +34,7 @@ export const relationshipManagers: RelationshipManager[] = [
 // 4. Associates (Child of Relationship Manager)
 export const associates: Associate[] = [
     // Under Kashish Nathwani
-    { id: 'assoc-1', name: 'Associate A1', email: 'a1@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[7], rmId: 'rm-1' },
+    { id: 'assoc-1', name: 'Associate A1', email: 'associate@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[7], rmId: 'rm-1' },
     // Under Priyesh Shah
     { id: 'assoc-2', name: 'Associate A2', email: 'a2@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[8], rmId: 'rm-2' },
     { id: 'assoc-3', name: 'Associate A3', email: 'a3@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[9], rmId: 'rm-2' },
@@ -53,7 +53,7 @@ export const clients: Client[] = [
         name: 'Rahul Mehta',
         firstName: 'Rahul',
         lastName: 'Mehta',
-        email: 'rahul.mehta@demo.app',
+        email: 'customer@demo.app',
         password: 'Customer@123',
         role: 'CUSTOMER',
         avatarUrl: avatarUrls[13],
@@ -166,47 +166,62 @@ export const documents: Document[] = [
 
 export const permissions: Record<string, Permissions> = {
   SUPER_ADMIN: {
-    SUPER_ADMIN: { view: true, create: true, update: true, delete: true, export: true },
-    ADMIN: { view: true, create: true, update: true, delete: true, export: true },
-    ASSOCIATE: { view: true, create: true, update: true, delete: true, export: true },
-    CUSTOMER: { view: true, create: true, update: true, delete: true, export: true },
-    FAMILY_MANAGER: { view: true, create: true, update: true, delete: true, export: true },
-    DOC_VAULT: { view: true, create: true, update: true, delete: true, export: true },
+    SUPER_ADMIN: { view: true, create: true, edit: true, delete: true, export: true },
+    ADMIN: { view: true, create: true, edit: true, delete: true, export: true },
+    RM: { view: true, create: true, edit: true, delete: true, export: true },
+    ASSOCIATE: { view: true, create: true, edit: true, delete: true, export: true },
+    CUSTOMER: { view: true, create: true, edit: true, delete: true, export: true },
+    DOC_VAULT: { view: true, create: true, edit: true, delete: true, export: true },
+    TASK: { view: true, create: true, edit: true, delete: true, export: true },
+    CHATBOT: { view: true, create: true, edit: true, delete: true, export: true },
+    CUSTOMER_ACTIONS: { view: true, create: true, edit: true, delete: true, export: true },
   },
   ADMIN: {
-    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ADMIN: { view: true, create: false, update: true, delete: false, export: true },
-    ASSOCIATE: { view: true, create: true, update: true, delete: true, export: false },
-    CUSTOMER: { view: true, create: true, update: true, delete: true, export: true },
-    FAMILY_MANAGER: { view: true, create: true, update: true, delete: false, export: true },
-    DOC_VAULT: { view: true, create: true, update: false, delete: false, export: true },
+    SUPER_ADMIN: { view: false, create: false, edit: false, delete: false, export: false },
+    ADMIN: { view: true, create: false, edit: true, delete: false, export: true },
+    RM: { view: true, create: true, edit: true, delete: true, export: true },
+    ASSOCIATE: { view: true, create: true, edit: true, delete: true, export: true },
+    CUSTOMER: { view: true, create: true, edit: true, delete: true, export: true },
+    DOC_VAULT: { view: true, create: true, edit: true, delete: false, export: true },
+    TASK: { view: true, create: true, edit: true, delete: false, export: true },
+    CHATBOT: { view: true, create: true, edit: true, delete: false, export: true },
+    CUSTOMER_ACTIONS: { view: true, create: true, edit: true, delete: false, export: true },
   },
-   // Add RM permissions if needed, for now they are like admins without create rights for other admins
   RM: {
-    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ASSOCIATE: { view: true, create: true, update: true, delete: false, export: true },
-    CUSTOMER: { view: true, create: true, update: true, delete: true, export: true },
-    FAMILY_MANAGER: { view: true, create: true, update: true, delete: false, export: true },
-    DOC_VAULT: { view: true, create: true, update: false, delete: false, export: true },
+    SUPER_ADMIN: { view: false, create: false, edit: false, delete: false, export: false },
+    ADMIN: { view: false, create: false, edit: false, delete: false, export: false },
+    RM: { view: true, create: false, edit: true, delete: false, export: true },
+    ASSOCIATE: { view: true, create: true, edit: true, delete: false, export: true },
+    CUSTOMER: { view: true, create: true, edit: true, delete: true, export: true },
+    DOC_VAULT: { view: true, create: true, edit: true, delete: false, export: true },
+    TASK: { view: true, create: true, edit: true, delete: false, export: true },
+    CHATBOT: { view: true, create: true, edit: true, delete: false, export: true },
+    CUSTOMER_ACTIONS: { view: true, create: true, edit: true, delete: true, export: true },
   },
   ASSOCIATE: {
-    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ASSOCIATE: { view: true, create: false, update: true, delete: false, export: false },
-    CUSTOMER: { view: true, create: true, update: true, delete: false, export: true },
-    FAMILY_MANAGER: { view: true, create: false, update: true, delete: false, export: false },
-    DOC_VAULT: { view: true, create: true, update: false, delete: false, export: false },
+    SUPER_ADMIN: { view: false, create: false, edit: false, delete: false, export: false },
+    ADMIN: { view: false, create: false, edit: false, delete: false, export: false },
+    RM: { view: false, create: false, edit: false, delete: false, export: false },
+    ASSOCIATE: { view: true, create: false, edit: true, delete: false, export: false },
+    CUSTOMER: { view: true, create: true, edit: true, delete: false, export: true },
+    DOC_VAULT: { view: true, create: true, edit: false, delete: false, export: false },
+    TASK: { view: true, create: true, edit: true, delete: false, export: false },
+    CHATBOT: { view: true, create: true, edit: false, delete: false, export: false },
+    CUSTOMER_ACTIONS: { view: true, create: true, edit: true, delete: false, export: true },
   },
   CUSTOMER: {
-    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ASSOCIATE: { view: false, create: false, update: false, delete: false, export: false },
-    CUSTOMER: { view: true, create: false, update: false, delete: false, export: true },
-    FAMILY_MANAGER: { view: true, create: true, update: true, delete: true, export: false },
-    DOC_VAULT: { view: true, create: true, update: true, delete: true, export: true },
+    SUPER_ADMIN: { view: false, create: false, edit: false, delete: false, export: false },
+    ADMIN: { view: false, create: false, edit: false, delete: false, export: false },
+    RM: { view: false, create: false, edit: false, delete: false, export: false },
+    ASSOCIATE: { view: false, create: false, edit: false, delete: false, export: false },
+    CUSTOMER: { view: true, create: false, edit: false, delete: false, export: true },
+    DOC_VAULT: { view: true, create: true, edit: true, delete: true, export: true },
+    TASK: { view: false, create: false, edit: false, delete: false, export: false },
+    CHATBOT: { view: false, create: false, edit: false, delete: false, export: false },
+    CUSTOMER_ACTIONS: { view: true, create: true, edit: true, delete: true, export: false },
   },
 };
+
 
 // --- DATA ACCESSOR FUNCTIONS (NEW HIERARCHY) ---
 

@@ -1,3 +1,4 @@
+
 'use client';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useRouter, useParams } from 'next/navigation';
@@ -16,49 +17,14 @@ import { PERMISSION_MODULES, PERMISSIONS, type Permission, type PermissionModule
 import { useMemo, useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-// Mock data store for permissions
-const mockPermissionsStore: Record<string, Permissions> = {
-  SUPER_ADMIN: {
-    SUPER_ADMIN: { view: true, create: true, update: true, delete: true, export: true },
-    ADMIN: { view: true, create: true, update: true, delete: true, export: true },
-    ASSOCIATE: { view: true, create: true, update: true, delete: true, export: true },
-    CUSTOMER: { view: true, create: true, update: true, delete: true, export: true },
-    FAMILY_MANAGER: { view: true, create: true, update: true, delete: true, export: true },
-    DOC_VAULT: { view: true, create: true, update: true, delete: true, export: true },
-  },
-  ADMIN: {
-    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ADMIN: { view: true, create: true, update: true, delete: false, export: true },
-    ASSOCIATE: { view: true, create: true, update: true, delete: true, export: false },
-    CUSTOMER: { view: true, create: true, update: true, delete: true, export: true },
-    FAMILY_MANAGER: { view: true, create: true, update: true, delete: false, export: true },
-    DOC_VAULT: { view: true, create: true, update: false, delete: false, export: true },
-  },
-  ASSOCIATE: {
-    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ASSOCIATE: { view: true, create: false, update: true, delete: false, export: false },
-    CUSTOMER: { view: true, create: true, update: true, delete: false, export: true },
-    FAMILY_MANAGER: { view: true, create: false, update: true, delete: false, export: false },
-    DOC_VAULT: { view: true, create: true, update: false, delete: false, export: false },
-  },
-  CUSTOMER: {
-    SUPER_ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ADMIN: { view: false, create: false, update: false, delete: false, export: false },
-    ASSOCIATE: { view: false, create: false, update: false, delete: false, export: false },
-    CUSTOMER: { view: true, create: false, update: false, delete: false, export: true },
-    FAMILY_MANAGER: { view: true, create: true, update: true, delete: true, export: false },
-    DOC_VAULT: { view: true, create: true, update: true, delete: true, export: true },
-  },
-};
+import { permissions as mockPermissionsStore } from '@/lib/mock-data';
 
 
 export default function EditRolePage() {
   const { effectiveUser } = useCurrentUser();
   const router = useRouter();
   const params = useParams();
-  const roleId = decodeURIComponent(params.roleId as string); // Role name is the ID
+  const roleId = decodeURIComponent(params.roleId as string);
   
   const { toast } = useToast();
   
@@ -75,12 +41,23 @@ export default function EditRolePage() {
   const handlePermissionChange = (module: PermissionModule, permission: Permission, checked: boolean) => {
     if (roleId === 'SUPER_ADMIN' || !permissions) return;
 
+    let newModulePermissions = {
+      ...(permissions[module] || {}),
+      [permission]: checked,
+    };
+
+    // If 'view' is unchecked, uncheck and disable all others for that module
+    if (permission === 'view' && !checked) {
+      PERMISSIONS.forEach(p => {
+        if (p !== 'view') {
+          newModulePermissions[p] = false;
+        }
+      });
+    }
+
     const newPermissions = { 
       ...permissions,
-      [module]: {
-        ...permissions[module],
-        [permission]: checked,
-      }
+      [module]: newModulePermissions,
     };
     setPermissions(newPermissions);
 
@@ -107,6 +84,19 @@ export default function EditRolePage() {
     );
   }
 
+  const moduleDisplayNames: Record<PermissionModule, string> = {
+    SUPER_ADMIN: 'Super-admin',
+    ADMIN: 'Admin',
+    RM: 'RM',
+    ASSOCIATE: 'Associate',
+    CUSTOMER: 'Customer',
+    DOC_VAULT: 'Doc Vault',
+    TASK: 'Task',
+    CHATBOT: 'Chat-bot',
+    CUSTOMER_ACTIONS: 'View / Impersonate / Edit / Delete / Create New Family (Customer page actions)'
+  };
+
+
   return (
     <div className="space-y-6">
        <Button variant="outline" onClick={() => router.back()} className="mb-4">
@@ -127,7 +117,7 @@ export default function EditRolePage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[200px] font-bold">Modules</TableHead>
+                  <TableHead className="w-[400px] font-bold">Modules</TableHead>
                   {PERMISSIONS.map(permission => (
                     <TableHead key={permission} className="text-center capitalize font-bold">{permission}</TableHead>
                   ))}
@@ -136,18 +126,23 @@ export default function EditRolePage() {
               <TableBody>
                 {permissions && PERMISSION_MODULES.map(module => (
                   <TableRow key={module}>
-                    <TableCell className="font-medium">{module.replace(/_/g, ' ')}</TableCell>
-                    {PERMISSIONS.map(permission => (
-                      <TableCell key={permission} className="text-center">
-                        <Checkbox
-                          disabled={roleId === 'SUPER_ADMIN'}
-                          checked={permissions[module]?.[permission] ?? false}
-                          onCheckedChange={(checked) => {
-                            handlePermissionChange(module, permission, !!checked);
-                          }}
-                        />
-                      </TableCell>
-                    ))}
+                    <TableCell className="font-medium">{moduleDisplayNames[module]}</TableCell>
+                    {PERMISSIONS.map(permission => {
+                      const canView = permissions[module]?.view ?? false;
+                      const isViewCheckbox = permission === 'view';
+                      
+                      return (
+                        <TableCell key={permission} className="text-center">
+                          <Checkbox
+                            disabled={roleId === 'SUPER_ADMIN' || (!isViewCheckbox && !canView)}
+                            checked={permissions[module]?.[permission] ?? false}
+                            onCheckedChange={(checked) => {
+                              handlePermissionChange(module, permission, !!checked);
+                            }}
+                          />
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))}
               </TableBody>
