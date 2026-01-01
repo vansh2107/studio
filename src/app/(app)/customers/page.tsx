@@ -387,7 +387,7 @@ export default function CustomersPage() {
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete the record for strong>{client.firstName} {client.lastName}</strong>
+                                                This action cannot be undone. This will permanently delete the record for <strong>{client.firstName} {client.lastName}</strong>
                                                 {isHead && " and all associated family members."}
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
