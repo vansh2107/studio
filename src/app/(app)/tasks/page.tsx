@@ -14,7 +14,7 @@ import {
 import { useTasks } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import { Task, TaskStatus } from '@/hooks/use-tasks';
@@ -27,6 +27,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { TASK_STATUSES } from '@/lib/constants';
 import { format, parseISO, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -35,13 +45,15 @@ import { cn } from '@/lib/utils';
 export default function TasksPage() {
   const { hasPermission } = useCurrentUser();
   const { toast } = useToast();
-  const { tasks, addTask, updateTask } = useTasks();
+  const { tasks, addTask, updateTask, deleteTask } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   const canView = hasPermission('TASK', 'view');
   const canCreate = hasPermission('TASK', 'create');
   const canUpdate = hasPermission('TASK', 'edit');
+  const canDelete = hasPermission('TASK', 'delete');
 
   const getStatusBadgeVariant = (status: string) => {
     const lowerCaseStatus = status.toLowerCase();
@@ -90,6 +102,16 @@ export default function TasksPage() {
         description: `Task status changed to "${newStatus}".`
     });
   }
+
+  const handleDeleteConfirm = () => {
+    if (!taskToDelete) return;
+    deleteTask(taskToDelete.id);
+    toast({
+        title: 'Task Deleted',
+        description: `The task for "${taskToDelete.clientName}" has been deleted.`,
+    });
+    setTaskToDelete(null);
+  };
 
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return '—';
@@ -193,18 +215,32 @@ export default function TasksPage() {
                           </TableCell>
                           <TableCell>{task.description || '—'}</TableCell>
                           <TableCell className="text-right">
-                             {canUpdate && (
-                                 <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={isTerminal}>
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>{isTerminal ? 'Task is locked' : 'Edit Task'}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                             )}
+                             <div className="flex items-center justify-end gap-1">
+                                {canUpdate && (
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={isTerminal}>
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{isTerminal ? 'Task is locked' : 'Edit Task'}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                )}
+                                {canDelete && (
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={isTerminal}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{isTerminal ? 'Cannot delete locked task' : 'Delete Task'}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                )}
+                             </div>
                           </TableCell>
                         </TableRow>
                     );
@@ -239,6 +275,21 @@ export default function TasksPage() {
           onSave={handleSaveTask}
         />
       </Modal>
+
+      <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the task for <strong>{taskToDelete?.clientName}</strong>.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </TooltipProvider>
   );
 }
