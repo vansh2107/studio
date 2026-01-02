@@ -60,6 +60,13 @@ export default function CustomersPage() {
   
   const [itemToDelete, setItemToDelete] = useState<DisplayClient | null>(null);
   
+  const getRmForClient = (client: DisplayClient) => {
+    const associate = allAssociates.find(a => a.id === client.associateId);
+    if (!associate) return null;
+    const rm = allRMs.find(r => r.id === associate.rmId);
+    return rm;
+  };
+
   const allDisplayClients: DisplayClient[] = useMemo(() => {
     if (!effectiveUser) return [];
     setLoading(true);
@@ -93,7 +100,7 @@ export default function CustomersPage() {
             ...fm,
             name: `${fm.firstName} ${fm.lastName}`,
             role: 'CUSTOMER',
-            associateId: clientHead?.associateId || '', // members don't have avatars in this model
+            associateId: clientHead?.associateId || '', 
             isFamilyHead: false,
             email: fm.emailId,
             // Carry over necessary fields from head for display if needed
@@ -103,7 +110,42 @@ export default function CustomersPage() {
         });
         
     setLoading(false);
-    return [...heads, ...members].sort((a,b) => a.lastName.localeCompare(b.lastName));
+
+    const unsortedClients = [...heads, ...members];
+
+    const rolePriority = ["Head", "Self", "Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister"];
+    const getRolePriority = (item: DisplayClient) => {
+      if (item.isFamilyHead) return -1;
+      const relation = (item as FamilyMember).relation;
+      const index = rolePriority.indexOf(relation);
+      return index === -1 ? rolePriority.length : index;
+    };
+    
+    return unsortedClients.sort((a, b) => {
+        const rmA = getRmForClient(a);
+        const rmB = getRmForClient(b);
+
+        // Primary sort: by RM name. Unassigned RMs go to the bottom.
+        if (rmA && !rmB) return -1;
+        if (!rmA && rmB) return 1;
+        if (rmA && rmB && rmA.name !== rmB.name) {
+            return rmA.name.localeCompare(rmB.name);
+        }
+
+        // Secondary sort: by family head.
+        const headAId = a.isFamilyHead ? a.id : (a as FamilyMember).clientId;
+        const headBId = b.isFamilyHead ? b.id : (b as FamilyMember).clientId;
+
+        if (headAId !== headBId) {
+            const headA = heads.find(h => h.id === headAId);
+            const headB = heads.find(h => h.id === headBId);
+            return (headA?.name || '').localeCompare(headB?.name || '');
+        }
+
+        // Tertiary sort: by role within the family.
+        return getRolePriority(a) - getRolePriority(b);
+    });
+
   }, [effectiveUser, familyMembers]);
 
   const filteredClients = useMemo(() => {
@@ -237,13 +279,6 @@ export default function CustomersPage() {
       if (!client.isFamilyHead) return undefined;
       return mockUsers.find(u => u.id === client.id);
   }
-
-  const getRmForClient = (client: DisplayClient) => {
-    const associate = allAssociates.find(a => a.id === client.associateId);
-    if (!associate) return null;
-    const rm = allRMs.find(r => r.id === associate.rmId);
-    return rm;
-  };
 
   const canCreate = hasPermission('CUSTOMER_ACTIONS', 'create');
   const canUpdate = hasPermission('CUSTOMER_ACTIONS', 'edit');
