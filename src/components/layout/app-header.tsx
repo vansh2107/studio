@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Briefcase,
   UserSquare,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ const settingsMenuItems = [
   { href: '/admins', label: 'Admins', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },
   { href: '/rms', label: 'RMs', icon: UserSquare, roles: ['SUPER_ADMIN', 'ADMIN'] },
   { href: '/associates', label: 'Associates', icon: Briefcase, roles: ['SUPER_ADMIN', 'ADMIN', 'RM'] },
+  { href: '/user-mapping', label: 'User Mapping', icon: Users, roles: ['SUPER_ADMIN'] },
   { href: '/role-management', label: 'Role Management', icon: Shield, roles: ['SUPER_ADMIN'] },
 ];
 
