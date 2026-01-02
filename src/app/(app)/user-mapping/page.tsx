@@ -223,7 +223,6 @@ export default function UserMappingPage() {
             <h1 className="text-3xl font-bold font-headline">User Mapping</h1>
             <p className="text-muted-foreground">Manage the hierarchy of users in the system.</p>
         </div>
-        <Button><Plus className="mr-2 h-4 w-4"/> Add Mapping</Button>
       </div>
 
       <div className="space-y-4">
