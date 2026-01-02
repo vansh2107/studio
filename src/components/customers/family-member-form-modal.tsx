@@ -30,7 +30,7 @@ const memberSchema = z.object({
 
 type MemberFormData = z.infer<typeof memberSchema>;
 
-const RELATION_OPTIONS = ["Self", "Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister", "Other"];
+const RELATION_OPTIONS = ["Self", "Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister", "Other", "Daughter-in-law", "Son-in-law", "Grandson", "Granddaughter"];
 const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
 interface FamilyMemberFormModalProps {
