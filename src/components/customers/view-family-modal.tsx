@@ -183,6 +183,7 @@ export function ViewFamilyModal({
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Relation</TableHead>
+                  <TableHead>Documents</TableHead>
                   <TableHead>D.O.B</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -198,6 +199,17 @@ export function ViewFamilyModal({
                       </div>
                     </TableCell>
                     <TableCell>{member.relation}</TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/documents/${member.id}?clientId=${client.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                         <Button variant="ghost" size="icon">
+                            <Folder className="h-5 w-5 text-primary" />
+                         </Button>
+                      </Link>
+                    </TableCell>
                     <TableCell>{formatDate(member.dateOfBirth)}</TableCell>
                     <TableCell>{member.phoneNumber || 'N/A'}</TableCell>
                     <TableCell className="text-right">
@@ -211,7 +223,7 @@ export function ViewFamilyModal({
                 ))}
                  {familyMembers.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={5} className="text-center h-24">No members added yet.</TableCell>
+                        <TableCell colSpan={6} className="text-center h-24">No members added yet.</TableCell>
                     </TableRow>
                  )}
               </TableBody>
