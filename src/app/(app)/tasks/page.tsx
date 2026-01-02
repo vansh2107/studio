@@ -17,10 +17,17 @@ import { Button } from '@/components/ui/button';
 import { Plus, Edit } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
-import { Task } from '@/hooks/use-tasks';
+import { Task, TaskStatus } from '@/hooks/use-tasks';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { TASK_STATUSES } from '@/lib/constants';
 
 export default function TasksPage() {
   const { hasPermission } = useCurrentUser();
@@ -73,6 +80,14 @@ export default function TasksPage() {
     handleCloseModal();
   };
 
+  const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
+    updateTask(taskId, { status: newStatus });
+    toast({
+        title: "Status Updated",
+        description: `Task status changed to "${newStatus}".`
+    });
+  }
+
   if (!canView) {
       return (
           <Card>
@@ -121,9 +136,26 @@ export default function TasksPage() {
                       <TableCell>{task.rmName}</TableCell>
                       <TableCell>{task.dueDate}</TableCell>
                       <TableCell>
-                        <Badge variant={getStatusBadgeVariant(task.status)}>
-                          {task.status}
-                        </Badge>
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild disabled={!canUpdate}>
+                                <Badge 
+                                    variant={getStatusBadgeVariant(task.status)}
+                                    className={canUpdate ? "cursor-pointer" : "cursor-not-allowed"}
+                                >
+                                {task.status}
+                                </Badge>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                {TASK_STATUSES.map(status => (
+                                    <DropdownMenuItem 
+                                        key={status} 
+                                        onSelect={() => handleStatusChange(task.id, status)}
+                                    >
+                                        {status}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                       <TableCell>{task.description || '—'}</TableCell>
                       <TableCell className="text-right">

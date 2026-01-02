@@ -2,6 +2,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import type { TaskStatus, TaskCategory } from '@/lib/constants';
+
+export type { TaskStatus, TaskCategory };
 
 export interface Task {
   id: string;
@@ -9,7 +12,7 @@ export interface Task {
   category: string;
   rmName: string;
   dueDate: string;
-  status: string;
+  status: TaskStatus;
   description?: string;
 }
 
