@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -14,6 +14,8 @@ import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TASK_CATEGORIES, TASK_STATUSES, RM_NAMES } from '@/lib/constants';
+import { getAllClients, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
+import { Combobox } from '@/components/ui/combobox';
 
 const taskSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
@@ -37,11 +39,28 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const { toast } = useToast();
   const isEditMode = !!task;
 
+  const clientOptions = useMemo(() => {
+    const heads = getAllClients().map(c => ({
+      ...c,
+      label: `${c.firstName} ${c.lastName} — Head`,
+      value: `${c.firstName} ${c.lastName}`
+    }));
+
+    const members = mockFamilyMembers.map(fm => ({
+      ...fm,
+      label: `${fm.firstName} ${fm.lastName} — ${fm.relation}`,
+      value: `${fm.firstName} ${fm.lastName}`
+    }));
+    
+    return [...heads, ...members].sort((a,b) => a.label.localeCompare(b.label));
+  }, []);
+
   const {
     register,
     handleSubmit,
     reset,
     control,
+    setValue,
     formState: { errors },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -101,7 +120,24 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                   <Label htmlFor="clientName">Client Name</Label>
-                  <Input id="clientName" {...register('clientName')} />
+                   <Controller
+                    name="clientName"
+                    control={control}
+                    render={({ field }) => (
+                      <Combobox
+                        options={clientOptions}
+                        value={field.value}
+                        onChange={(value) => {
+                            // Find the full name from the selected value (which is also the full name)
+                            const selectedOption = clientOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
+                            setValue('clientName', selectedOption ? selectedOption.value : '');
+                        }}
+                        placeholder="Select Client"
+                        searchPlaceholder="Search clients..."
+                        emptyText="No clients found."
+                      />
+                    )}
+                  />
                   {errors.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
               </div>
 
