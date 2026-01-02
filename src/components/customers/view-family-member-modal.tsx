@@ -58,12 +58,6 @@ export function ViewFamilyMemberModal({
             <DetailItem label="Address" value={member.address} />
         </div>
       </div>
-
-      <div className="flex justify-end mt-6">
-        <Button variant="outline" onClick={onClose}>
-          Close
-        </Button>
-      </div>
     </div>
   );
 }
