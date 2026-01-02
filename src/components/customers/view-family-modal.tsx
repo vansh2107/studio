@@ -10,6 +10,7 @@ import {
   Trash2,
   User,
   Folder,
+  Eye,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import {
@@ -35,6 +36,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { cn } from '@/lib/utils';
 import { DocumentViewer } from './document-viewer';
+import Modal from '@/components/ui/Modal';
+import { ViewFamilyMemberModal } from './view-family-member-modal';
 
 interface ViewFamilyModalProps {
   onClose: () => void;
@@ -76,6 +79,7 @@ export function ViewFamilyModal({
   const { hasPermission } = useCurrentUser();
   const { toast } = useToast();
   const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(null);
+  const [memberToView, setMemberToView] = useState<FamilyMember | null>(null);
   const [selectedPersonForDocs, setSelectedPersonForDocs] = useState<Client | FamilyMember>(client);
   
   const allFamily = [client, ...familyMembers];
@@ -226,7 +230,8 @@ export function ViewFamilyModal({
                     <TableCell>{formatDate(member.dateOfBirth)}</TableCell>
                     <TableCell>{member.phoneNumber || 'N/A'}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
+                      <div className="flex gap-1 justify-end">
+                        <Button variant="ghost" size="icon" onClick={() => setMemberToView(member)}><Eye className="h-4 w-4" /></Button>
                         {canUpdateMember && <Button variant="ghost" size="icon" onClick={() => handleEdit(member)}><Edit className="h-4 w-4" /></Button>}
                         {canDeleteMember && <Button variant="ghost" size="icon" onClick={() => handleDelete(member)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                       </div>
@@ -241,7 +246,6 @@ export function ViewFamilyModal({
               </TableBody>
             </Table>
         </div>
-
       </div>
       
        <AlertDialog open={!!memberToDelete} onOpenChange={(open) => !open && setMemberToDelete(null)}>
@@ -258,6 +262,15 @@ export function ViewFamilyModal({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <Modal open={!!memberToView} onClose={() => setMemberToView(null)}>
+            {memberToView && (
+                <ViewFamilyMemberModal
+                    member={memberToView}
+                    onClose={() => setMemberToView(null)}
+                />
+            )}
+        </Modal>
 
     </div>
   );
