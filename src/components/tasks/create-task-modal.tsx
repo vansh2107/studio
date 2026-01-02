@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Task } from '@/hooks/use-tasks';
+import { Task, TaskStatus } from '@/hooks/use-tasks';
 import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,7 +23,6 @@ const taskSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   rmName: z.string().min(1, 'RM name is required'),
   dueDate: z.string().min(1, 'Due date is required'),
-  status: z.string().min(1, 'Status is required'),
   description: z.string().optional(),
 });
 
@@ -31,7 +30,7 @@ type TaskFormData = z.infer<typeof taskSchema>;
 
 interface CreateTaskModalProps {
   onClose: () => void;
-  onSave: (task: Omit<Task, 'id' | 'createDate' | 'startDate' | 'completeDate'> & { id?: string }) => void;
+  onSave: (task: Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'> & { id?: string }) => void;
   task?: Task | null;
 }
 
@@ -39,6 +38,9 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const isEditMode = !!task;
+
+  const terminalStatuses: TaskStatus[] = ['Completed', 'Cancelled', 'Rejected'];
+  const isTerminal = isEditMode && task ? terminalStatuses.includes(task.status) : false;
 
   const clientOptions = useMemo(() => {
     const heads = getAllClients().map(c => ({
@@ -70,21 +72,26 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       category: '',
       rmName: '',
       dueDate: '',
-      status: 'Pending',
       description: '',
     },
   });
 
   useEffect(() => {
     if (task) {
-      reset(task);
+       const defaultData: TaskFormData = {
+         clientName: task.clientName || '',
+         category: task.category || '',
+         rmName: task.rmName || '',
+         dueDate: task.dueDate ? format(new Date(task.dueDate), 'yyyy-MM-dd') : '',
+         description: task.description || '',
+       }
+      reset(defaultData);
     } else {
       reset({
         clientName: '',
         category: '',
         rmName: '',
         dueDate: '',
-        status: 'Pending',
         description: '',
       });
     }
@@ -113,7 +120,12 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               {isEditMode ? 'Edit Task' : 'Create Task Manually'}
           </h2>
           <p className="text-sm text-muted-foreground">
-              {isEditMode ? 'Update the details for this task.' : 'Fill in the details to create a new task.'}
+              {isTerminal 
+                ? 'This task is locked and cannot be edited.' 
+                : isEditMode 
+                ? 'Update the details for this task.' 
+                : 'Fill in the details to create a new task.'
+              }
           </p>
         </div>
 
@@ -129,7 +141,6 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         options={clientOptions}
                         value={field.value}
                         onChange={(value) => {
-                            // Find the full name from the selected value (which is also the full name)
                             const selectedOption = clientOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
                             setValue('clientName', selectedOption ? selectedOption.value : '');
                         }}
@@ -148,7 +159,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     name="category"
                     control={control}
                     render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isTerminal}>
                         <SelectTrigger id="category">
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
@@ -171,7 +182,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     name="rmName"
                     control={control}
                     render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isTerminal}>
                         <SelectTrigger id="rmName">
                           <SelectValue placeholder="Select RM" />
                         </SelectTrigger>
@@ -190,43 +201,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
                <div className="space-y-1">
                   <Label htmlFor="dueDate">Due Date</Label>
-                  <Input id="dueDate" {...register('dueDate')} placeholder="YYYY-MM-DD" type="date" />
+                  <Input id="dueDate" {...register('dueDate')} placeholder="YYYY-MM-DD" type="date" disabled={isTerminal} />
                   {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
               </div>
           </div>
 
           <div className="space-y-1">
             <Label htmlFor="description">Description (Optional)</Label>
-            <Textarea id="description" {...register('description')} />
-          </div>
-
-          <div className="space-y-1">
-              <Label htmlFor="status">Status</Label>
-               <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                    <SelectTrigger id="status">
-                      <SelectValue placeholder="Select a status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TASK_STATUSES.map(cat => (
-                        <SelectItem key={cat} value={cat}>
-                            {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.status && <p className="text-sm text-destructive">{errors.status.message}</p>}
+            <Textarea id="description" {...register('description')} disabled={isTerminal} />
           </div>
           
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="submit" disabled={isSaving}>
-              {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : isEditMode ? 'Save Changes' : 'Save Task'}
-            </Button>
+            {!isTerminal && (
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : isEditMode ? 'Save Changes' : 'Save Task'}
+              </Button>
+            )}
           </div>
         </form>
       </div>

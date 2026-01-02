@@ -22,7 +22,7 @@ export interface Task {
 
 interface TaskContextType {
   tasks: Task[];
-  addTask: (task: Omit<Task, 'id' | 'createDate'>) => void;
+  addTask: (task: Omit<Task, 'id' | 'createDate' | 'status'>) => void;
   updateTask: (taskId: string, updatedTask: Partial<Omit<Task, 'id'>>) => void;
 }
 
@@ -31,10 +31,11 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  const addTask = (task: Omit<Task, 'id' | 'createDate'>) => {
+  const addTask = (task: Omit<Task, 'id' | 'createDate' | 'status'>) => {
     const newTask: Task = {
         ...task,
         id: `task-${Date.now()}`,
+        status: 'Pending',
         createDate: new Date().toISOString(),
         startDate: null,
         completeDate: null,

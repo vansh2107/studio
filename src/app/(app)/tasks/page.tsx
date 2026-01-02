@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Table,
@@ -74,11 +74,11 @@ export default function TasksPage() {
     setEditingTask(null);
   };
 
-  const handleSaveTask = (task: Omit<Task, 'id' | 'createDate' | 'startDate' | 'completeDate'> & { id?: string }) => {
+  const handleSaveTask = (task: Omit<Task, 'id' | 'createDate' | 'startDate' | 'completeDate' | 'status'> & { id?: string }) => {
     if (task.id) {
         updateTask(task.id, task);
     } else {
-        addTask(task as Omit<Task, 'id' | 'createDate'>);
+        addTask(task as Omit<Task, 'id' | 'createDate' | 'status'>);
     }
     handleCloseModal();
   };
@@ -99,6 +99,8 @@ export default function TasksPage() {
       return dateString;
     }
   };
+
+  const terminalStatuses: TaskStatus[] = ['Completed', 'Cancelled', 'Rejected'];
 
   if (!canView) {
       return (
@@ -144,7 +146,9 @@ export default function TasksPage() {
               <TableBody>
                 {tasks.length > 0 ? (
                   tasks.map((task) => {
-                    const isOverdue = task.status === 'In Progress' && isPast(parseISO(task.dueDate));
+                    const isOverdue = task.status === 'In Progress' && task.dueDate && isPast(parseISO(task.dueDate));
+                    const isTerminal = terminalStatuses.includes(task.status);
+
                     return (
                         <TableRow key={task.id} className={cn(isOverdue && 'text-destructive')}>
                           <TableCell className="font-medium">{task.clientName}</TableCell>
@@ -154,7 +158,7 @@ export default function TasksPage() {
                             <Tooltip>
                                 <TooltipTrigger>{formatDate(task.createDate)}</TooltipTrigger>
                                 <TooltipContent>
-                                    <p>Created: {format(parseISO(task.createDate), 'PPpp')}</p>
+                                    <p>Created: {task.createDate ? format(parseISO(task.createDate), 'PPpp') : 'N/A'}</p>
                                     {task.completeDate && <p>Completed: {format(parseISO(task.completeDate), 'PPpp')}</p>}
                                 </TooltipContent>
                             </Tooltip>
@@ -163,23 +167,27 @@ export default function TasksPage() {
                           <TableCell>{formatDate(task.dueDate)}</TableCell>
                           <TableCell>
                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild disabled={!canUpdate}>
+                                <DropdownMenuTrigger asChild disabled={!canUpdate || isTerminal}>
                                     <Badge 
                                         variant={getStatusBadgeVariant(task.status)}
-                                        className={cn(canUpdate ? "cursor-pointer" : "cursor-not-allowed", isOverdue && 'border-destructive')}
+                                        className={cn((canUpdate && !isTerminal) ? "cursor-pointer" : "cursor-not-allowed", isOverdue && 'border-destructive')}
                                     >
                                     {task.status}
                                     </Badge>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
-                                    {TASK_STATUSES.map(status => (
-                                        <DropdownMenuItem 
-                                            key={status} 
-                                            onSelect={() => handleStatusChange(task.id, status)}
-                                        >
-                                            {status}
+                                    {task.status === 'Pending' && (
+                                        <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'In Progress')}>
+                                            Move to In Progress
                                         </DropdownMenuItem>
-                                    ))}
+                                    )}
+                                    {task.status === 'In Progress' && (
+                                        <>
+                                            <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Completed')}>Completed</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Cancelled')}>Cancelled</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Rejected')}>Rejected</DropdownMenuItem>
+                                        </>
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
@@ -188,12 +196,12 @@ export default function TasksPage() {
                              {canUpdate && (
                                  <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)}>
+                                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={isTerminal}>
                                             <Edit className="h-4 w-4" />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>Edit Task</p>
+                                        <p>{isTerminal ? 'Task is locked' : 'Edit Task'}</p>
                                     </TooltipContent>
                                 </Tooltip>
                              )}
