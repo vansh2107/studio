@@ -74,7 +74,7 @@ export function ViewFamilyModal({
   const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(null);
   const [memberToView, setMemberToView] = useState<FamilyMember | null>(null);
   
-  const allFamilyForDocs = [client, ...familyMembers];
+  const allFamilyForTable = [{...client, relation: 'Head', name: `${client.firstName} ${client.lastName}` }, ...familyMembers];
 
   const canCreateMember = hasPermission('CUSTOMER_ACTIONS', 'create');
   const canUpdateMember = hasPermission('CUSTOMER_ACTIONS', 'edit');
@@ -135,40 +135,6 @@ export function ViewFamilyModal({
           </p>
       </div>
       <div className="grid gap-6 py-4">
-
-        {/* --- NEW Family Documents Section --- */}
-        <div>
-          <h3 className="text-lg font-semibold mb-2 border-b pb-1">
-            Family Documents
-          </h3>
-           <p className="text-sm text-muted-foreground mb-4">
-            Click a member to view their documents in a new tab.
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            {allFamilyForDocs.map((person) => (
-              <Link
-                key={person.id}
-                href={`/documents/${person.id}?clientId=${client.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  'text-left p-3 border rounded-lg transition-colors hover:bg-muted/50'
-                )}
-               >
-                 <div className="flex items-center gap-2">
-                    <Folder className="h-6 w-6 text-primary" />
-                    <div className="flex-1">
-                       <p className="font-semibold truncate">{person.firstName}</p>
-                       <p className="text-xs text-muted-foreground">
-                         {'role' in person ? 'Head' : person.relation}
-                       </p>
-                    </div>
-                 </div>
-               </Link>
-            ))}
-          </div>
-        </div>
-
         <div>
           <div className="flex justify-between items-center mb-2 border-b pb-1">
             <h3 className="text-lg font-semibold">Family Members List</h3>
@@ -184,13 +150,10 @@ export function ViewFamilyModal({
                   <TableHead>Name</TableHead>
                   <TableHead>Relation</TableHead>
                   <TableHead>Documents</TableHead>
-                  <TableHead>D.O.B</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {familyMembers.map((member) => (
+                {allFamilyForTable.map((member) => (
                   <TableRow key={member.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -198,7 +161,7 @@ export function ViewFamilyModal({
                         <span className="font-medium">{member.firstName} {member.lastName}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{member.relation}</TableCell>
+                    <TableCell>{'relation' in member ? member.relation : 'N/A'}</TableCell>
                     <TableCell>
                       <Link
                         href={`/documents/${member.id}?clientId=${client.id}`}
@@ -210,20 +173,11 @@ export function ViewFamilyModal({
                          </Button>
                       </Link>
                     </TableCell>
-                    <TableCell>{formatDate(member.dateOfBirth)}</TableCell>
-                    <TableCell>{member.phoneNumber || 'N/A'}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-1 justify-end">
-                        <Button variant="ghost" size="icon" onClick={() => setMemberToView(member)}><Eye className="h-4 w-4" /></Button>
-                        {canUpdateMember && <Button variant="ghost" size="icon" onClick={() => handleEdit(member)}><Edit className="h-4 w-4" /></Button>}
-                        {canDeleteMember && <Button variant="ghost" size="icon" onClick={() => handleDelete(member)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
-                      </div>
-                    </TableCell>
                   </TableRow>
                 ))}
-                 {familyMembers.length === 0 && (
+                 {allFamilyForTable.length === 1 && ( // Only head exists
                     <TableRow>
-                        <TableCell colSpan={6} className="text-center h-24">No members added yet.</TableCell>
+                        <TableCell colSpan={3} className="text-center h-24">No members added yet.</TableCell>
                     </TableRow>
                  )}
               </TableBody>
