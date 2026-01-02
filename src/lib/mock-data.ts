@@ -311,5 +311,3 @@ export const getMappedAssociatesForAdmin = (adminId: string): (Associate)[] => {
 export const getMappedCustomersForAssociate = (associateId: string): Client[] => {
   return getClientsForAssociate(associateId);
 };
-
-    

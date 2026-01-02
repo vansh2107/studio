@@ -3,6 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Client, FamilyMember } from '@/lib/types';
+import Link from 'next/link';
 import {
   X,
   PlusCircle,
@@ -35,7 +36,6 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { cn } from '@/lib/utils';
-import { DocumentViewer } from './document-viewer';
 import Modal from '@/components/ui/Modal';
 import { ViewFamilyMemberModal } from './view-family-member-modal';
 
@@ -47,13 +47,6 @@ interface ViewFamilyModalProps {
   onEditMember: (member: FamilyMember) => void;
   onDeleteMember: (memberId: string) => void;
 }
-
-const DetailItem = ({ label, value }: { label: string; value?: string }) => (
-  <div>
-    <p className="text-sm font-medium text-muted-foreground">{label}</p>
-    <p className="text-base">{value || 'N/A'}</p>
-  </div>
-);
 
 const formatDate = (dateString?: string) => {
   if (!dateString) return 'N/A';
@@ -80,9 +73,8 @@ export function ViewFamilyModal({
   const { toast } = useToast();
   const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(null);
   const [memberToView, setMemberToView] = useState<FamilyMember | null>(null);
-  const [selectedPersonForDocs, setSelectedPersonForDocs] = useState<Client | FamilyMember>(client);
   
-  const allFamily = [client, ...familyMembers];
+  const allFamilyForDocs = [client, ...familyMembers];
 
   const canCreateMember = hasPermission('CUSTOMER_ACTIONS', 'create');
   const canUpdateMember = hasPermission('CUSTOMER_ACTIONS', 'edit');
@@ -136,10 +128,10 @@ export function ViewFamilyModal({
       </Button>
       <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
           <h2 className="text-lg font-semibold leading-none tracking-tight">
-            Client Details: {client.firstName} {client.lastName}
+             Family Members
           </h2>
           <p className="text-sm text-muted-foreground">
-            Viewing record for the {client.lastName} family.
+            Viewing members of the {client.lastName} family.
           </p>
       </div>
       <div className="grid gap-6 py-4">
@@ -149,14 +141,18 @@ export function ViewFamilyModal({
           <h3 className="text-lg font-semibold mb-2 border-b pb-1">
             Family Documents
           </h3>
+           <p className="text-sm text-muted-foreground mb-4">
+            Click a member to view their documents in a new tab.
+          </p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            {allFamily.map((person) => (
-               <button
+            {allFamilyForDocs.map((person) => (
+              <Link
                 key={person.id}
-                onClick={() => setSelectedPersonForDocs(person)}
+                href={`/documents/${person.id}?clientId=${client.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={cn(
-                  'text-left p-3 border rounded-lg transition-colors',
-                  selectedPersonForDocs?.id === person.id ? 'bg-primary/10 border-primary' : 'hover:bg-muted/50'
+                  'text-left p-3 border rounded-lg transition-colors hover:bg-muted/50'
                 )}
                >
                  <div className="flex items-center gap-2">
@@ -168,39 +164,14 @@ export function ViewFamilyModal({
                        </p>
                     </div>
                  </div>
-               </button>
+               </Link>
             ))}
-          </div>
-          {selectedPersonForDocs && <DocumentViewer person={selectedPersonForDocs} />}
-        </div>
-
-
-        <div>
-          <h3 className="text-lg font-semibold mb-2 border-b pb-1">
-            Personal Details (Family Head)
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailItem label="First Name" value={client.firstName} />
-            <DetailItem label="Last Name" value={client.lastName} />
-            <DetailItem label="Phone Number" value={client.phoneNumber} />
-            <DetailItem label="Email ID" value={client.email} />
-            <DetailItem
-              label="Date of Birth"
-              value={formatDate(client.dateOfBirth)}
-            />
-            <DetailItem
-              label="Anniversary Date"
-              value={formatDate(client.anniversaryDate)}
-            />
-            <div className="md:col-span-2">
-              <DetailItem label="Address" value={client.address} />
-            </div>
           </div>
         </div>
 
         <div>
           <div className="flex justify-between items-center mb-2 border-b pb-1">
-            <h3 className="text-lg font-semibold">Family Members</h3>
+            <h3 className="text-lg font-semibold">Family Members List</h3>
             {canCreateMember && (
                 <Button variant="outline" size="sm" onClick={handleAdd}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Member
