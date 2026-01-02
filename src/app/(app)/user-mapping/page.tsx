@@ -45,7 +45,11 @@ const UserCard = ({ user }: { user: User }) => (
         <Badge variant={user.role === 'SUPER_ADMIN' ? 'default' : 'secondary'}>{user.role}</Badge>
       </div>
     </div>
-    <Button variant="ghost" size="icon">
+    <Button variant="ghost" size="icon" onClick={(e) => {
+        e.stopPropagation();
+        // Add action menu logic here
+        console.log(`Actions for ${user.name}`);
+    }}>
       <MoreVertical className="h-4 w-4" />
     </Button>
   </div>
