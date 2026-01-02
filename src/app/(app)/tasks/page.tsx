@@ -28,6 +28,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { TASK_STATUSES } from '@/lib/constants';
+import { format, parseISO, isPast } from 'date-fns';
+import { cn } from '@/lib/utils';
+
 
 export default function TasksPage() {
   const { hasPermission } = useCurrentUser();
@@ -71,11 +74,11 @@ export default function TasksPage() {
     setEditingTask(null);
   };
 
-  const handleSaveTask = (task: Omit<Task, 'id'> & { id?: string }) => {
+  const handleSaveTask = (task: Omit<Task, 'id' | 'createDate' | 'startDate' | 'completeDate'> & { id?: string }) => {
     if (task.id) {
         updateTask(task.id, task);
     } else {
-        addTask({ ...task, id: `task-${Date.now()}` } as Task);
+        addTask(task as Omit<Task, 'id' | 'createDate'>);
     }
     handleCloseModal();
   };
@@ -87,6 +90,15 @@ export default function TasksPage() {
         description: `Task status changed to "${newStatus}".`
     });
   }
+
+  const formatDate = (dateString?: string | null) => {
+    if (!dateString) return '—';
+    try {
+      return format(parseISO(dateString), 'dd MMM yyyy');
+    } catch {
+      return dateString;
+    }
+  };
 
   if (!canView) {
       return (
@@ -121,6 +133,8 @@ export default function TasksPage() {
                   <TableHead>Client</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>RM</TableHead>
+                  <TableHead>Create Date</TableHead>
+                  <TableHead>Start Date</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Description</TableHead>
@@ -129,54 +143,67 @@ export default function TasksPage() {
               </TableHeader>
               <TableBody>
                 {tasks.length > 0 ? (
-                  tasks.map((task) => (
-                    <TableRow key={task.id}>
-                      <TableCell className="font-medium">{task.clientName}</TableCell>
-                      <TableCell>{task.category}</TableCell>
-                      <TableCell>{task.rmName}</TableCell>
-                      <TableCell>{task.dueDate}</TableCell>
-                      <TableCell>
-                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild disabled={!canUpdate}>
-                                <Badge 
-                                    variant={getStatusBadgeVariant(task.status)}
-                                    className={canUpdate ? "cursor-pointer" : "cursor-not-allowed"}
-                                >
-                                {task.status}
-                                </Badge>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                {TASK_STATUSES.map(status => (
-                                    <DropdownMenuItem 
-                                        key={status} 
-                                        onSelect={() => handleStatusChange(task.id, status)}
-                                    >
-                                        {status}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                      <TableCell>{task.description || '—'}</TableCell>
-                      <TableCell className="text-right">
-                         {canUpdate && (
-                             <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)}>
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                </TooltipTrigger>
+                  tasks.map((task) => {
+                    const isOverdue = task.status === 'In Progress' && isPast(parseISO(task.dueDate));
+                    return (
+                        <TableRow key={task.id} className={cn(isOverdue && 'text-destructive')}>
+                          <TableCell className="font-medium">{task.clientName}</TableCell>
+                          <TableCell>{task.category}</TableCell>
+                          <TableCell>{task.rmName}</TableCell>
+                          <TableCell>
+                            <Tooltip>
+                                <TooltipTrigger>{formatDate(task.createDate)}</TooltipTrigger>
                                 <TooltipContent>
-                                    <p>Edit Task</p>
+                                    <p>Created: {format(parseISO(task.createDate), 'PPpp')}</p>
+                                    {task.completeDate && <p>Completed: {format(parseISO(task.completeDate), 'PPpp')}</p>}
                                 </TooltipContent>
                             </Tooltip>
-                         )}
-                      </TableCell>
-                    </TableRow>
-                  ))
+                          </TableCell>
+                          <TableCell>{formatDate(task.startDate)}</TableCell>
+                          <TableCell>{formatDate(task.dueDate)}</TableCell>
+                          <TableCell>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild disabled={!canUpdate}>
+                                    <Badge 
+                                        variant={getStatusBadgeVariant(task.status)}
+                                        className={cn(canUpdate ? "cursor-pointer" : "cursor-not-allowed", isOverdue && 'border-destructive')}
+                                    >
+                                    {task.status}
+                                    </Badge>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {TASK_STATUSES.map(status => (
+                                        <DropdownMenuItem 
+                                            key={status} 
+                                            onSelect={() => handleStatusChange(task.id, status)}
+                                        >
+                                            {status}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                          <TableCell>{task.description || '—'}</TableCell>
+                          <TableCell className="text-right">
+                             {canUpdate && (
+                                 <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)}>
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Edit Task</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                             )}
+                          </TableCell>
+                        </TableRow>
+                    );
+                  })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
+                    <TableCell colSpan={9} className="h-24 text-center">
                       No tasks created yet. Try the chatbot or the '+' button!
                     </TableCell>
                   </TableRow>

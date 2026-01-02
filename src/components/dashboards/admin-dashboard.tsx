@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, PieChart, Users, Briefcase, FileText, ClipboardList } from 'lucide-react';
 import {
   ChartContainer,
@@ -21,9 +21,10 @@ import {
   Cell,
 } from 'recharts';
 import { getRMsForAdmin, getAssociatesForRM, getClientsForAssociate, getFamilyMembersForClient } from '@/lib/mock-data';
-import type { User, Client } from '@/lib/types';
+import type { User, Client, Task } from '@/lib/types';
 import { useMemo } from 'react';
 import { useTasks } from '@/hooks/use-tasks';
+import { parseISO, isPast } from 'date-fns';
 
 interface AdminDashboardProps {
   user: User;
@@ -49,9 +50,23 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
 
   const totalFamilies = mappedCustomers.length;
 
-  const customerNames = useMemo(() => new Set(mappedCustomers.map(c => c.name)), [mappedCustomers]);
-  
-  const relevantTasks = useMemo(() => tasks.filter(task => customerNames.has(task.clientName)), [tasks, customerNames]);
+  const { relevantTasks, taskAnalytics } = useMemo(() => {
+    if (user.role !== 'RM') return { relevantTasks: [], taskAnalytics: null };
+
+    const rmTasks = tasks.filter(task => task.rmName === user.name);
+
+    const analytics = {
+        total: rmTasks.length,
+        pending: rmTasks.filter(t => t.status === 'Pending').length,
+        inProgress: rmTasks.filter(t => t.status === 'In Progress').length,
+        completed: rmTasks.filter(t => t.status === 'Completed').length,
+        cancelled: rmTasks.filter(t => t.status === 'Cancelled').length,
+        rejected: rmTasks.filter(t => t.status === 'Rejected').length,
+        overdue: rmTasks.filter(t => t.status === 'In Progress' && isPast(parseISO(t.dueDate))).length,
+    };
+    
+    return { relevantTasks: rmTasks, taskAnalytics: analytics };
+  }, [tasks, user]);
 
 
   const totalCounts = user.role === 'ADMIN' ? [
@@ -62,7 +77,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     { name: 'Associates', count: mappedAssociates.length, fill: 'hsl(var(--chart-2))' },
     { name: 'Customers', count: mappedCustomers.length, fill: 'hsl(var(--chart-3))' },
     { name: 'Families', count: totalFamilies, fill: 'hsl(var(--chart-4))' },
-    { name: 'Tasks', count: relevantTasks.length, fill: 'hsl(var(--chart-5))' },
   ];
   
   const pieChartData = user.role === 'RM' ? [
@@ -77,7 +91,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     Associates: { label: 'Associates', color: 'hsl(var(--chart-2))' },
     Customers: { label: 'Customers', color: 'hsl(var(--chart-3))' },
     Families: { label: 'Families', color: 'hsl(var(--chart-4))' },
-    Tasks: { label: 'Tasks', color: 'hsl(var(--chart-5))' },
   };
 
   if (user.role === 'RM') {
@@ -113,13 +126,23 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                   </CardContent>
                 </Card>
                  <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-                     <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{relevantTasks.length}</div>
-                  </CardContent>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Tasks</CardTitle>
+                        <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{taskAnalytics?.total}</div>
+                        {taskAnalytics && (
+                             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground mt-2">
+                                <span>Pending: {taskAnalytics.pending}</span>
+                                <span>In Progress: {taskAnalytics.inProgress}</span>
+                                <span className="text-destructive">Overdue: {taskAnalytics.overdue}</span>
+                                <span>Completed: {taskAnalytics.completed}</span>
+                                <span>Cancelled: {taskAnalytics.cancelled}</span>
+                                <span>Rejected: {taskAnalytics.rejected}</span>
+                            </div>
+                        )}
+                    </CardContent>
                 </Card>
              </div>
              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">

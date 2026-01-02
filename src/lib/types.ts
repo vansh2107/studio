@@ -1,6 +1,6 @@
 
-import { type Role, type Permission, type AssetCategory, type Permissions } from './constants';
-export type { Role, Permission, AssetCategory, Permissions };
+import { type Role, type Permission, type AssetCategory, type Permissions, type TaskStatus } from './constants';
+export type { Role, Permission, AssetCategory, Permissions, TaskStatus };
 
 // Base user type
 export interface BaseUser {
@@ -124,4 +124,18 @@ export interface Family {
   panFileName?: string;
   aadhaarFileName?: string;
   otherDocumentFileName?: string;
+}
+
+
+export interface Task {
+  id: string;
+  clientName: string;
+  category: string;
+  rmName: string;
+  dueDate: string; // Should be in a format parsable by new Date()
+  status: TaskStatus;
+  description?: string;
+  createDate: string;
+  startDate?: string | null;
+  completeDate?: string | null;
 }

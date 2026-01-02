@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TASK_CATEGORIES, TASK_STATUSES, RM_NAMES } from '@/lib/constants';
 import { getAllClients, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
+import { format } from 'date-fns';
 
 const taskSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
@@ -30,7 +31,7 @@ type TaskFormData = z.infer<typeof taskSchema>;
 
 interface CreateTaskModalProps {
   onClose: () => void;
-  onSave: (task: Omit<Task, 'id'> & { id?: string }) => void;
+  onSave: (task: Omit<Task, 'id' | 'createDate' | 'startDate' | 'completeDate'> & { id?: string }) => void;
   task?: Task | null;
 }
 
@@ -188,8 +189,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               </div>
 
                <div className="space-y-1">
-                  <Label htmlFor="dueDate">Due Date & Time</Label>
-                  <Input id="dueDate" {...register('dueDate')} placeholder="e.g., Tomorrow 5pm" />
+                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Input id="dueDate" {...register('dueDate')} placeholder="YYYY-MM-DD" type="date" />
                   {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
               </div>
           </div>
