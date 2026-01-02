@@ -33,15 +33,15 @@ export const relationshipManagers: RelationshipManager[] = [
 
 // 4. Associates (Child of Relationship Manager)
 export const associates: Associate[] = [
-    // Under Kashish Nathwani
+    // Under Kashish Nathwani -> A1
     { id: 'assoc-1', name: 'Associate A1', email: 'associate@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[7], rmId: 'rm-1' },
-    // Under Priyesh Shah
+    // Under Priyesh Shah -> A2, A3
     { id: 'assoc-2', name: 'Associate A2', email: 'a2@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[8], rmId: 'rm-2' },
     { id: 'assoc-3', name: 'Associate A3', email: 'a3@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[9], rmId: 'rm-2' },
-    // Under Harsh Shah
+    // Under Harsh Shah -> A4, A5
     { id: 'assoc-4', name: 'Associate A4', email: 'a4@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[10], rmId: 'rm-3' },
     { id: 'assoc-5', name: 'Associate A5', email: 'a5@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[11], rmId: 'rm-3' },
-    // Under Dhrumi Shah
+    // Under Dhrumi Shah -> A6
     { id: 'assoc-6', name: 'Associate A6', email: 'a6@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[12], rmId: 'rm-4' },
 ];
 
@@ -50,26 +50,28 @@ export const clients: Client[] = [
     // Customer for A1
     {
         id: 'client-1',
-        name: 'Bipin Hirpara',
-        firstName: 'Bipin',
-        lastName: 'Hirpara',
+        name: 'Rahul Mehta',
+        firstName: 'Rahul',
+        lastName: 'Mehta',
         email: 'customer@demo.app',
         password: 'Customer@123',
         role: 'CUSTOMER',
         avatarUrl: avatarUrls[13],
         associateId: 'assoc-1',
         phoneNumber: '9876543210',
-        dateOfBirth: '1990-05-12',
+        dateOfBirth: '1985-05-12',
         address: 'Mumbai, India',
-        anniversaryDate: '2018-12-01',
+        anniversaryDate: '2010-12-01',
+        panFileName: 'Rahul_Mehta_PAN.pdf',
+        panPhotoUrl: '#',
     },
      // Customer 1 for A4
     {
         id: 'client-2',
-        name: 'Jitendra Hirpara',
-        firstName: 'Jitendra',
-        lastName: 'Hirpara',
-        email: 'jitendra.hirpara@demo.app',
+        name: 'Mehul Patel',
+        firstName: 'Mehul',
+        lastName: 'Patel',
+        email: 'mehul.patel@demo.app',
         password: 'Customer@123',
         role: 'CUSTOMER',
         avatarUrl: avatarUrls[14],
@@ -77,36 +79,44 @@ export const clients: Client[] = [
         phoneNumber: '9123456780',
         dateOfBirth: '1988-03-15',
         address: 'Ahmedabad, Gujarat',
+        aadhaarFileName: 'Mehul_Aadhaar.pdf',
+        aadhaarPhotoUrl: '#',
     },
     // Customer 2 for A4
     {
         id: 'client-4',
-        name: 'Jivraj Hirpara',
-        firstName: 'Jivraj',
-        lastName: 'Hirpara',
-        email: 'jivraj.hirpara@demo.app',
+        name: 'Nirav Shah',
+        firstName: 'Nirav',
+        lastName: 'Shah',
+        email: 'nirav.shah@demo.app',
         password: 'Customer@123',
         role: 'CUSTOMER',
         avatarUrl: avatarUrls[9],
         associateId: 'assoc-4',
         phoneNumber: '9825098250',
-        dateOfBirth: '1985-08-20',
+        dateOfBirth: '1982-08-20',
         address: 'Surat, Gujarat',
     },
     // Customer for A6
     {
         id: 'client-3',
-        name: 'Ramniklal Hirpara',
-        firstName: 'Ramniklal',
-        lastName: 'Hirpara',
-        email: 'ramniklal.hirpara@demo.app',
+        name: 'Suresh Kumar',
+        firstName: 'Suresh',
+        lastName: 'Kumar',
+        email: 'suresh.kumar@demo.app',
         password: 'Customer@123',
         role: 'CUSTOMER',
-        avatarUrl: avatarUrls[0], // Reuse avatars
+        avatarUrl: avatarUrls[0],
         associateId: 'assoc-6',
         phoneNumber: '9998887771',
-        dateOfBirth: '1985-11-25',
+        dateOfBirth: '1980-11-25',
         address: 'Bangalore, Karnataka',
+        panFileName: 'Suresh_Kumar_PAN.pdf',
+        panPhotoUrl: '#',
+        aadhaarFileName: 'Suresh_Aadhaar.pdf',
+        aadhaarPhotoUrl: '#',
+        otherDocumentFileName: 'Passport.pdf',
+        otherDocumentUrl: '#',
     },
 ];
 
@@ -123,47 +133,21 @@ export const users: User[] = [
 // --- Other Mock Data (Family, Assets, etc.) ---
 
 export const familyMembers: FamilyMember[] = [
-  // Bipin Hirpara's Family
-  { id: 'fm-1-1', clientId: 'client-1', firstName: 'Sarlaben', lastName: 'Hirpara', relation: 'Spouse', phoneNumber: '9876543210', emailId: 'Salraben.hirpara@demo.app', dateOfBirth: '1990-05-12', address: 'Mumbai, India' },
-  { id: 'fm-1-2', clientId: 'client-1', firstName: 'Hirenbhai', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
-  { id: 'fm-1-3', clientId: 'client-1', firstName: 'Priyanka', lastName: 'Hirpara', relation: 'Daughter-in-law', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
-  { id: 'fm-1-4', clientId: 'client-1', firstName: 'Nirav', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543212', emailId: 'nirav.h@example.com', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
-  { id: 'fm-1-5', clientId: 'client-1', firstName: 'Jil', lastName: 'Hirpara', relation: 'Daughter-in-law', phoneNumber: '9876543213', emailId: 'jil.h@example.com', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
-  { id: 'fm-1-6', clientId: 'client-1', firstName: 'Aarav', lastName: 'Hirpara', relation: 'Grandson', phoneNumber: '', emailId: 'aarav.h@example.com', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
-  { id: 'fm-1-7', clientId: 'client-1', firstName: 'Viraansh', lastName: 'Hirpara', relation: 'Grandson', phoneNumber: '', emailId: 'viraansh.h@example.com', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
+  // Rahul Mehta's Family (client-1)
+  { id: 'fm-1-1', clientId: 'client-1', firstName: 'Anita', lastName: 'Mehta', relation: 'Spouse', phoneNumber: '9876543210', emailId: 'anita.mehta@example.com', dateOfBirth: '1987-02-14', address: 'Mumbai, India', panFileName: 'Anita_PAN.pdf', panPhotoUrl: '#' },
+  { id: 'fm-1-2', clientId: 'client-1', firstName: 'Aarav', lastName: 'Mehta', relation: 'Son', phoneNumber: '9876543211', emailId: 'aarav.mehta@example.com', dateOfBirth: '2015-10-10', address: 'Mumbai, India' },
 
-  // Jitendra Hirpara's Family
-  { id: 'fm-2-1', clientId: 'client-2', firstName: 'Nayanaben', lastName: 'Hirpara', relation: 'Spouse', phoneNumber: '9876543210', emailId: 'Salraben.hirpara@demo.app', dateOfBirth: '1990-05-12', address: 'Mumbai, India' },
-  { id: 'fm-2-2', clientId: 'client-2', firstName: 'Harsh', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
-  { id: 'fm-2-3', clientId: 'client-2', firstName: 'Shreya', lastName: 'Hirpara', relation: 'Daughter-in-law', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
-  { id: 'fm-2-4', clientId: 'client-2', firstName: 'Krushi', lastName: 'Hirpara', relation: 'Son', phoneNumber: '', emailId: '', dateOfBirth:'2020-01-15' , address:'Mumbai, India' },
-  { id:'fm-2-5' , clientId:'client-2' , firstName:'Nidhi' , lastName:'Hirpara' , relation:'Daughter-in-law' , phoneNumber:'9876543213' , emailId:'jil.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India'},
-  { id: 'fm-2-6', clientId: 'client-2', firstName: 'Hayan', lastName: 'Hirpara', relation: 'Grandson', phoneNumber:'', emailId:'aarav.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India'},
-  { id: 'fm-2-7', clientId: 'client-2', firstName: 'Viaan', lastName: 'Hirpara', relation: 'Grandson', phoneNumber: '', emailId: 'viraansh.h@example.com', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
+  // Mehul Patel's Family (client-2)
+  { id: 'fm-2-1', clientId: 'client-2', firstName: 'Bhavika', lastName: 'Patel', relation: 'Spouse', phoneNumber: '9123456780', emailId: 'bhavika.p@example.com', dateOfBirth: '1990-07-22', address: 'Ahmedabad, Gujarat' },
+  { id: 'fm-2-2', clientId: 'client-2', firstName: 'Riya', lastName: 'Patel', relation: 'Daughter', phoneNumber: '9123456781', emailId: 'riya.p@example.com', dateOfBirth: '2018-04-01', address: 'Ahmedabad, Gujarat' },
 
-  // Jivraj Hirpara's Family
-  { id: 'fm-3-1', clientId: 'client-4', firstName: 'Maniben', lastName: 'Hirpara', relation: 'Spouse', phoneNumber: '9876543210', emailId: 'Salraben.hirpara@demo.app', dateOfBirth: '1990-05-12', address: 'Mumbai, India' },
-  { id: 'fm-3-2', clientId: 'client-4', firstName: 'Jayesh', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
-  { id: 'fm-3-3', clientId: 'client-4', firstName: 'Jignesh', lastName: 'Hirpara', relation: 'Daughter-in-law', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
-  { id: 'fm-3-4', clientId: 'client-4', firstName: 'Shiven', lastName: 'Hirpara', relation: 'Son', phoneNumber: '', emailId: '', dateOfBirth:'2020-01-15' , address:'Mumbai, India' },
-  { id:'fm-3-5' , clientId:'client-4' , firstName:'Bijal' , lastName:'Hirpara' , relation:'Daughter-in-law' , phoneNumber:'9876543213' , emailId:'jil.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India'},
-  { id: 'fm-3-6', clientId: 'client-4', firstName: 'Dharaben', lastName: 'Hirpara', relation: 'Grandson', phoneNumber:'', emailId:'aarav.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India'},
-  { id: 'fm-3-7', clientId: 'client-4', firstName: 'Ashka', lastName: 'Hirpara', relation: 'Grandson', phoneNumber:'', emailId:'viraansh.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India'},
-  { id: 'fm-3-8', clientId: 'client-4', firstName: 'Saanvi', lastName: 'Hirpara', relation: 'Grandson', phoneNumber:'', emailId:'aarav.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India'},
-  { id: 'fm-3-9', clientId: 'client-4', firstName: 'Taashvi', lastName: 'Hirpara', relation: 'Grandson', phoneNumber:'', emailId:'viraansh.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India'},
+  // Nirav Shah's Family (client-4)
+  { id: 'fm-4-1', clientId: 'client-4', firstName: 'Pooja', lastName: 'Shah', relation: 'Spouse', phoneNumber: '9825098250', emailId: 'pooja.s@example.com', dateOfBirth: '1984-01-30', address: 'Surat, Gujarat', panFileName: 'Pooja_Shah_PAN.pdf', panPhotoUrl: '#' },
+  { id: 'fm-4-2', clientId: 'client-4', firstName: 'Dev', lastName: 'Shah', relation: 'Son', phoneNumber: '', emailId: '', dateOfBirth: '2016-09-15', address: 'Surat, Gujarat' },
 
-
-  // Ramniklal Hirpara's Family
-{ id: 'fm-4-1', clientId: 'client-3', firstName: 'Pushpaben', lastName: 'Hirpara', relation: 'Spouse', phoneNumber: '9876543210', emailId: 'Salraben.hirpara@demo.app', dateOfBirth: '1990-05-12', address: 'Mumbai, India' },
-  { id: 'fm-4-2', clientId: 'client-3', firstName: 'Ashish', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
-  { id: 'fm-4-3', clientId: 'client-3', firstName: 'Sumita', lastName: 'Hirpara', relation: 'Daughter-in-law', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
-  { id: 'fm-4-4', clientId: 'client-3', firstName: 'Ravi', lastName: 'Hirpara', relation: 'Son', phoneNumber: '', emailId: '', dateOfBirth:'2020-01-15' , address:'Mumbai, India' },
-  { id:'fm-4-5' , clientId:'client-3' , firstName:'Keyuri' , lastName:'Hirpara' , relation:'Daughter-in-law' , phoneNumber:'9876543213' , emailId:'jil.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India'},
-  { id: 'fm-4-6', clientId: 'client-3', firstName: 'Dash', lastName: 'Hirpara', relation: 'Grandson', phoneNumber:'', emailId:'aarav.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India'},
-  { id: 'fm-4-7', clientId: 'client-3', firstName: 'Dev', lastName: 'Hirpara', relation: 'Grandson', phoneNumber:'', emailId:'viraansh.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India' },
-  { id: 'fm-4-8', clientId: 'client-3', firstName: 'Drashti', lastName: 'Hirpara', relation: 'Grandson', phoneNumber:'', emailId:'aarav.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India'},
-  { id: 'fm-4-9', clientId: 'client-3', firstName: 'Aira', lastName: 'Hirpara', relation: 'Grandson', phoneNumber:'', emailId:'viraansh.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India' },
-
+  // Suresh Kumar's Family (client-3)
+  { id: 'fm-3-1', clientId: 'client-3', firstName: 'Neha', lastName: 'Kumar', relation: 'Spouse', phoneNumber: '9998887771', emailId: 'neha.k@example.com', dateOfBirth: '1983-09-05', address: 'Bangalore, Karnataka' },
+  { id: 'fm-3-2', clientId: 'client-3', firstName: 'Rohan', lastName: 'Kumar', relation: 'Son', phoneNumber: '9998887772', emailId: 'rohan.k@example.com', dateOfBirth: '2012-06-20', address: 'Bangalore, Karnataka' },
 ];
 
 export const assets: Asset[] = [

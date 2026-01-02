@@ -2,15 +2,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Client, FamilyMember, DisplayClient } from '@/lib/types';
+import { Client, FamilyMember } from '@/lib/types';
 import {
-  Download,
   X,
   PlusCircle,
   Edit,
   Trash2,
   User,
-  FileText,
+  Folder,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import {
@@ -33,8 +32,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { getFamilyMembersForClient } from '@/lib/mock-data';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import { cn } from '@/lib/utils';
+import { DocumentViewer } from './document-viewer';
 
 interface ViewFamilyModalProps {
   onClose: () => void;
@@ -52,33 +52,6 @@ const DetailItem = ({ label, value }: { label: string; value?: string }) => (
   </div>
 );
 
-const DocumentLink = ({
-  label,
-  url,
-  filename,
-}: {
-  label: string;
-  url?: string;
-  filename?: string;
-}) => {
-  if (!url) return <DetailItem label={label} value="Not uploaded" />;
-
-  return (
-    <div>
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center text-primary hover:underline"
-      >
-        <Download className="mr-2 h-4 w-4" />
-        {filename || 'View Document'}
-      </a>
-    </div>
-  );
-};
-
 const formatDate = (dateString?: string) => {
   if (!dateString) return 'N/A';
   try {
@@ -95,7 +68,7 @@ const formatDate = (dateString?: string) => {
 export function ViewFamilyModal({
   onClose,
   client,
-  familyMembers: initialFamilyMembers,
+  familyMembers,
   onAddMember,
   onEditMember,
   onDeleteMember,
@@ -103,8 +76,9 @@ export function ViewFamilyModal({
   const { hasPermission } = useCurrentUser();
   const { toast } = useToast();
   const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(null);
-
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(getFamilyMembersForClient(client.id));
+  const [selectedPersonForDocs, setSelectedPersonForDocs] = useState<Client | FamilyMember>(client);
+  
+  const allFamily = [client, ...familyMembers];
 
   const canCreateMember = hasPermission('CUSTOMER_ACTIONS', 'create');
   const canUpdateMember = hasPermission('CUSTOMER_ACTIONS', 'edit');
@@ -146,8 +120,6 @@ export function ViewFamilyModal({
   const confirmDelete = () => {
     if(memberToDelete) {
       onDeleteMember(memberToDelete.id);
-      // Also update local state to reflect deletion
-      setFamilyMembers(prev => prev.filter(m => m.id !== memberToDelete.id));
       setMemberToDelete(null);
     }
   }
@@ -159,18 +131,46 @@ export function ViewFamilyModal({
           <X className="h-4 w-4" />
       </Button>
       <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-lg font-semibold leading-none tracking-tight">
-              Client Details: {client.firstName} {client.lastName}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Viewing record for {client.firstName} {client.lastName}.
-            </p>
-          </div>
-        </div>
+          <h2 className="text-lg font-semibold leading-none tracking-tight">
+            Client Details: {client.firstName} {client.lastName}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Viewing record for the {client.lastName} family.
+          </p>
       </div>
       <div className="grid gap-6 py-4">
+
+        {/* --- NEW Family Documents Section --- */}
+        <div>
+          <h3 className="text-lg font-semibold mb-2 border-b pb-1">
+            Family Documents
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            {allFamily.map((person) => (
+               <button
+                key={person.id}
+                onClick={() => setSelectedPersonForDocs(person)}
+                className={cn(
+                  'text-left p-3 border rounded-lg transition-colors',
+                  selectedPersonForDocs?.id === person.id ? 'bg-primary/10 border-primary' : 'hover:bg-muted/50'
+                )}
+               >
+                 <div className="flex items-center gap-2">
+                    <Folder className="h-6 w-6 text-primary" />
+                    <div className="flex-1">
+                       <p className="font-semibold truncate">{person.firstName}</p>
+                       <p className="text-xs text-muted-foreground">
+                         {'role' in person ? 'Head' : person.relation}
+                       </p>
+                    </div>
+                 </div>
+               </button>
+            ))}
+          </div>
+          {selectedPersonForDocs && <DocumentViewer person={selectedPersonForDocs} />}
+        </div>
+
+
         <div>
           <h3 className="text-lg font-semibold mb-2 border-b pb-1">
             Personal Details (Family Head)
@@ -208,7 +208,8 @@ export function ViewFamilyModal({
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Relation</TableHead>
-                  <TableHead>Documents</TableHead>
+                  <TableHead>D.O.B</TableHead>
+                  <TableHead>Contact</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -222,13 +223,8 @@ export function ViewFamilyModal({
                       </div>
                     </TableCell>
                     <TableCell>{member.relation}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {member.panFileName && <FileText className="h-4 w-4" title={member.panFileName} />}
-                        {member.aadhaarFileName && <FileText className="h-4 w-4" title={member.aadhaarFileName} />}
-                        {member.otherDocumentFileName && <FileText className="h-4 w-4" title={member.otherDocumentFileName} />}
-                      </div>
-                    </TableCell>
+                    <TableCell>{formatDate(member.dateOfBirth)}</TableCell>
+                    <TableCell>{member.phoneNumber || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
                         {canUpdateMember && <Button variant="ghost" size="icon" onClick={() => handleEdit(member)}><Edit className="h-4 w-4" /></Button>}
@@ -239,36 +235,13 @@ export function ViewFamilyModal({
                 ))}
                  {familyMembers.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={4} className="text-center h-24">No members added yet.</TableCell>
+                        <TableCell colSpan={5} className="text-center h-24">No members added yet.</TableCell>
                     </TableRow>
                  )}
               </TableBody>
             </Table>
         </div>
 
-
-        <div>
-          <h3 className="text-lg font-semibold mb-2 border-b pb-1">
-            Head's Documents
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <DocumentLink
-              label="PAN Photo"
-              url={client.panPhotoUrl}
-              filename={client.panFileName}
-            />
-            <DocumentLink
-              label="Aadhaar Photo"
-              url={client.aadhaarPhotoUrl}
-              filename={client.aadhaarFileName}
-            />
-            <DocumentLink
-              label="Other Document"
-              url={client.otherDocumentUrl}
-              filename={client.otherDocumentFileName}
-            />
-          </div>
-        </div>
       </div>
       
        <AlertDialog open={!!memberToDelete} onOpenChange={(open) => !open && setMemberToDelete(null)}>
