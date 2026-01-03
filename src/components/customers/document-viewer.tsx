@@ -6,6 +6,7 @@ import { Download, Trash2, X, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const DetailItem = ({ label, value }: { label: string; value?: string }) => (
   <div>
@@ -64,22 +65,32 @@ const DocumentSlot = ({
 
 const TheatreMode = ({ src, onClose }: { src: string; onClose: () => void }) => (
     <div 
-        className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4"
         onClick={onClose}
     >
-        <button className="absolute top-4 right-4 text-white z-[101]">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="relative max-w-[90vw] max-h-[85vh]"
+        onClick={e => e.stopPropagation()}
+      >
+        <Image 
+            src={src} 
+            alt="Document full view" 
+            width={1200}
+            height={1600}
+            className="w-auto h-auto max-w-full max-h-full object-contain"
+            data-ai-hint="document scan"
+        />
+      </motion.div>
+       <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-white z-[101] p-2 rounded-full bg-black/50 hover:bg-black/75 transition-colors"
+        >
             <X className="h-6 w-6" />
-        </button>
-        <div className="relative max-w-full max-h-full" onClick={e => e.stopPropagation()}>
-            <Image 
-                src={src} 
-                alt="Document full view" 
-                width={1200}
-                height={1600}
-                className="w-auto h-auto max-w-full max-h-[90vh] object-contain"
-                data-ai-hint="document scan"
-            />
-        </div>
+      </button>
     </div>
 );
 
@@ -135,7 +146,9 @@ export function DocumentViewer({ person }: DocumentViewerProps) {
           />
         </div>
       </div>
-      {viewingImage && <TheatreMode src={viewingImage} onClose={() => setViewingImage(null)} />}
+      <AnimatePresence>
+        {viewingImage && <TheatreMode src={viewingImage} onClose={() => setViewingImage(null)} />}
+      </AnimatePresence>
     </>
   );
 }
