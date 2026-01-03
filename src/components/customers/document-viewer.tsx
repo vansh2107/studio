@@ -1,7 +1,11 @@
+
 'use client';
 
 import { Client, FamilyMember } from '@/lib/types';
-import { Download } from 'lucide-react';
+import { Download, Trash2, X, Eye } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 const DetailItem = ({ label, value }: { label: string; value?: string }) => (
   <div>
@@ -10,61 +14,128 @@ const DetailItem = ({ label, value }: { label: string; value?: string }) => (
   </div>
 );
 
-const DocumentLink = ({
+// New component to handle each document slot
+const DocumentSlot = ({
   label,
   url,
   filename,
+  onDelete,
+  onView,
 }: {
   label: string;
-  url?: string;
+  url?: string | null;
   filename?: string;
+  onDelete: () => void;
+  onView: () => void;
 }) => {
-  if (!url) return <DetailItem label={label} value="Not uploaded" />;
+  if (!url) {
+    return <DetailItem label={label} value="Not uploaded" />;
+  }
 
   return (
     <div>
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center text-primary hover:underline"
-      >
-        <Download className="mr-2 h-4 w-4" />
-        {filename || 'View Document'}
-      </a>
+      <div className="mt-2 flex items-center gap-2">
+        <div className="relative group w-20 h-20 rounded-md overflow-hidden border">
+          <Image
+            src={url}
+            alt={filename || label}
+            fill
+            className="object-cover"
+            data-ai-hint="document scan"
+          />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-white" onClick={onView}>
+              <Eye className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="flex flex-col">
+            <p className="text-sm font-semibold truncate max-w-[120px]">{filename || label}</p>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete}>
+                <Trash2 className="h-4 w-4" />
+            </Button>
+        </div>
+      </div>
     </div>
   );
 };
 
 
+const TheatreMode = ({ src, onClose }: { src: string; onClose: () => void }) => (
+    <div 
+        className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4"
+        onClick={onClose}
+    >
+        <button className="absolute top-4 right-4 text-white z-[101]">
+            <X className="h-6 w-6" />
+        </button>
+        <div className="relative max-w-full max-h-full" onClick={e => e.stopPropagation()}>
+            <Image 
+                src={src} 
+                alt="Document full view" 
+                width={1200}
+                height={1600}
+                className="w-auto h-auto max-w-full max-h-[90vh] object-contain"
+                data-ai-hint="document scan"
+            />
+        </div>
+    </div>
+);
+
+
 interface DocumentViewerProps {
-    person: Client | FamilyMember;
+  person: Client | FamilyMember;
 }
 
 export function DocumentViewer({ person }: DocumentViewerProps) {
-    return (
-        <div className="mt-4 p-4 border rounded-lg bg-background/50">
-            <h4 className="font-semibold text-md mb-4">
-                Showing documents for: {person.firstName} {person.lastName}
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <DocumentLink
-                    label="PAN Photo"
-                    url={person.panPhotoUrl}
-                    filename={person.panFileName}
-                />
-                <DocumentLink
-                    label="Aadhaar Photo"
-                    url={person.aadhaarPhotoUrl}
-                    filename={person.aadhaarFileName}
-                />
-                <DocumentLink
-                    label="Other Document"
-                    url={person.otherDocumentUrl}
-                    filename={person.otherDocumentFileName}
-                />
-            </div>
+  const [documents, setDocuments] = useState({
+      pan: { url: person.panPhotoUrl, name: person.panFileName },
+      aadhaar: { url: person.aadhaarPhotoUrl, name: person.aadhaarFileName },
+      other: { url: person.otherDocumentUrl, name: person.otherDocumentFileName },
+  });
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
+
+  const handleDelete = (docKey: keyof typeof documents) => {
+      if (window.confirm(`Are you sure you want to delete this document? This action cannot be undone.`)) {
+          setDocuments(prev => ({ ...prev, [docKey]: { url: null, name: undefined } }));
+      }
+  }
+
+  // Use a placeholder if the URL is not available for demonstration
+  const getUrl = (url?: string | null) => url || 'https://picsum.photos/seed/doc/200/200';
+
+  return (
+    <>
+      <div className="mt-4 p-4 border rounded-lg bg-background/50">
+        <h4 className="font-semibold text-md mb-4">
+          Showing documents for: {person.firstName} {person.lastName}
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <DocumentSlot
+            label="PAN Photo"
+            url={documents.pan.url ? getUrl(documents.pan.url) : null}
+            filename={documents.pan.name}
+            onView={() => documents.pan.url && setViewingImage(getUrl(documents.pan.url))}
+            onDelete={() => handleDelete('pan')}
+          />
+          <DocumentSlot
+            label="Aadhaar Photo"
+            url={documents.aadhaar.url ? getUrl(documents.aadhaar.url) : null}
+            filename={documents.aadhaar.name}
+            onView={() => documents.aadhaar.url && setViewingImage(getUrl(documents.aadhaar.url))}
+            onDelete={() => handleDelete('aadhaar')}
+          />
+          <DocumentSlot
+            label="Other Document"
+            url={documents.other.url ? getUrl(documents.other.url) : null}
+            filename={documents.other.name}
+            onView={() => documents.other.url && setViewingImage(getUrl(documents.other.url))}
+            onDelete={() => handleDelete('other')}
+          />
         </div>
-    );
+      </div>
+      {viewingImage && <TheatreMode src={viewingImage} onClose={() => setViewingImage(null)} />}
+    </>
+  );
 }
