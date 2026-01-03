@@ -113,13 +113,13 @@ export function Chatbot() {
             transition={{ duration: 0.3, ease: 'easeOut' }}
             className="fixed bottom-24 right-5 z-50 w-full max-w-sm"
           >
-            <Card className="flex flex-col h-[500px] shadow-2xl">
-              <CardHeader className="flex flex-row items-center justify-between">
+            <Card className="flex flex-col h-[500px] shadow-2xl bg-white text-black">
+              <CardHeader className="flex flex-row items-center justify-between bg-[#f78e1e]">
                 <div className="flex items-center gap-2">
-                   <Bot className="h-6 w-6 text-primary" />
-                   <CardTitle>Assistant</CardTitle>
+                   <Bot className="h-6 w-6 text-black" />
+                   <CardTitle className="text-black">Assistant</CardTitle>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-black hover:text-black/80 hover:bg-white/20">
                   <X className="h-4 w-4" />
                 </Button>
               </CardHeader>
@@ -131,7 +131,7 @@ export function Chatbot() {
                         className={`max-w-[80%] rounded-lg px-4 py-2 whitespace-pre-wrap ${
                           message.sender === 'user'
                             ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
+                            : 'bg-muted text-black'
                         }`}
                       >
                         {message.text}
@@ -147,8 +147,9 @@ export function Chatbot() {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
+                    className="bg-white text-black placeholder:text-black/60"
                   />
-                  <Button onClick={handleSendMessage}>
+                  <Button onClick={handleSendMessage} className="bg-[#f78e1e] text-black hover:bg-[#f78e1e]/90">
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
