@@ -75,7 +75,7 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-app-header text-white px-4 sm:h-16 sm:px-6">
-      <SidebarTrigger className="md:hidden hover:bg-white/20" />
+      <SidebarTrigger className="md:hidden hover:bg-app-sidebar" />
 
       {impersonatedUser && (
         <div className="flex-1">
@@ -94,7 +94,7 @@ export function AppHeader() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="hover:bg-white/20 hover:text-white">
+                      <Button variant="ghost" size="icon" className="hover:bg-app-sidebar hover:text-white">
                         <Settings className="h-5 w-5" />
                         <span className="sr-only">Quick Settings</span>
                       </Button>
@@ -124,7 +124,7 @@ export function AppHeader() {
           {canViewAdminSettings && (
              <Tooltip>
                 <TooltipTrigger asChild>
-                   <Button variant="ghost" size="icon" asChild className="hover:bg-white/20 hover:text-white">
+                   <Button variant="ghost" size="icon" asChild className="hover:bg-app-sidebar hover:text-white">
                     <Link href="/admin-settings">
                       <UserCog className="h-5 w-5" />
                       <span className="sr-only">Admin Settings Page</span>
@@ -142,7 +142,7 @@ export function AppHeader() {
              <Tooltip>
                 <TooltipTrigger asChild>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-white/20 hover:text-white">
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-app-sidebar hover:text-white">
                       <Bell />
                       <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
@@ -166,7 +166,7 @@ export function AppHeader() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 p-1 h-auto rounded-full hover:bg-white/20 hover:text-white">
+              <Button variant="ghost" className="flex items-center gap-2 p-1 h-auto rounded-full hover:bg-app-sidebar hover:text-white">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={effectiveUser?.avatarUrl} alt={effectiveUser?.name} />
                   <AvatarFallback>{effectiveUser ? getInitials(effectiveUser.name) : '...'}</AvatarFallback>
