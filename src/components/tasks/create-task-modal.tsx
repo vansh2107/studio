@@ -23,7 +23,7 @@ const taskSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   rmName: z.string().min(1, 'RM name is required'),
   dueDate: z.string().min(1, 'Due date is required'),
-  description: z.string().optional(),
+  description: z.string().max(300, 'Description cannot exceed 300 characters.').optional(),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -64,6 +64,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     reset,
     control,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -75,6 +76,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       description: '',
     },
   });
+  
+  const descriptionValue = watch('description') || '';
 
   useEffect(() => {
     if (task) {
@@ -208,7 +211,20 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
           <div className="space-y-1">
             <Label htmlFor="description">Description (Optional)</Label>
-            <Textarea id="description" {...register('description')} disabled={isTerminal} />
+            <Textarea 
+              id="description" 
+              {...register('description')} 
+              disabled={isTerminal} 
+              maxLength={300}
+            />
+            <div className="flex justify-between text-sm text-muted-foreground">
+                {errors.description ? (
+                    <p className="text-destructive">{errors.description.message}</p>
+                ) : (
+                    <p></p> 
+                )}
+                <p>{descriptionValue.length} / 300</p>
+            </div>
           </div>
           
           <div className="flex justify-end gap-2 pt-4">

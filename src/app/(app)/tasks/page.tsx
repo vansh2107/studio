@@ -86,7 +86,7 @@ export default function TasksPage() {
     setEditingTask(null);
   };
 
-  const handleSaveTask = (task: Omit<Task, 'id' | 'createDate' | 'startDate' | 'completeDate' | 'status'> & { id?: string }) => {
+  const handleSaveTask = (task: Omit<Task, 'id' | 'createDate' | 'status'> & { id?: string }) => {
     if (task.id) {
         updateTask(task.id, task);
     } else {
@@ -120,6 +120,12 @@ export default function TasksPage() {
     } catch {
       return dateString;
     }
+  };
+  
+  const truncateText = (text: string | undefined, maxLength: number) => {
+    if (!text) return '—';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
   };
 
   const terminalStatuses: TaskStatus[] = ['Completed', 'Cancelled', 'Rejected'];
@@ -213,7 +219,7 @@ export default function TasksPage() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
-                          <TableCell>{task.description || '—'}</TableCell>
+                          <TableCell>{truncateText(task.description, 25)}</TableCell>
                           <TableCell className="text-right">
                              <div className="flex items-center justify-end gap-1">
                                 {canUpdate && (
