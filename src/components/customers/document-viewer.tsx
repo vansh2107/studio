@@ -2,8 +2,8 @@
 'use client';
 
 import { Client, FamilyMember } from '@/lib/types';
-import { Download, Trash2, X, Eye } from 'lucide-react';
-import { useState } from 'react';
+import { Trash2, Eye, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -63,36 +63,55 @@ const DocumentSlot = ({
 };
 
 
-const TheatreMode = ({ src, onClose }: { src: string; onClose: () => void }) => (
-    <div 
-        className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4"
-        onClick={onClose}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.8 }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
-        className="relative max-w-[90vw] max-h-[85vh]"
-        onClick={e => e.stopPropagation()}
-      >
-        <Image 
-            src={src} 
-            alt="Document full view" 
-            width={1200}
-            height={1600}
-            className="w-auto h-auto max-w-full max-h-full object-contain"
-            data-ai-hint="document scan"
-        />
-      </motion.div>
-       <button 
-          onClick={onClose} 
-          className="absolute top-4 right-4 text-white z-[101] p-2 rounded-full bg-black/50 hover:bg-black/75 transition-colors"
+const TheatreMode = ({ src, onClose }: { src: string; onClose: () => void }) => {
+    useEffect(() => {
+        const handleEsc = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => {
+            window.removeEventListener('keydown', handleEsc);
+        };
+    }, [onClose]);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 bg-[rgba(0,0,0,0.92)] flex items-center justify-center z-[9999]"
+            onClick={onClose}
         >
-            <X className="h-6 w-6" />
-      </button>
-    </div>
-);
+            <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="relative"
+                onClick={e => e.stopPropagation()}
+            >
+                <Image
+                    src={src}
+                    alt="Document full view"
+                    width={1600}
+                    height={1200}
+                    className="rounded-xl object-contain max-w-[90vw] max-h-[85vh]"
+                    data-ai-hint="document scan"
+                />
+            </motion.div>
+            <button
+                onClick={onClose}
+                className="absolute top-4 right-4 text-white z-[10000] p-2 rounded-full bg-black/50 hover:bg-black/75 transition-colors"
+                aria-label="Close image viewer"
+            >
+                <X className="h-6 w-6" />
+            </button>
+        </motion.div>
+    );
+};
 
 
 interface DocumentViewerProps {
@@ -114,7 +133,7 @@ export function DocumentViewer({ person }: DocumentViewerProps) {
   }
 
   // Use a placeholder if the URL is not available for demonstration
-  const getUrl = (url?: string | null) => url || 'https://picsum.photos/seed/doc/200/200';
+  const getUrl = (url?: string | null) => url || 'https://picsum.photos/seed/doc/400/300';
 
   return (
     <>
