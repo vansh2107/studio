@@ -1,8 +1,8 @@
 
 'use client';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { BarChart, PieChart, ClipboardList, Eye } from 'lucide-react';
+import { BarChart, PieChart, ClipboardList, Eye, Edit } from 'lucide-react';
 import {
   ChartContainer,
   ChartTooltip,
@@ -44,6 +44,9 @@ import { useToast } from '@/hooks/use-toast';
 import { format, parseISO, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import Modal from '@/components/ui/Modal';
+import { CreateTaskModal } from '@/components/tasks/create-task-modal';
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const admins = getAllAdmins();
 const rms = getAllRMs();
@@ -80,11 +83,14 @@ const chartConfig = {
 };
 
 const TaskSummaryCard = () => {
-    const { tasks, updateTask } = useTasks();
-    const { hasPermission } = useCurrentUser();
+    const { tasks, updateTask, addTask } = useTasks();
+    const { effectiveUser, hasPermission } = useCurrentUser();
     const { toast } = useToast();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingTask, setEditingTask] = useState<Task | null>(null);
 
     const canUpdate = hasPermission('TASK', 'edit');
+    const isSuperAdmin = effectiveUser?.role === 'SUPER_ADMIN';
 
     const taskAnalytics = useMemo(() => {
         const allTasks = tasks;
@@ -107,6 +113,30 @@ const TaskSummaryCard = () => {
             .sort((a, b) => parseISO(b.createDate).getTime() - parseISO(a.createDate).getTime())
             .slice(0, 5);
     }, [tasks]);
+
+    const handleOpenEditModal = (task: Task) => {
+      // Super Admin can always edit. Others follow 'canUpdate' permission.
+      if (!isSuperAdmin && !canUpdate) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to edit tasks.', variant: 'destructive' });
+        return;
+      }
+      setEditingTask(task);
+      setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+      setIsModalOpen(false);
+      setEditingTask(null);
+    };
+
+    const handleSaveTask = (task: Omit<Task, 'id' | 'createDate' | 'status'> & { id?: string }) => {
+      if (task.id) {
+          updateTask(task.id, task);
+      } else {
+          addTask(task as Omit<Task, 'id' | 'createDate' | 'status'>);
+      }
+      handleCloseModal();
+    };
     
     const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
         updateTask(taskId, { status: newStatus });
@@ -132,8 +162,15 @@ const TaskSummaryCard = () => {
             return dateString;
         }
     };
+
+    const truncateText = (text: string | undefined, maxLength: number) => {
+      if (!text) return '—';
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength) + '...';
+    };
     
     return (
+      <TooltipProvider>
         <Card className="lg:col-span-7">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -157,6 +194,7 @@ const TaskSummaryCard = () => {
                             <TableHead>Client Name</TableHead>
                             <TableHead>Category</TableHead>
                             <TableHead>Assigned RM</TableHead>
+                            <TableHead>Description</TableHead>
                             <TableHead>Due Date</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -166,11 +204,14 @@ const TaskSummaryCard = () => {
                         {latestTasks.map(task => {
                             const isOverdue = (task.status === 'In Progress' || task.status === 'Pending') && task.dueDate && isPast(parseISO(task.dueDate));
                             const isTerminal = ['Completed', 'Cancelled', 'Rejected'].includes(task.status);
+                            const canEditTask = isSuperAdmin || !isTerminal;
+
                              return (
                                 <TableRow key={task.id} className={cn(isOverdue && 'text-destructive')}>
                                     <TableCell>{task.clientName}</TableCell>
                                     <TableCell>{task.category}</TableCell>
                                     <TableCell>{task.rmName || '—'}</TableCell>
+                                    <TableCell>{truncateText(task.description, 25)}</TableCell>
                                     <TableCell>{formatDate(task.dueDate)}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
@@ -199,11 +240,26 @@ const TaskSummaryCard = () => {
                                         </DropdownMenu>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                         <Button variant="ghost" size="icon" asChild>
-                                            <Link href="/tasks">
-                                               <Eye className="h-4 w-4" />
-                                            </Link>
-                                         </Button>
+                                      <div className="flex items-center justify-end gap-1">
+                                         <UITooltip>
+                                            <TooltipTrigger asChild>
+                                               <Button variant="ghost" size="icon" asChild>
+                                                  <Link href="/tasks">
+                                                     <Eye className="h-4 w-4" />
+                                                  </Link>
+                                               </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent><p>View All Tasks</p></TooltipContent>
+                                         </UITooltip>
+                                         <UITooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={!canEditTask}>
+                                                <Edit className="h-4 w-4" />
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent><p>{canEditTask ? 'Edit Task' : 'Task is locked'}</p></TooltipContent>
+                                         </UITooltip>
+                                      </div>
                                     </TableCell>
                                 </TableRow>
                             )
@@ -218,6 +274,14 @@ const TaskSummaryCard = () => {
                 </Button>
             </CardFooter>
         </Card>
+        <Modal open={isModalOpen} onClose={handleCloseModal}>
+          <CreateTaskModal
+            task={editingTask}
+            onClose={handleCloseModal}
+            onSave={handleSaveTask}
+          />
+        </Modal>
+      </TooltipProvider>
     );
 }
 
@@ -324,3 +388,5 @@ export default function SuperAdminDashboard() {
     </>
   );
 }
+
+    
