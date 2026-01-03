@@ -154,7 +154,18 @@ export const familyMembers: FamilyMember[] = [
 
 
   // Ramniklal Hirpara's Family
-{ id: 'fm-4-1', clientId: 'client-3', firstName: 'Pushpaben', lastName: 'Hirpara', relation: 'Spouse', phoneNumber: '9876543210', emailId: 'Salraben.hirpara@demo.app', dateOfBirth: '1990-05-12', address: 'Mumbai, India' },
+  { 
+    id: 'fm-4-1', 
+    clientId: 'client-3', 
+    firstName: 'Pushpaben', 
+    lastName: 'Hirpara', 
+    relation: 'Spouse', 
+    phoneNumber: '9876543210', 
+    emailId: 'pushpaben.hirpara@demo.app', 
+    dateOfBirth: '1990-05-12', 
+    address: 'Bangalore, Karnataka',
+    panPhotoUrl: 'https://picsum.photos/seed/pan1/400/300'
+  },
   { id: 'fm-4-2', clientId: 'client-3', firstName: 'Ashish', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
   { id: 'fm-4-3', clientId: 'client-3', firstName: 'Sumita', lastName: 'Hirpara', relation: 'Daughter-in-law', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
   { id: 'fm-4-4', clientId: 'client-3', firstName: 'Ravi', lastName: 'Hirpara', relation: 'Son', phoneNumber: '', emailId: '', dateOfBirth:'2020-01-15' , address:'Mumbai, India' },
@@ -228,7 +239,7 @@ export const permissions: Record<string, Permissions> = {
     ASSOCIATE: { view: true, create: false, edit: true, delete: false, export: false },
     CUSTOMER: { view: true, create: true, edit: true, delete: false, export: true },
     DOC_VAULT: { view: true, create: true, edit: false, delete: false, export: false },
-    TASK: { view: true, create: true, edit: true, delete: false, export: false },
+    TASK: { view: true, create: true, edit: false, delete: false, export: false },
     CHATBOT: { view: true, create: true, edit: false, delete: false, export: false },
     CUSTOMER_ACTIONS: { view: true, create: true, edit: true, delete: false, export: true },
   },
