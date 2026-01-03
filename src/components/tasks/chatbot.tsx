@@ -131,7 +131,7 @@ export function Chatbot() {
                         className={`max-w-[80%] rounded-lg px-4 py-2 whitespace-pre-wrap ${
                           message.sender === 'user'
                             ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-black'
+                            : 'bg-[#1b51a0] text-white'
                         }`}
                       >
                         {message.text}
