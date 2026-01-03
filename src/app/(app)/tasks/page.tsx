@@ -43,7 +43,7 @@ import { cn } from '@/lib/utils';
 
 
 export default function TasksPage() {
-  const { hasPermission } = useCurrentUser();
+  const { effectiveUser, hasPermission } = useCurrentUser();
   const { toast } = useToast();
   const { tasks, addTask, updateTask, deleteTask } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,6 +54,7 @@ export default function TasksPage() {
   const canCreate = hasPermission('TASK', 'create');
   const canUpdate = hasPermission('TASK', 'edit');
   const canDelete = hasPermission('TASK', 'delete');
+  const isSuperAdmin = effectiveUser?.role === 'SUPER_ADMIN';
 
   const getStatusBadgeVariant = (status: string) => {
     const lowerCaseStatus = status.toLowerCase();
@@ -177,6 +178,7 @@ export default function TasksPage() {
                   tasks.map((task) => {
                     const isOverdue = task.status === 'In Progress' && task.dueDate && isPast(parseISO(task.dueDate));
                     const isTerminal = terminalStatuses.includes(task.status);
+                    const canEditTask = isSuperAdmin || !isTerminal;
 
                     return (
                         <TableRow key={task.id} className={cn(isOverdue && 'text-destructive')}>
@@ -197,10 +199,10 @@ export default function TasksPage() {
                           <TableCell>{formatDate(task.completeDate)}</TableCell>
                           <TableCell>
                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild disabled={!canUpdate || isTerminal}>
+                                <DropdownMenuTrigger asChild disabled={!canUpdate || !canEditTask}>
                                     <Badge 
                                         variant={getStatusBadgeVariant(task.status)}
-                                        className={cn((canUpdate && !isTerminal) ? "cursor-pointer" : "cursor-not-allowed", isOverdue && 'border-destructive')}
+                                        className={cn((canUpdate && canEditTask) ? "cursor-pointer" : "cursor-not-allowed", isOverdue && 'border-destructive')}
                                     >
                                     {task.status}
                                     </Badge>
@@ -211,8 +213,13 @@ export default function TasksPage() {
                                             Move to In Progress
                                         </DropdownMenuItem>
                                     )}
-                                    {task.status === 'In Progress' && (
+                                    {(task.status === 'In Progress' || (isSuperAdmin && isTerminal)) && (
                                         <>
+                                            {isSuperAdmin && task.status !== 'In Progress' && (
+                                                <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'In Progress')}>
+                                                    Re-open to In Progress
+                                                </DropdownMenuItem>
+                                            )}
                                             <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Completed')}>Completed</DropdownMenuItem>
                                             <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Cancelled')}>Cancelled</DropdownMenuItem>
                                             <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Rejected')}>Rejected</DropdownMenuItem>
@@ -234,24 +241,24 @@ export default function TasksPage() {
                                 {canUpdate && (
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={isTerminal}>
+                                            <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={!canEditTask}>
                                                 <Edit className="h-4 w-4" />
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>{isTerminal ? 'Task is locked' : 'Edit Task'}</p>
+                                            <p>{canEditTask ? 'Edit Task' : 'Task is locked'}</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 )}
                                 {canDelete && (
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={isTerminal}>
+                                            <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={!canEditTask}>
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>{isTerminal ? 'Cannot delete locked task' : 'Delete Task'}</p>
+                                            <p>{canEditTask ? 'Delete Task' : 'Cannot delete locked task'}</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 )}

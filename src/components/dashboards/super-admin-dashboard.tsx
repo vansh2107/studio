@@ -83,12 +83,11 @@ const chartConfig = {
 
 const TaskSummaryCard = () => {
     const { tasks, updateTask, addTask } = useTasks();
-    const { effectiveUser, hasPermission } = useCurrentUser();
+    const { effectiveUser } = useCurrentUser();
     const { toast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-    const canUpdate = hasPermission('TASK', 'edit');
     const isSuperAdmin = effectiveUser?.role === 'SUPER_ADMIN';
 
     const taskAnalytics = useMemo(() => {
@@ -113,27 +112,9 @@ const TaskSummaryCard = () => {
             .slice(0, 5);
     }, [tasks]);
 
-    const handleOpenEditModal = (task: Task) => {
-      if (!isSuperAdmin && !canUpdate) {
-        toast({ title: 'Permission Denied', description: 'You do not have permission to edit tasks.', variant: 'destructive' });
-        return;
-      }
-      setEditingTask(task);
-      setIsModalOpen(true);
-    };
-
     const handleCloseModal = () => {
       setIsModalOpen(false);
       setEditingTask(null);
-    };
-
-    const handleSaveTask = (task: Omit<Task, 'id' | 'createDate' | 'status'> & { id?: string }) => {
-      if (task.id) {
-          updateTask(task.id, task);
-      } else {
-          addTask(task as Omit<Task, 'id' | 'createDate' | 'status'>);
-      }
-      handleCloseModal();
     };
     
     const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
@@ -202,7 +183,7 @@ const TaskSummaryCard = () => {
                         {latestTasks.map(task => {
                             const isOverdue = (task.status === 'In Progress' || task.status === 'Pending') && task.dueDate && isPast(parseISO(task.dueDate));
                             const isTerminal = ['Completed', 'Cancelled', 'Rejected'].includes(task.status);
-                            const canEditTask = isSuperAdmin || !isTerminal;
+                            const canUpdateStatus = isSuperAdmin; // Always true for super admin
 
                              return (
                                 <TableRow key={task.id} className={cn(isOverdue && 'text-destructive')}>
@@ -220,26 +201,33 @@ const TaskSummaryCard = () => {
                                     <TableCell>{formatDate(task.dueDate)}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
-                                            <DropdownMenuTrigger asChild disabled={!canUpdate || isTerminal}>
+                                            <DropdownMenuTrigger asChild disabled={!canUpdateStatus}>
                                                 <Badge 
                                                     variant={getStatusBadgeVariant(task.status)}
-                                                    className={cn((canUpdate && !isTerminal) ? "cursor-pointer" : "cursor-not-allowed", isOverdue && 'border-destructive')}
+                                                    className={cn(canUpdateStatus ? "cursor-pointer" : "cursor-not-allowed", isOverdue && 'border-destructive')}
                                                 >
                                                 {task.status}
                                                 </Badge>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
-                                                {task.status === 'Pending' && (
+                                                {task.status !== 'Pending' && (
+                                                    <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Pending')}>
+                                                        Move to Pending
+                                                    </DropdownMenuItem>
+                                                )}
+                                                {task.status !== 'In Progress' && (
                                                     <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'In Progress')}>
                                                         Move to In Progress
                                                     </DropdownMenuItem>
                                                 )}
-                                                {task.status === 'In Progress' && (
-                                                    <>
-                                                        <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Completed')}>Completed</DropdownMenuItem>
-                                                        <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Cancelled')}>Cancelled</DropdownMenuItem>
-                                                        <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Rejected')}>Rejected</DropdownMenuItem>
-                                                    </>
+                                                {task.status !== 'Completed' && (
+                                                    <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Completed')}>Completed</DropdownMenuItem>
+                                                )}
+                                                {task.status !== 'Cancelled' && (
+                                                    <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Cancelled')}>Cancelled</DropdownMenuItem>
+                                                )}
+                                                {task.status !== 'Rejected' && (
+                                                    <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Rejected')}>Rejected</DropdownMenuItem>
                                                 )}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -256,14 +244,6 @@ const TaskSummaryCard = () => {
                                             </TooltipTrigger>
                                             <TooltipContent><p>View All Tasks</p></TooltipContent>
                                          </UITooltip>
-                                         <UITooltip>
-                                            <TooltipTrigger asChild>
-                                              <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={!canEditTask}>
-                                                <Edit className="h-4 w-4" />
-                                              </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent><p>{canEditTask ? 'Edit Task' : 'Task is locked'}</p></TooltipContent>
-                                         </UITooltip>
                                       </div>
                                     </TableCell>
                                 </TableRow>
@@ -279,13 +259,6 @@ const TaskSummaryCard = () => {
                 </Button>
             </CardFooter>
         </Card>
-        <Modal open={isModalOpen} onClose={handleCloseModal}>
-          <CreateTaskModal
-            task={editingTask}
-            onClose={handleCloseModal}
-            onSave={handleSaveTask}
-          />
-        </Modal>
       </TooltipProvider>
     );
 }

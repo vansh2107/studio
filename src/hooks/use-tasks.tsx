@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import type { TaskStatus, TaskCategory } from '@/lib/constants';
 import { format } from 'date-fns';
+import { useCurrentUser } from './use-current-user';
 
 export type { TaskStatus, TaskCategory };
 
@@ -22,7 +23,7 @@ export interface Task {
 
 interface TaskContextType {
   tasks: Task[];
-  addTask: (task: Omit<Task, 'id' | 'createDate' | 'status'>) => void;
+  addTask: (task: Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'>) => void;
   updateTask: (taskId: string, updatedTask: Partial<Omit<Task, 'id'>>) => void;
   deleteTask: (taskId: string) => void;
 }
@@ -30,9 +31,10 @@ interface TaskContextType {
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export const TaskProvider = ({ children }: { children: ReactNode }) => {
+  const { effectiveUser } = useCurrentUser();
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  const addTask = (task: Omit<Task, 'id' | 'createDate' | 'status'>) => {
+  const addTask = (task: Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'>) => {
     const newTask: Task = {
         ...task,
         id: `task-${Date.now()}`,
@@ -49,16 +51,22 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
       prevTasks.map(task => {
         if (task.id === taskId) {
           const combined = { ...task, ...updatedTask };
+          const now = new Date().toISOString();
 
           // Auto-populate startDate
           if (updatedTask.status === 'In Progress' && !task.startDate) {
-            combined.startDate = new Date().toISOString();
+            combined.startDate = now;
           }
 
-          // Auto-populate completeDate
+          // SUPER_ADMIN can reopen a task, which should clear the completeDate
+          if (updatedTask.status === 'In Progress' && effectiveUser?.role === 'SUPER_ADMIN') {
+              combined.completeDate = null;
+          }
+
+          // Auto-populate completeDate for terminal statuses
           const terminalStatuses: TaskStatus[] = ['Completed', 'Cancelled', 'Rejected'];
           if (updatedTask.status && terminalStatuses.includes(updatedTask.status) && !task.completeDate) {
-              combined.completeDate = new Date().toISOString();
+              combined.completeDate = now;
           }
 
           return combined;
