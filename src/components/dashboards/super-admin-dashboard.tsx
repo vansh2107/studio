@@ -19,7 +19,6 @@ import {
   CartesianGrid,
   Pie,
   Cell,
-  Tooltip,
 } from 'recharts';
 import { getAllAdmins, getAllRMs, getAllAssociates, getAllClients } from '@/lib/mock-data';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -115,7 +114,6 @@ const TaskSummaryCard = () => {
     }, [tasks]);
 
     const handleOpenEditModal = (task: Task) => {
-      // Super Admin can always edit. Others follow 'canUpdate' permission.
       if (!isSuperAdmin && !canUpdate) {
         toast({ title: 'Permission Denied', description: 'You do not have permission to edit tasks.', variant: 'destructive' });
         return;
@@ -211,7 +209,14 @@ const TaskSummaryCard = () => {
                                     <TableCell>{task.clientName}</TableCell>
                                     <TableCell>{task.category}</TableCell>
                                     <TableCell>{task.rmName || '—'}</TableCell>
-                                    <TableCell>{truncateText(task.description, 25)}</TableCell>
+                                    <TableCell>
+                                        <UITooltip>
+                                          <TooltipTrigger>{truncateText(task.description, 25)}</TooltipTrigger>
+                                          {task.description && task.description.length > 25 && (
+                                            <TooltipContent><p className="max-w-xs">{task.description}</p></TooltipContent>
+                                          )}
+                                        </UITooltip>
+                                    </TableCell>
                                     <TableCell>{formatDate(task.dueDate)}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>

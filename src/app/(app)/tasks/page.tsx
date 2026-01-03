@@ -166,6 +166,7 @@ export default function TasksPage() {
                   <TableHead>Create Date</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>Due Date</TableHead>
+                  <TableHead>Complete Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -193,6 +194,7 @@ export default function TasksPage() {
                           </TableCell>
                           <TableCell>{formatDate(task.startDate)}</TableCell>
                           <TableCell>{formatDate(task.dueDate)}</TableCell>
+                          <TableCell>{formatDate(task.completeDate)}</TableCell>
                           <TableCell>
                              <DropdownMenu>
                                 <DropdownMenuTrigger asChild disabled={!canUpdate || isTerminal}>
@@ -219,7 +221,14 @@ export default function TasksPage() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
-                          <TableCell>{truncateText(task.description, 25)}</TableCell>
+                          <TableCell>
+                            <Tooltip>
+                              <TooltipTrigger>{truncateText(task.description, 25)}</TooltipTrigger>
+                              {task.description && task.description.length > 25 && (
+                                <TooltipContent><p className="max-w-xs">{task.description}</p></TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TableCell>
                           <TableCell className="text-right">
                              <div className="flex items-center justify-end gap-1">
                                 {canUpdate && (
@@ -253,7 +262,7 @@ export default function TasksPage() {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center">
+                    <TableCell colSpan={10} className="h-24 text-center">
                       No tasks created yet. Try the chatbot or the '+' button!
                     </TableCell>
                   </TableRow>
