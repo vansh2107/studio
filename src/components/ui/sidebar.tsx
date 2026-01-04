@@ -198,7 +198,7 @@ const Sidebar = React.forwardRef<
         data-state={state}
         className={cn(
           "hidden md:flex flex-col z-40 fixed left-0 top-0 h-screen bg-app-sidebar text-white transition-all duration-300 ease-in-out border-r",
-          "w-64",
+          "data-[state=expanded]:w-64 data-[state=collapsed]:w-[3.5rem]",
           className
         )}
         {...props}
@@ -223,7 +223,7 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
-      className={cn("h-7 w-7", className)}
+      className={cn("h-7 w-7 text-white hover:bg-[#2c6bd4] hover:text-white", className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
@@ -466,7 +466,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all hover:bg-[#2c6bd4] hover:text-white focus-visible:ring-2 active:bg-[#2c6bd4] active:text-white disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-white/20 data-[active=true]:font-medium data-[active=true]:text-white data-[state=open]:hover:bg-[#2c6bd4] data-[state=open]:hover:text-white group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-0 [&>span]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all hover:bg-[#2c6bd4] hover:text-white focus-visible:ring-2 active:bg-[#2c6bd4] active:text-white disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-white/20 data-[active=true]:font-medium data-[active=true]:text-white data-[state=open]:hover:bg-[#2c6bd4] data-[state=open]:hover:text-white group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:p-2 [&>span]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -730,5 +730,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
-    

@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { AscendWealthLogo } from '@/components/icons/logo';
 import {
@@ -49,8 +50,9 @@ export function AppSidebar() {
   if (!userRole) {
     return (
       <Sidebar>
-        <SidebarHeader>
+        <SidebarHeader className="flex items-center justify-between">
           <AscendWealthLogo />
+          <SidebarTrigger />
         </SidebarHeader>
       </Sidebar>
     );
@@ -60,8 +62,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader>
-        <AscendWealthLogo />
+      <SidebarHeader className="flex items-center justify-between">
+        <AscendWealthLogo className={cn(sidebarState === 'collapsed' && 'hidden')} />
+        <SidebarTrigger />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
@@ -73,7 +76,7 @@ export function AppSidebar() {
                   tooltip={{ children: item.label, side: 'right' }}
                 >
                     <item.icon />
-                    <span className={cn(sidebarState === 'collapsed' && 'sr-only')}>
+                    <span className={cn(sidebarState === 'collapsed' && 'hidden')}>
                       {item.label}
                     </span>
                 </SidebarMenuButton>
