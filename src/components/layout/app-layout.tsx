@@ -11,8 +11,10 @@ function MainContent({ children }: { children: React.ReactNode }) {
   return (
     <div className={cn(
         "flex flex-1 flex-col transition-all duration-300 ease-in-out",
-        state === 'expanded' ? 'ml-64' : 'ml-[3.5rem]'
-      )}>
+        "md:ml-64 data-[state=collapsed]:md:ml-[3.5rem]"
+      )}
+      data-state={state}
+      >
         <AppHeader />
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
             <div className="mx-auto w-full max-w-7xl">{children}</div>
