@@ -8,11 +8,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <div className="flex min-h-screen bg-background">
         <AppSidebar />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col ml-64">
           <AppHeader />
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
             <div className="mx-auto w-full max-w-7xl">{children}</div>
           </main>
+           <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t mt-8">
+                © Ascend Wealth — All rights reserved
+            </footer>
         </div>
       </div>
     </SidebarProvider>
@@ -33,7 +36,7 @@ export function AppLayoutSkeleton() {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-1 flex-col">
+            <div className="flex flex-1 flex-col ml-64">
                 <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-card px-4 sm:h-16 sm:px-6">
                     <div className='flex-1'></div>
                     <Skeleton className="h-8 w-8 rounded-full" />
@@ -57,6 +60,9 @@ export function AppLayoutSkeleton() {
                         </div>
                     </div>
                 </main>
+                 <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t mt-8">
+                    © Ascend Wealth — All rights reserved
+                </footer>
             </div>
         </div>
     )

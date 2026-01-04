@@ -197,8 +197,8 @@ const Sidebar = React.forwardRef<
         ref={ref}
         data-state={state}
         className={cn(
-          "hidden md:flex flex-col z-30 h-screen bg-app-sidebar text-white transition-all duration-300 ease-in-out",
-          open ? "w-64" : "w-[var(--sidebar-width-icon)]",
+          "hidden md:flex flex-col z-40 fixed left-0 top-0 h-screen bg-app-sidebar text-white transition-all duration-300 ease-in-out border-r",
+          "w-64",
           className
         )}
         {...props}
