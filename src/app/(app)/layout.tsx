@@ -2,6 +2,7 @@
 
 import { AppLayout } from '@/components/layout/app-layout';
 import { Chatbot } from '@/components/tasks/chatbot';
+import { useCurrentUser } from '@/hooks/use-current-user';
 import { TaskProvider } from '@/hooks/use-tasks';
 
 export default function DashboardLayout({
@@ -9,9 +10,10 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { isLoading } = useCurrentUser();
   return (
     <TaskProvider>
-      <AppLayout>{children}</AppLayout>
+      <AppLayout isLoading={isLoading}>{children}</AppLayout>
       <Chatbot />
     </TaskProvider>
   );

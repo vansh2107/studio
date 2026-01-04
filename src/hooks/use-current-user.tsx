@@ -6,7 +6,7 @@ import React, { createContext, useContext, useState, useMemo, ReactNode, useCall
 import { usePathname, useRouter } from 'next/navigation';
 import { users, permissions as mockPermissions, User, Client, Associate, Admin, SuperAdmin, RelationshipManager, getRMsForAdmin, getAssociatesForRM, getClientsForAssociate, getAllRMs, getAllAssociates as allAssociatesData } from '@/lib/mock-data';
 import { HIERARCHY, Role, Permission, PermissionModule } from '@/lib/constants';
-import { AppLayoutSkeleton } from '@/components/layout/app-layout';
+import { AppLayout } from '@/components/layout/app-layout';
 
 // --- Helper Functions ---
 
@@ -86,16 +86,25 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    try {
-      const storedUserId = localStorage.getItem('currentUser');
-      if (storedUserId) {
-        const user = users.find(u => u.id === storedUserId);
-        setCurrentUser(user || null);
+    let isMounted = true;
+    const checkUser = () => {
+      try {
+        const storedUserId = localStorage.getItem('currentUser');
+        if (storedUserId) {
+          const user = users.find(u => u.id === storedUserId);
+          if(isMounted) setCurrentUser(user || null);
+        }
+      } catch (e) {
+        // localStorage not available
       }
-    } catch (e) {
-      // localStorage not available
+      if(isMounted) setIsLoading(false);
+    };
+
+    checkUser();
+
+    return () => {
+      isMounted = false;
     }
-    setIsLoading(false);
   }, []);
   
   useEffect(() => {
@@ -209,19 +218,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     relationshipManagers,
   }), [currentUser, impersonatedUser, effectiveUser, login, logout, impersonate, stopImpersonation, hasPermission, isLoading, associates, relationshipManagers]);
 
-  if (isLoading) {
-    return <AppLayoutSkeleton />;
+  if (pathname === '/login') {
+     return (
+       <UserContext.Provider value={value}>
+         {children}
+       </UserContext.Provider>
+     );
   }
-
-  if (!currentUser && pathname !== '/login') {
-    return <AppLayoutSkeleton />;
-  }
-
-  if (currentUser && pathname === '/login') {
-    // This case is handled by redirect logic, but as a fallback, show skeleton.
-    return <AppLayoutSkeleton />;
-  }
-
 
   return (
     <UserContext.Provider value={value}>

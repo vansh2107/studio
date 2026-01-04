@@ -26,23 +26,13 @@ function MainContent({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <SidebarProvider>
-      <div className="flex min-h-screen bg-background">
-        <AppSidebar />
-        <MainContent>{children}</MainContent>
-      </div>
-    </SidebarProvider>
-  );
-}
-
-export function AppLayoutSkeleton() {
+function AppLayoutSkeleton() {
     return (
         <div className="flex min-h-screen bg-background">
             <div className="hidden md:flex flex-col z-30 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out w-64 p-2">
-                <div className="flex flex-col gap-2 p-3">
+                <div className="flex items-center justify-between gap-2 p-3">
                      <Skeleton className="h-7 w-40" />
+                     <Skeleton className="h-7 w-7" />
                 </div>
                 <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2">
                     <div className="flex w-full min-w-0 flex-col gap-1">
@@ -51,7 +41,7 @@ export function AppLayoutSkeleton() {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-1 flex-col ml-64">
+            <div className="flex flex-1 flex-col md:ml-64">
                 <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-card px-4 sm:h-16 sm:px-6">
                     <div className='flex-1'></div>
                     <Skeleton className="h-8 w-8 rounded-full" />
@@ -81,4 +71,19 @@ export function AppLayoutSkeleton() {
             </div>
         </div>
     )
+}
+
+export function AppLayout({ children, isLoading }: { children: React.ReactNode, isLoading?: boolean }) {
+  if (isLoading) {
+    return <AppLayoutSkeleton />;
+  }
+  
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-screen bg-background">
+        <AppSidebar />
+        <MainContent>{children}</MainContent>
+      </div>
+    </SidebarProvider>
+  );
 }
