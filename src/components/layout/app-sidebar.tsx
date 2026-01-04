@@ -63,7 +63,9 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="flex items-center justify-between">
-        <AscendWealthLogo className={cn(sidebarState === 'collapsed' && 'hidden')} />
+        <div className={cn("flex items-center gap-2", sidebarState === 'collapsed' && 'justify-center')}>
+            <AscendWealthLogo className={cn(sidebarState === 'collapsed' && 'hidden')} />
+        </div>
         <SidebarTrigger />
       </SidebarHeader>
       <SidebarContent>
