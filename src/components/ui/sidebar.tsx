@@ -466,7 +466,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all focus-visible:ring-2 active:bg-app-sidebar active:text-white disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-white/20 data-[active=true]:font-medium data-[active=true]:text-white data-[state=open]:bg-app-sidebar data-[state=open]:text-white group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:p-2 [&>span]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors focus-visible:ring-2 active:bg-app-sidebar active:text-white disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-white/20 data-[active=true]:font-medium data-[active=true]:text-white data-[state=open]:bg-app-sidebar data-[state=open]:text-white group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:p-2 [&>span]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
