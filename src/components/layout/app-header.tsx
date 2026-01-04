@@ -144,9 +144,8 @@ export function AppHeader() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-[#2c6bd4] hover:text-white">
                       <Bell />
-                      <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                      <span className="absolute top-0 right-0 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-5 w-auto min-w-5 px-1 rounded-full bg-[#ff3b30] text-white text-xs font-bold">
+                        9+
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
