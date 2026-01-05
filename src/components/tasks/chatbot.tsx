@@ -110,12 +110,12 @@ export function Chatbot() {
             className="fixed bottom-24 right-5 z-50 w-full max-w-sm"
           >
             <Card className="flex flex-col h-[500px] shadow-2xl bg-white text-black">
-              <CardHeader className="flex flex-row items-center justify-between bg-app-header">
+              <CardHeader className="flex flex-row items-center justify-between bg-primary">
                 <div className="flex items-center gap-2">
                    <Bot className="h-6 w-6 text-white" />
                    <CardTitle className="text-white">Assistant</CardTitle>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white hover:text-white/80 hover:bg-orange-500/80">
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white hover:text-white/80 hover:bg-primary/80">
                   <X className="h-4 w-4" />
                 </Button>
               </CardHeader>
@@ -145,7 +145,7 @@ export function Chatbot() {
                     onKeyPress={handleKeyPress}
                     className="bg-white text-black placeholder:text-black/60"
                   />
-                  <Button onClick={handleSendMessage} className="bg-primary text-white hover:bg-primary/90">
+                  <Button onClick={handleSendMessage}>
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
@@ -156,7 +156,7 @@ export function Chatbot() {
       </AnimatePresence>
 
       <Button
-        className="fixed bottom-5 right-5 z-50 h-16 w-16 rounded-full shadow-lg bg-app-sidebar text-white hover:bg-app-sidebar/90"
+        className="fixed bottom-5 right-5 z-50 h-16 w-16 rounded-full shadow-lg bg-primary text-white hover:bg-primary/90"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}

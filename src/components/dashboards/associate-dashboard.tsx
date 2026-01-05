@@ -44,7 +44,7 @@ export default function AssociateDashboard({ user }: AssociateDashboardProps) {
     <>
       <h1 className="text-3xl font-bold font-headline">Associate Dashboard</h1>
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="md:col-span-1">
+        <Card className="md:col-span-1 rounded-[10px] border-primary border-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Mapped Clients</CardTitle>
           </CardHeader>

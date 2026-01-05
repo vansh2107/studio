@@ -269,7 +269,7 @@ export default function SuperAdminDashboard() {
     <>
       <h1 className="text-3xl font-bold font-headline">Super Admin Dashboard</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="rounded-[10px] border-primary border-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Admins</CardTitle>
           </CardHeader>
@@ -277,7 +277,7 @@ export default function SuperAdminDashboard() {
             <div className="text-2xl font-bold">{admins.length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-[10px] border-primary border-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total RMs</CardTitle>
           </CardHeader>
@@ -285,7 +285,7 @@ export default function SuperAdminDashboard() {
             <div className="text-2xl font-bold">{rms.length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-[10px] border-primary border-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Associates</CardTitle>
           </CardHeader>
@@ -293,7 +293,7 @@ export default function SuperAdminDashboard() {
             <div className="text-2xl font-bold">{associates.length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-[10px] border-primary border-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
           </CardHeader>

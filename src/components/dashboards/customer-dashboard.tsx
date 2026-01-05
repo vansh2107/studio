@@ -71,7 +71,7 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   return (
     <>
       <h1 className="text-3xl font-bold font-headline">Family Dashboard</h1>
-      <Card>
+      <Card className="rounded-[10px] border-primary border-2">
         <CardHeader>
           <CardTitle>Total Policy Value</CardTitle>
           <CardDescription>Sum of all Life and Term Insurance policies across the family.</CardDescription>
@@ -97,7 +97,10 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
                 isClickable ? "cursor-pointer" : "cursor-default"
               )}
             >
-              <Card className={cn("flex flex-col h-full", isClickable && "hover:bg-card/80 hover:border-primary/50 transition-colors")}>
+              <Card className={cn(
+                  "flex flex-col h-full rounded-[10px] border-primary/20 border-[1.5px]", 
+                  isClickable && "hover:bg-primary/5 transition-colors"
+              )}>
                 <CardHeader className="flex-row items-center gap-4 space-y-0">
                     <div className="p-3 rounded-full bg-primary/10 text-primary">
                       <Icon className="h-6 w-6" />
