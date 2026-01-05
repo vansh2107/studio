@@ -173,7 +173,7 @@ const Sidebar = React.forwardRef<
         <Sheet open={openMobile} onOpenChange={setOpenMobile}>
           <SheetContent
             side="left"
-            className="w-[var(--sidebar-width-mobile)] bg-orange-gradient p-0 text-white"
+            className="w-[var(--sidebar-width-mobile)] bg-orange-gradient-vertical p-0 text-white"
             style={
               {
                 "--sidebar-width-mobile": SIDEBAR_WIDTH_MOBILE,
@@ -197,7 +197,7 @@ const Sidebar = React.forwardRef<
         ref={ref}
         data-state={state}
         className={cn(
-          "hidden md:flex flex-col z-40 fixed left-0 top-0 h-screen bg-orange-gradient text-white transition-all duration-300 ease-in-out",
+          "hidden md:flex flex-col z-40 fixed left-0 top-0 h-screen bg-orange-gradient-vertical text-white transition-all duration-300 ease-in-out",
           "data-[state=expanded]:w-64 data-[state=collapsed]:w-[3.5rem]",
           className
         )}
@@ -466,11 +466,11 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors focus-visible:ring-2 active:bg-orange-600 active:text-white disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-orange-600 data-[active=true]:font-medium data-[active=true]:text-white data-[state=open]:bg-orange-600 data-[state=open]:text-white group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:p-2 [&>span]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-ring transition-colors focus-visible:ring-2 active:bg-primary active:text-primary-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-primary data-[active=true]:font-medium data-[active=true]:text-primary-foreground data-[state=open]:bg-primary data-[state=open]:text-primary-foreground group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:p-2 [&>span]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "hover:bg-orange-500 hover:text-white",
+        default: "hover:bg-primary hover:text-primary-foreground",
         outline:
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-white/20 hover:text-white hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
