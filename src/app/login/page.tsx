@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -25,6 +26,12 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, allUsers, currentUser } = useCurrentUser();
 
+  useEffect(() => {
+    if (currentUser) {
+      router.push('/');
+    }
+  }, [currentUser, router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -33,7 +40,7 @@ export default function LoginPage() {
     
     if (userToLogin) {
       login(userToLogin.id);
-      router.push('/');
+      // The useEffect will handle the redirect
     } else {
       toast({
         title: 'Login Failed',
@@ -45,8 +52,7 @@ export default function LoginPage() {
   };
   
   if (currentUser) {
-    router.push('/');
-    return null;
+    return null; // Render nothing while redirecting
   }
 
   return (
