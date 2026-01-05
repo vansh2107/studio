@@ -74,7 +74,7 @@ export function AppHeader() {
   const canViewAdminSettings = userRole === 'SUPER_ADMIN' || userRole === 'ADMIN';
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-app-header px-4 text-white sm:h-16 sm:px-6">
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-orange-gradient px-4 text-white sm:h-16 sm:px-6">
       <SidebarTrigger className="md:hidden text-white hover:bg-white/20 hover:text-white" />
 
       {impersonatedUser && (
