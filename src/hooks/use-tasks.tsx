@@ -19,6 +19,15 @@ export interface Task {
   createDate: string;
   startDate?: string | null;
   completeDate?: string | null;
+  mutualFund?: {
+    familyHead: string;
+    service: string;
+    folioNo: string;
+    nameOfAMC: string;
+    amount: number;
+    documentStatus: "Received" | "Pending";
+    signatureStatus: "Done" | "Pending";
+  }
 }
 
 interface TaskContextType {
@@ -41,6 +50,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         rmName: task.rmName || 'N/A',
         dueDate: task.dueDate || new Date().toISOString(),
         description: task.description,
+        mutualFund: task.mutualFund,
         id: `task-${Date.now()}`,
         status: 'Pending',
         createDate: new Date().toISOString(),

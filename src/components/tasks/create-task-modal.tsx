@@ -17,14 +17,41 @@ import { TASK_CATEGORIES, TASK_STATUSES, RM_NAMES } from '@/lib/constants';
 import { getAllClients, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
 import { format, parse, parseISO } from 'date-fns';
+import { Separator } from '../ui/separator';
 
-const taskSchema = z.object({
+const baseTaskSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
   category: z.string().min(1, 'Category is required'),
   rmName: z.string().min(1, 'RM name is required'),
   dueDate: z.string().min(1, 'Due date and time are required'),
   description: z.string().max(300, 'Description cannot exceed 300 characters.').optional(),
 });
+
+const mutualFundSchema = z.object({
+    familyHead: z.string(),
+    service: z.string().min(1, "Service is required"),
+    folioNo: z.string().min(1, "Folio No. is required"),
+    nameOfAMC: z.string().min(1, "Name of AMC is required"),
+    amount: z.preprocess(
+      (a) => parseFloat(z.string().parse(a)),
+      z.number().positive("Amount must be positive")
+    ),
+    documentStatus: z.enum(["Received", "Pending"]),
+    signatureStatus: z.enum(["Done", "Pending"]),
+});
+
+const taskSchema = baseTaskSchema.extend({
+  mutualFund: mutualFundSchema.optional()
+}).refine(data => {
+    if (data.category === 'Mutual Funds') {
+        return !!data.mutualFund;
+    }
+    return true;
+}, {
+    message: "Mutual Fund details are required for this category.",
+    path: ["mutualFund"],
+});
+
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
@@ -43,19 +70,11 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const isTerminal = isEditMode && task ? terminalStatuses.includes(task.status) : false;
 
   const clientOptions = useMemo(() => {
-    const heads = getAllClients().map(c => ({
-      ...c,
-      label: `${c.firstName} ${c.lastName} — Head`,
+    const clients = getAllClients();
+    return clients.map(c => ({
+      label: `${c.firstName} ${c.lastName}`,
       value: `${c.firstName} ${c.lastName}`
     }));
-
-    const members = mockFamilyMembers.map(fm => ({
-      ...fm,
-      label: `${fm.firstName} ${fm.lastName} — ${fm.relation}`,
-      value: `${fm.firstName} ${fm.lastName}`
-    }));
-    
-    return [...heads, ...members].sort((a,b) => a.label.localeCompare(b.label));
   }, []);
 
   const {
@@ -78,24 +97,24 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   });
   
   const descriptionValue = watch('description') || '';
+  const selectedCategory = watch('category');
+  const clientName = watch('clientName');
 
   useEffect(() => {
     if (task) {
         let formattedDueDate = '';
         if (task.dueDate) {
             try {
-                // Handle 'dd-MM-yyyy HH:mm' from chatbot
                 if (task.dueDate.includes(' ')) {
                      const parsedDate = parse(task.dueDate, 'dd-MM-yyyy HH:mm', new Date());
                      if (!isNaN(parsedDate.getTime())) {
                         formattedDueDate = format(parsedDate, "yyyy-MM-dd'T'HH:mm");
                      }
-                } else { // Handle ISO string
+                } else {
                     formattedDueDate = format(parseISO(task.dueDate), "yyyy-MM-dd'T'HH:mm");
                 }
             } catch (e) {
                 console.error("Error parsing due date:", e);
-                // Keep it empty if format is wrong
             }
         }
        const defaultData: TaskFormData = {
@@ -104,6 +123,10 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
          rmName: task.rmName || '',
          dueDate: formattedDueDate,
          description: task.description || '',
+         mutualFund: task.mutualFund ? {
+           ...task.mutualFund,
+           amount: task.mutualFund.amount || 0,
+         } : undefined,
        }
       reset(defaultData);
     } else {
@@ -119,13 +142,16 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
   const processSave = (data: TaskFormData) => {
     setIsSaving(true);
-    // Simulate save
     setTimeout(() => {
-      // Convert local datetime string to a standardized format if needed, e.g., ISO string
       const submissionData = {
         ...data,
-        dueDate: new Date(data.dueDate).toISOString(), // Standardize to ISO
+        dueDate: new Date(data.dueDate).toISOString(), 
       };
+      
+      if (submissionData.category !== 'Mutual Funds') {
+        delete submissionData.mutualFund;
+      }
+      
       onSave({ ...submissionData, id: task?.id });
       toast({
         title: isEditMode ? 'Task Updated' : 'Task Created',
@@ -134,6 +160,18 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       setIsSaving(false);
     }, 500);
   };
+  
+  const familyHeadName = useMemo(() => {
+    const client = getAllClients().find(c => `${c.firstName} ${c.lastName}` === clientName);
+    return client ? `${client.firstName} ${client.lastName}` : '';
+  }, [clientName]);
+  
+  useEffect(() => {
+      if(selectedCategory === 'Mutual Funds' && familyHeadName) {
+          setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
+      }
+  }, [familyHeadName, selectedCategory, setValue]);
+
 
   return (
       <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
@@ -230,6 +268,73 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
               </div>
           </div>
+          
+          {selectedCategory === 'Mutual Funds' && (
+              <div className="space-y-4 pt-4">
+                <Separator />
+                <h3 className="text-md font-semibold">Mutual Fund Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label>Family Head</Label>
+                    <Input {...register('mutualFund.familyHead')} readOnly value={familyHeadName} />
+                  </div>
+                  <div className="space-y-1">
+                      <Label htmlFor="mf-service">Service</Label>
+                      <Input id="mf-service" {...register('mutualFund.service')} disabled={isTerminal}/>
+                      {errors.mutualFund?.service && <p className="text-sm text-destructive">{errors.mutualFund.service.message}</p>}
+                  </div>
+                   <div className="space-y-1">
+                      <Label htmlFor="mf-folioNo">Folio No.</Label>
+                      <Input id="mf-folioNo" {...register('mutualFund.folioNo')} disabled={isTerminal}/>
+                       {errors.mutualFund?.folioNo && <p className="text-sm text-destructive">{errors.mutualFund.folioNo.message}</p>}
+                  </div>
+                   <div className="space-y-1">
+                      <Label htmlFor="mf-nameOfAMC">Name of AMC</Label>
+                      <Input id="mf-nameOfAMC" {...register('mutualFund.nameOfAMC')} disabled={isTerminal}/>
+                       {errors.mutualFund?.nameOfAMC && <p className="text-sm text-destructive">{errors.mutualFund.nameOfAMC.message}</p>}
+                  </div>
+                  <div className="space-y-1">
+                      <Label htmlFor="mf-amount">Amount</Label>
+                      <Input id="mf-amount" type="number" {...register('mutualFund.amount')} disabled={isTerminal}/>
+                       {errors.mutualFund?.amount && <p className="text-sm text-destructive">{errors.mutualFund.amount.message}</p>}
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Document Status</Label>
+                    <Controller
+                        name="mutualFund.documentStatus"
+                        control={control}
+                        defaultValue="Pending"
+                        render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                            <SelectTrigger><SelectValue/></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Received">Received</SelectItem>
+                                <SelectItem value="Pending">Pending</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        )}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Signature Status</Label>
+                    <Controller
+                        name="mutualFund.signatureStatus"
+                        control={control}
+                        defaultValue="Pending"
+                        render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                            <SelectTrigger><SelectValue/></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Done">Done</SelectItem>
+                                <SelectItem value="Pending">Pending</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        )}
+                    />
+                  </div>
+                </div>
+              </div>
+          )}
 
           <div className="space-y-1">
             <Label htmlFor="description">Description (Optional)</Label>

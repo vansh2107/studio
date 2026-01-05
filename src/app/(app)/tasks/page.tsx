@@ -58,7 +58,7 @@ export default function TasksPage() {
 
   const getStatusBadgeVariant = (status: string) => {
     const lowerCaseStatus = status.toLowerCase();
-    if (lowerCaseStatus.includes('completed')) return 'default';
+    if (lowerCaseStatus.includes('completed') || lowerCaseStatus.includes('received') || lowerCaseStatus.includes('done')) return 'default';
     if (lowerCaseStatus.includes('pending')) return 'destructive';
     if (lowerCaseStatus.includes('in progress')) return 'secondary';
     return 'outline';
@@ -188,6 +188,8 @@ export default function TasksPage() {
                   <TableHead>Due Date</TableHead>
                   <TableHead>Complete Date</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Doc Status</TableHead>
+                  <TableHead>Sig Status</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -247,11 +249,25 @@ export default function TasksPage() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
+                           <TableCell>
+                            {task.mutualFund?.documentStatus ? (
+                              <Badge variant={getStatusBadgeVariant(task.mutualFund.documentStatus)}>
+                                {task.mutualFund.documentStatus}
+                              </Badge>
+                            ) : '—'}
+                          </TableCell>
+                          <TableCell>
+                            {task.mutualFund?.signatureStatus ? (
+                              <Badge variant={getStatusBadgeVariant(task.mutualFund.signatureStatus)}>
+                                {task.mutualFund.signatureStatus}
+                              </Badge>
+                            ) : '—'}
+                          </TableCell>
                           <TableCell>
                             <Tooltip>
-                              <TooltipTrigger>{truncateText(task.description, 25)}</TooltipTrigger>
-                              {task.description && task.description.length > 25 && (
-                                <TooltipContent><p className="max-w-xs">{task.description}</p></TooltipContent>
+                              <TooltipTrigger>{truncateText(task.mutualFund?.folioNo || task.description, 25)}</TooltipTrigger>
+                              {(task.description && task.description.length > 25) || (task.mutualFund?.folioNo && task.mutualFund?.folioNo.length > 25) && (
+                                <TooltipContent><p className="max-w-xs">{task.mutualFund?.folioNo || task.description}</p></TooltipContent>
                               )}
                             </Tooltip>
                           </TableCell>
@@ -288,7 +304,7 @@ export default function TasksPage() {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={10} className="h-24 text-center">
+                    <TableCell colSpan={12} className="h-24 text-center">
                       No tasks created yet. Try the chatbot or the 'Add Task' button!
                     </TableCell>
                   </TableRow>
@@ -312,7 +328,7 @@ export default function TasksPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the task for <strong>{taskToDelete?.clientName}</strong>.
+                    This will permanently delete the task for <strong>{taskToDelete?.clientName}</strong>.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -139,4 +139,13 @@ export interface Task {
   createDate: string;
   startDate?: string | null;
   completeDate?: string | null;
+  mutualFund?: {
+    familyHead: string;
+    service: string;
+    folioNo: string;
+    nameOfAMC: string;
+    amount: number;
+    documentStatus: "Received" | "Pending";
+    signatureStatus: "Done" | "Pending";
+  }
 }
