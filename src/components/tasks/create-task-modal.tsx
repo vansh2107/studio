@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TASK_CATEGORIES, TASK_STATUSES, RM_NAMES } from '@/lib/constants';
 import { getAllClients, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
-import { format, parse } from 'date-fns';
+import { format, parse, parseISO } from 'date-fns';
 
 const taskSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
@@ -91,7 +91,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         formattedDueDate = format(parsedDate, "yyyy-MM-dd'T'HH:mm");
                      }
                 } else { // Handle ISO string
-                    formattedDueDate = format(new Date(task.dueDate), "yyyy-MM-dd'T'HH:mm");
+                    formattedDueDate = format(parseISO(task.dueDate), "yyyy-MM-dd'T'HH:mm");
                 }
             } catch (e) {
                 console.error("Error parsing due date:", e);

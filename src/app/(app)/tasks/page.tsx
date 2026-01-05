@@ -38,7 +38,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { TASK_STATUSES } from '@/lib/constants';
-import { format, parseISO, parse } from 'date-fns';
+import { format, parseISO, parse, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 
@@ -195,7 +195,7 @@ export default function TasksPage() {
               <TableBody>
                 {tasks.length > 0 ? (
                   tasks.map((task) => {
-                    const isOverdue = task.status === 'In Progress' && task.dueDate && isPast(parseISO(task.dueDate));
+                    const isOverdue = task.status !== 'Completed' && task.dueDate && isPast(parseISO(task.dueDate));
                     const isTerminal = terminalStatuses.includes(task.status);
                     const canEditTask = isSuperAdmin || !isTerminal;
 

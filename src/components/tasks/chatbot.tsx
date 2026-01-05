@@ -15,16 +15,16 @@ type Message = {
 };
 
 
-const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; error?: string } => {
+const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id' | 'status'>>; error?: string } => {
     const cleanInput = input.trim();
-    const regex = /create task for (.*?) for (.*?) which is assigned to (.*?) by (.*?) which is (.*)/i;
+    const regex = /create task for (.*?) for (.*?) which is assigned to (.*?) by (.*)/i;
     const match = cleanInput.match(regex);
 
     if (!match) {
-        return { error: 'Please use the format:\n`Create task for <CLIENT NAME> for <CATEGORY> which is assigned to <RM NAME> by <dd-mm-yyyy hh:mm> which is <STATUS>`' };
+        return { error: 'Please use the format:\n`Create task for <CLIENT NAME> for <CATEGORY> which is assigned to <RM NAME> by <dd-mm-yyyy hh:mm>`' };
     }
     
-    const [, clientName, category, rmName, dueDate, status] = match.map(m => m.trim());
+    const [, clientName, category, rmName, dueDate] = match.map(m => m.trim());
     
     // Simple validation for dd-mm-yyyy hh:mm format
     const dateTimeRegex = /^\d{2}-\d{2}-\d{4} \d{2}:\d{2}$/;
@@ -38,7 +38,6 @@ const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; er
             category: category || 'Not specified',
             rmName: rmName || 'Not specified',
             dueDate: dueDate || 'Not specified',
-            status: status || 'Not specified',
         }
     };
 };
@@ -47,7 +46,7 @@ const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; er
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "To create a task, please use the format:\n`Create task for <CLIENT NAME> for <CATEGORY> which is assigned to <RM NAME> by <dd-mm-yyyy hh:mm> which is <STATUS>`", sender: 'bot' }
+    { id: 1, text: "To create a task, please use the format:\n`Create task for <CLIENT NAME> for <CATEGORY> which is assigned to <RM NAME> by <dd-mm-yyyy hh:mm>`", sender: 'bot' }
   ]);
   const [inputValue, setInputValue] = useState('');
   const { addTask } = useTasks();
@@ -72,20 +71,11 @@ export function Chatbot() {
     const { task: taskDetails, error } = parseTaskCommand(inputValue);
     
     if (taskDetails) {
-        const fullTask: Task = {
-            id: `task-${Date.now()}`,
-            clientName: taskDetails.clientName!,
-            category: taskDetails.category!,
-            rmName: taskDetails.rmName!,
-            dueDate: taskDetails.dueDate!,
-            status: taskDetails.status!,
-            description: `Created via chatbot`
-        };
-        addTask(fullTask);
+        addTask(taskDetails);
 
         const botResponse: Message = {
             id: Date.now() + 1,
-            text: `Task created for ${fullTask.clientName} under ${fullTask.category}, assigned to ${fullTask.rmName} (Due: ${fullTask.dueDate}, Status: ${fullTask.status})`,
+            text: `Task created for ${taskDetails.clientName} under ${taskDetails.category}, assigned to ${taskDetails.rmName} (Due: ${taskDetails.dueDate}). Status is now 'Pending'.`,
             sender: 'bot'
         };
         newMessages.push(botResponse);
@@ -129,7 +119,7 @@ export function Chatbot() {
                   <X className="h-4 w-4" />
                 </Button>
               </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto" ref={chatHistoryRef}>
+              <CardContent className="flex-1 overflow-y-auto p-4" ref={chatHistoryRef}>
                 <div className="space-y-4">
                   {messages.map((message) => (
                     <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -149,13 +139,13 @@ export function Chatbot() {
               <CardFooter className="p-4 border-t">
                 <div className="flex w-full items-center space-x-2">
                   <Input
-                    placeholder="Create task for <CLIENT> for <CATEGORY>..."
+                    placeholder="Create task for..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
                     className="bg-white text-black placeholder:text-black/60"
                   />
-                  <Button onClick={handleSendMessage} className="bg-[#1b51a0] text-white hover:bg-[#1b51a0]/90">
+                  <Button onClick={handleSendMessage} className="bg-app-sidebar text-white hover:bg-app-sidebar/90">
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
@@ -166,7 +156,7 @@ export function Chatbot() {
       </AnimatePresence>
 
       <Button
-        className="fixed bottom-5 right-5 z-50 h-16 w-16 rounded-full shadow-lg bg-[#1b51a0] text-white hover:bg-[#1b51a0]/90"
+        className="fixed bottom-5 right-5 z-50 h-16 w-16 rounded-full shadow-lg bg-app-sidebar text-white hover:bg-app-sidebar/90"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}

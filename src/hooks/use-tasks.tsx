@@ -23,7 +23,7 @@ export interface Task {
 
 interface TaskContextType {
   tasks: Task[];
-  addTask: (task: Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'>) => void;
+  addTask: (task: Partial<Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'>>) => void;
   updateTask: (taskId: string, updatedTask: Partial<Omit<Task, 'id'>>) => void;
   deleteTask: (taskId: string) => void;
 }
@@ -34,9 +34,13 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const { effectiveUser } = useCurrentUser();
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  const addTask = (task: Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'>) => {
+  const addTask = (task: Partial<Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'>>) => {
     const newTask: Task = {
-        ...task,
+        clientName: task.clientName || 'N/A',
+        category: task.category || 'N/A',
+        rmName: task.rmName || 'N/A',
+        dueDate: task.dueDate || new Date().toISOString(),
+        description: task.description,
         id: `task-${Date.now()}`,
         status: 'Pending',
         createDate: new Date().toISOString(),
