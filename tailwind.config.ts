@@ -10,6 +10,9 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        'orange-gradient': 'linear-gradient(180deg, #fbc87b 0%, #f78e1e 100%)',
+      },
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['"Space Grotesk"', 'sans-serif'],
@@ -17,7 +20,6 @@ export default {
       },
       colors: {
         'app-header': '#f78e1e',
-        'app-sidebar': '#1b51a0',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
