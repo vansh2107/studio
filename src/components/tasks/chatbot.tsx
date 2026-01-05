@@ -16,15 +16,21 @@ type Message = {
 
 
 const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; error?: string } => {
-    const cleanInput = input.trim().toLowerCase();
-    const regex = /create task for (.*?) for (.*?) assigned to (.*?) by (.*?) which is (.*)/i;
+    const cleanInput = input.trim();
+    const regex = /create task for (.*?) for (.*?) which is assigned to (.*?) by (.*?) which is (.*)/i;
     const match = cleanInput.match(regex);
 
     if (!match) {
-        return { error: 'Please use:\nCreate task for CLIENT for CATEGORY assigned to RM by DATE which is STATUS' };
+        return { error: 'Please use the format:\n`Create task for <CLIENT> for <CATEGORY> which is assigned to <RM> by <dd-mm-yyyy hh:mm> which is <STATUS>`' };
     }
     
     const [, clientName, category, rmName, dueDate, status] = match.map(m => m.trim());
+    
+    // Simple validation for dd-mm-yyyy hh:mm format
+    const dateTimeRegex = /^\d{2}-\d{2}-\d{4} \d{2}:\d{2}$/;
+    if (!dateTimeRegex.test(dueDate)) {
+        return { error: `Invalid date format for "${dueDate}". Please use "dd-mm-yyyy hh:mm".`};
+    }
     
     return {
         task: {
@@ -41,7 +47,7 @@ const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; er
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "Hello! How can I help you create tasks today?", sender: 'bot' }
+    { id: 1, text: "To create a task, please use the format:\n`Create task for <CLIENT> for <CATEGORY> which is assigned to <RM> by <dd-mm-yyyy hh:mm> which is <STATUS>`", sender: 'bot' }
   ]);
   const [inputValue, setInputValue] = useState('');
   const { addTask } = useTasks();
@@ -114,12 +120,12 @@ export function Chatbot() {
             className="fixed bottom-24 right-5 z-50 w-full max-w-sm"
           >
             <Card className="flex flex-col h-[500px] shadow-2xl bg-white text-black">
-              <CardHeader className="flex flex-row items-center justify-between bg-[#f78e1e]">
+              <CardHeader className="flex flex-row items-center justify-between bg-[#1b51a0]">
                 <div className="flex items-center gap-2">
-                   <Bot className="h-6 w-6 text-black" />
-                   <CardTitle className="text-black">Assistant</CardTitle>
+                   <Bot className="h-6 w-6 text-white" />
+                   <CardTitle className="text-white">Assistant</CardTitle>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-black hover:text-black/80 hover:bg-white/20">
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white hover:text-white/80 hover:bg-white/20">
                   <X className="h-4 w-4" />
                 </Button>
               </CardHeader>
@@ -131,7 +137,7 @@ export function Chatbot() {
                         className={`max-w-[80%] rounded-lg px-4 py-2 whitespace-pre-wrap ${
                           message.sender === 'user'
                             ? 'bg-primary text-primary-foreground'
-                            : 'bg-[#1b51a0] text-white'
+                            : 'bg-muted text-muted-foreground'
                         }`}
                       >
                         {message.text}
@@ -143,13 +149,13 @@ export function Chatbot() {
               <CardFooter className="p-4 border-t">
                 <div className="flex w-full items-center space-x-2">
                   <Input
-                    placeholder="Create task for..."
+                    placeholder="Create task for... (see format above)"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
                     className="bg-white text-black placeholder:text-black/60"
                   />
-                  <Button onClick={handleSendMessage} className="bg-[#f78e1e] text-black hover:bg-[#f78e1e]/90">
+                  <Button onClick={handleSendMessage} className="bg-[#1b51a0] text-white hover:bg-[#1b51a0]/90">
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
@@ -160,7 +166,7 @@ export function Chatbot() {
       </AnimatePresence>
 
       <Button
-        className="fixed bottom-5 right-5 z-50 h-16 w-16 rounded-full shadow-lg"
+        className="fixed bottom-5 right-5 z-50 h-16 w-16 rounded-full shadow-lg bg-[#1b51a0] text-white hover:bg-[#1b51a0]/90"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}

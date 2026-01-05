@@ -38,7 +38,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { TASK_STATUSES } from '@/lib/constants';
-import { format, parseISO, isPast } from 'date-fns';
+import { format, parseISO, parse } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 
@@ -117,9 +117,17 @@ export default function TasksPage() {
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return '—';
     try {
-      return format(parseISO(dateString), 'dd MMM yyyy');
+        // Handle 'dd-MM-yyyy HH:mm' from chatbot
+        if (dateString.includes(' ')) {
+            const parsedDate = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
+            if (!isNaN(parsedDate.getTime())) {
+                return format(parsedDate, 'dd MMM yyyy, h:mm a');
+            }
+        }
+      // Handle ISO string from datetime-local input
+      return format(parseISO(dateString), 'dd MMM yyyy, h:mm a');
     } catch {
-      return dateString;
+      return dateString; // Fallback to original string if parsing fails
     }
   };
   
@@ -198,7 +206,7 @@ export default function TasksPage() {
                           <TableCell>{task.rmName}</TableCell>
                           <TableCell>
                             <Tooltip>
-                                <TooltipTrigger>{formatDate(task.createDate)}</TooltipTrigger>
+                                <TooltipTrigger>{task.createDate ? format(parseISO(task.createDate), 'dd MMM yyyy') : '—'}</TooltipTrigger>
                                 <TooltipContent>
                                     <p>Created: {task.createDate ? format(parseISO(task.createDate), 'PPpp') : 'N/A'}</p>
                                     {task.completeDate && <p>Completed: {format(parseISO(task.completeDate), 'PPpp')}</p>}

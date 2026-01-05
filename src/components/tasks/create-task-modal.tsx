@@ -16,13 +16,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TASK_CATEGORIES, TASK_STATUSES, RM_NAMES } from '@/lib/constants';
 import { getAllClients, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 
 const taskSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
   category: z.string().min(1, 'Category is required'),
   rmName: z.string().min(1, 'RM name is required'),
-  dueDate: z.string().min(1, 'Due date is required'),
+  dueDate: z.string().min(1, 'Due date and time are required'),
   description: z.string().max(300, 'Description cannot exceed 300 characters.').optional(),
 });
 
@@ -81,11 +81,28 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
   useEffect(() => {
     if (task) {
+        let formattedDueDate = '';
+        if (task.dueDate) {
+            try {
+                // Handle 'dd-MM-yyyy HH:mm' from chatbot
+                if (task.dueDate.includes(' ')) {
+                     const parsedDate = parse(task.dueDate, 'dd-MM-yyyy HH:mm', new Date());
+                     if (!isNaN(parsedDate.getTime())) {
+                        formattedDueDate = format(parsedDate, "yyyy-MM-dd'T'HH:mm");
+                     }
+                } else { // Handle ISO string
+                    formattedDueDate = format(new Date(task.dueDate), "yyyy-MM-dd'T'HH:mm");
+                }
+            } catch (e) {
+                console.error("Error parsing due date:", e);
+                // Keep it empty if format is wrong
+            }
+        }
        const defaultData: TaskFormData = {
          clientName: task.clientName || '',
          category: task.category || '',
          rmName: task.rmName || '',
-         dueDate: task.dueDate ? format(new Date(task.dueDate), 'yyyy-MM-dd') : '',
+         dueDate: formattedDueDate,
          description: task.description || '',
        }
       reset(defaultData);
@@ -104,7 +121,12 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     setIsSaving(true);
     // Simulate save
     setTimeout(() => {
-      onSave({ ...data, id: task?.id });
+      // Convert local datetime string to a standardized format if needed, e.g., ISO string
+      const submissionData = {
+        ...data,
+        dueDate: new Date(data.dueDate).toISOString(), // Standardize to ISO
+      };
+      onSave({ ...submissionData, id: task?.id });
       toast({
         title: isEditMode ? 'Task Updated' : 'Task Created',
         description: `The task for "${data.clientName}" has been successfully saved.`,
@@ -203,8 +225,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               </div>
 
                <div className="space-y-1">
-                  <Label htmlFor="dueDate">Due Date</Label>
-                  <Input id="dueDate" {...register('dueDate')} placeholder="YYYY-MM-DD" type="date" disabled={isTerminal} />
+                  <Label htmlFor="dueDate">Due Date & Time</Label>
+                  <Input id="dueDate" {...register('dueDate')} type="datetime-local" disabled={isTerminal} />
                   {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
               </div>
           </div>
