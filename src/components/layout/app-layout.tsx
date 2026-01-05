@@ -8,22 +8,21 @@ import { cn } from '@/lib/utils';
 function MainContent({ children }: { children: React.ReactNode }) {
   const { state } = useSidebar();
   return (
-    <div
+    <main
       className={cn(
-        'flex flex-1 flex-col transition-all duration-300 ease-in-out',
-        'md:ml-64 data-[state=collapsed]:md:ml-14'
+        'flex-1 p-4 sm:p-6 lg:p-8 transition-all duration-300 ease-in-out',
+        'data-[state=expanded]:md:ml-64 data-[state=collapsed]:md:ml-14'
       )}
       data-state={state}
     >
-      <main className="flex-1 p-4 sm:p-6 lg:p-8">
-        <div className="mx-auto w-full max-w-7xl">{children}</div>
-      </main>
+      <div className="mx-auto w-full max-w-7xl">{children}</div>
       <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t mt-8">
         © Ascend Wealth — All rights reserved
       </footer>
-    </div>
+    </main>
   );
 }
+
 
 function AppLayoutSkeleton() {
   return (
@@ -87,9 +86,9 @@ export function AppLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen flex-col bg-background">
+      <div className="min-h-screen bg-background">
         <AppHeader />
-        <div className="flex flex-1">
+        <div className="flex">
           <AppSidebar />
           <MainContent>{children}</MainContent>
         </div>

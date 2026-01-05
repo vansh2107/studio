@@ -198,7 +198,7 @@ const Sidebar = React.forwardRef<
         data-state={state}
         className={cn(
           "hidden md:flex flex-col z-30 bg-orange-gradient-vertical text-white transition-all duration-300 ease-in-out",
-          "fixed top-14 h-[calc(100vh-3.5rem)] border-r border-gray-200/20",
+          "sticky top-14 h-[calc(100vh-3.5rem)] border-r border-gray-200/20",
           "data-[state=expanded]:w-64 data-[state=collapsed]:w-14",
           className
         )}
