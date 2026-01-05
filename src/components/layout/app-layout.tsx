@@ -11,7 +11,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
     <div
       className={cn(
         'flex flex-1 flex-col transition-all duration-300 ease-in-out',
-        'md:ml-0 data-[state=collapsed]:md:ml-0'
+        'md:pl-64 data-[state=collapsed]:md:pl-14'
       )}
       data-state={state}
     >
