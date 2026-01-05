@@ -3,7 +3,6 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import type { TaskStatus, TaskCategory } from '@/lib/constants';
-import { format } from 'date-fns';
 import { useCurrentUser } from './use-current-user';
 import type { Task } from '@/lib/types';
 
@@ -25,6 +24,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const addTask = (task: Partial<Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'>>) => {
     const newTask: Task = {
+        clientId: task.clientId || 'N/A',
         clientName: task.clientName || 'N/A',
         category: task.category || 'N/A',
         rmName: task.rmName || 'N/A',

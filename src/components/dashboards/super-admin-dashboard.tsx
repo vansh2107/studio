@@ -2,24 +2,7 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { BarChart, PieChart, ClipboardList, Eye, Edit } from 'lucide-react';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-} from '@/components/ui/chart';
-import {
-  BarChart as RechartsBarChart,
-  PieChart as RechartsPieChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Pie,
-  Cell,
-} from 'recharts';
+import { Eye } from 'lucide-react';
 import { getAllAdmins, getAllRMs, getAllAssociates, getAllClients } from '@/lib/mock-data';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useTasks, Task, TaskStatus } from '@/hooks/use-tasks';
@@ -43,79 +26,27 @@ import { useToast } from '@/hooks/use-toast';
 import { format, parseISO, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import Modal from '@/components/ui/Modal';
-import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import TaskOverview from './task-overview';
 
 const admins = getAllAdmins();
 const rms = getAllRMs();
 const associates = getAllAssociates();
 const clients = getAllClients();
 
-const totalCounts = [
-  { name: 'Admins', count: admins.length, fill: 'hsl(var(--chart-1))' },
-  { name: 'RMs', count: rms.length, fill: 'hsl(var(--chart-4))' },
-  { name: 'Associates', count: associates.length, fill: 'hsl(var(--chart-2))' },
-  { name: 'Clients', count: clients.length, fill: 'hsl(var(--chart-3))' },
-];
-
-const chartConfig = {
-  count: {
-    label: 'Count',
-  },
-  Admins: {
-    label: 'Admins',
-    color: 'hsl(var(--chart-1))',
-  },
-  RMs: {
-    label: 'RMs',
-    color: 'hsl(var(--chart-4))',
-  },
-  Associates: {
-    label: 'Associates',
-    color: 'hsl(var(--chart-2))',
-  },
-  Clients: {
-    label: 'Clients',
-    color: 'hsl(var(--chart-3))',
-  },
-};
-
 const TaskSummaryCard = () => {
-    const { tasks, updateTask, addTask } = useTasks();
+    const { tasks, updateTask } = useTasks();
     const { effectiveUser } = useCurrentUser();
     const { toast } = useToast();
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
 
     const isSuperAdmin = effectiveUser?.role === 'SUPER_ADMIN';
-
-    const taskAnalytics = useMemo(() => {
-        const allTasks = tasks;
-        return {
-            total: allTasks.length,
-            pending: allTasks.filter(t => t.status === 'Pending').length,
-            inProgress: allTasks.filter(t => t.status === 'In Progress').length,
-            completed: allTasks.filter(t => t.status === 'Completed').length,
-            cancelled: allTasks.filter(t => t.status === 'Cancelled').length,
-            rejected: allTasks.filter(t => t.status === 'Rejected').length,
-            overdue: allTasks.filter(t => 
-                (t.status === 'Pending' || t.status === 'In Progress') && 
-                t.dueDate && isPast(parseISO(t.dueDate))
-            ).length,
-        };
-    }, [tasks]);
 
     const latestTasks = useMemo(() => {
         return [...tasks]
             .sort((a, b) => parseISO(b.createDate).getTime() - parseISO(a.createDate).getTime())
             .slice(0, 5);
     }, [tasks]);
-
-    const handleCloseModal = () => {
-      setIsModalOpen(false);
-      setEditingTask(null);
-    };
     
     const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
         updateTask(taskId, { status: newStatus });
@@ -152,19 +83,7 @@ const TaskSummaryCard = () => {
       <TooltipProvider>
         <Card className="lg:col-span-7">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <ClipboardList className="h-5 w-5" />
-                    Tasks (All Accounts)
-                </CardTitle>
-                 <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
-                    <span>Total: <strong className="text-foreground">{taskAnalytics.total}</strong></span>
-                    <span className="text-yellow-500">Pending: <strong className="text-yellow-400">{taskAnalytics.pending}</strong></span>
-                    <span className="text-blue-500">In Progress: <strong className="text-blue-400">{taskAnalytics.inProgress}</strong></span>
-                    <span className="text-green-500">Completed: <strong className="text-green-400">{taskAnalytics.completed}</strong></span>
-                    <span>Cancelled: <strong className="text-foreground">{taskAnalytics.cancelled}</strong></span>
-                    <span>Rejected: <strong className="text-foreground">{taskAnalytics.rejected}</strong></span>
-                    <span className="text-red-500">Overdue: <strong className="text-red-400">{taskAnalytics.overdue}</strong></span>
-                </div>
+                <TaskOverview tasks={tasks} />
             </CardHeader>
             <CardContent className="p-0">
                 <Table>
@@ -182,11 +101,10 @@ const TaskSummaryCard = () => {
                     <TableBody>
                         {latestTasks.map(task => {
                             const isOverdue = (task.status === 'In Progress' || task.status === 'Pending') && task.dueDate && isPast(parseISO(task.dueDate));
-                            const isTerminal = ['Completed', 'Cancelled', 'Rejected'].includes(task.status);
                             const canUpdateStatus = isSuperAdmin; // Always true for super admin
 
                              return (
-                                <TableRow key={task.id} className={cn(isOverdue && 'text-destructive')}>
+                                <TableRow key={task.id} className={cn(isOverdue && 'text-destructive', 'hover:bg-transparent')}>
                                     <TableCell>{task.clientName}</TableCell>
                                     <TableCell>{task.category}</TableCell>
                                     <TableCell>{task.rmName || '—'}</TableCell>
@@ -303,65 +221,7 @@ export default function SuperAdminDashboard() {
         </Card>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart className="h-5 w-5" />
-              User Counts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-              <RechartsBarChart data={totalCounts} accessibilityLayer>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  tickFormatter={(value) => value.slice(0, 10)}
-                />
-                <YAxis />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <Bar dataKey="count" radius={4}>
-                  {totalCounts.map((entry) => (
-                     <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </RechartsBarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5" />
-              User Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
-              <RechartsPieChart>
-                <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                <Pie data={totalCounts} dataKey="count" nameKey="name" innerRadius={60}>
-                   {totalCounts.map((entry) => (
-                     <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <ChartLegend
-                  content={<ChartLegendContent nameKey="name" />}
-                  className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
-                />
-              </RechartsPieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        
         {effectiveUser?.role === 'SUPER_ADMIN' && <TaskSummaryCard />}
-
       </div>
     </>
   );

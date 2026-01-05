@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAssetsForClient, getFamilyMembersForClient } from '@/lib/mock-data';
-import type { User, AssetCategory, FamilyMember, Client } from '@/lib/types';
+import type { User, AssetCategory } from '@/lib/types';
 import { ASSET_CATEGORIES } from '@/lib/constants';
 import { useMemo, useState } from 'react';
 import {
@@ -18,6 +18,8 @@ import {
 import Modal from '@/components/ui/Modal';
 import { AssetBreakdownModal } from './asset-breakdown-modal';
 import { cn } from '@/lib/utils';
+import { useTasks } from '@/hooks/use-tasks';
+import CustomerTaskDashboard from './customer-task-dashboard';
 
 interface CustomerDashboardProps {
   user: User;
@@ -38,6 +40,12 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
 
   const assets = useMemo(() => user.role === 'CUSTOMER' ? getAssetsForClient(user.id) : [], [user]);
   const familyMembers = useMemo(() => user.role === 'CUSTOMER' ? getFamilyMembersForClient(user.id): [], [user]);
+
+  const { tasks } = useTasks();
+  const customerTasks = useMemo(() => {
+    if (user.role !== 'CUSTOMER') return [];
+    return tasks.filter(task => task.clientId === user.id);
+  }, [tasks, user]);
 
   const totalPoliciesValue = useMemo(() => {
     return assets
@@ -122,6 +130,8 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
           );
         })}
       </div>
+      
+      <CustomerTaskDashboard tasks={customerTasks} />
 
       <Modal open={!!selectedCategory} onClose={handleCloseModal}>
         {selectedCategory && (

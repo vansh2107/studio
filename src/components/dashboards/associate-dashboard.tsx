@@ -2,43 +2,25 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, PieChart } from 'lucide-react';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
-import {
-  BarChart as RechartsBarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from 'recharts';
 import { getClientsForAssociate, getAssetsForClient } from '@/lib/mock-data';
 import type { User } from '@/lib/types';
 import { useMemo } from 'react';
+import { useTasks } from '@/hooks/use-tasks';
+import TaskOverview from './task-overview';
 
 interface AssociateDashboardProps {
   user: User;
 }
 
 export default function AssociateDashboard({ user }: AssociateDashboardProps) {
+  const { tasks } = useTasks();
   const mappedCustomers = useMemo(() => user.role === 'ASSOCIATE' ? getClientsForAssociate(user.id) : [], [user]);
   
-  const customerAssets = useMemo(() => {
-    return mappedCustomers.map(customer => ({
-      name: customer.name,
-      totalValue: getAssetsForClient(customer.id).reduce((acc, asset) => acc + asset.value, 0)
-    }));
-  }, [mappedCustomers]);
-
-  const chartConfig = {
-    totalValue: {
-      label: 'Total Assets',
-      color: 'hsl(var(--chart-1))',
-    },
-  };
+  const relevantTasks = useMemo(() => {
+    if (!user || user.role !== 'ASSOCIATE') return [];
+    const customerNames = mappedCustomers.map(c => c.name);
+    return tasks.filter(task => customerNames.some(name => task.clientName.includes(name)));
+  }, [tasks, user, mappedCustomers]);
 
   return (
     <>
@@ -53,38 +35,7 @@ export default function AssociateDashboard({ user }: AssociateDashboardProps) {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart className="h-5 w-5" />
-              Client Asset Value
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-              <RechartsBarChart data={customerAssets} accessibilityLayer>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  tickFormatter={(value) => value.split(' ')[0]} // Show first name
-                />
-                <YAxis 
-                  tickFormatter={(value) => `₹${Number(value) / 1000}k`}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <Bar dataKey="totalValue" fill="var(--color-totalValue)" radius={4} />
-              </RechartsBarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+      <TaskOverview tasks={relevantTasks} />
     </>
   );
 }
