@@ -1,19 +1,247 @@
+/**
+ * # Firestore Security Rules
+ *
+ * ## Core Philosophy
+ * This ruleset enforces a hierarchical, role-based security model where a user's
+ * permissions are determined by their role (SuperAdmin, Admin, Associate).
+ * Roles are established by the existence of a document in a role-specific collection
+ * (e.g., `/admins/{userId}`). This model is often called Document-Based Access
+ * Control (DBAC). Associates, the primary data managers, are strictly confined
+ * to their own data trees, ensuring strong data isolation.
+ *
+ * ## Data Structure
+ * The data is organized into top-level collections for each user role (`super_admins`,
+ * `admins`, `associates`) and for core entities like `customers`. Task data, the
+ * most granular, is deeply nested under an associate's path
+ * (`/associates/{associateId}/...`) to leverage path-based security for simpler,
+ * more performant rules. A generic `/users` collection holds basic profile info
+ * for any authenticated user.
+ *
+ * ## Key Security Decisions
+ * - **Strict Ownership**: Users can only create and manage their own profile documents
+ *   (e.g., an admin can only edit `/admins/{their-own-id}`). Role profiles cannot be deleted.
+ * - **Hierarchical Reads**: SuperAdmins have read-only access to all data for
+ *   oversight. Admins have read-only access to associate and customer data.
+ * - **No User Enumeration**: Listing users from any role-based collection
+ *   (e.g., `list /admins`) is explicitly disallowed to prevent harvesting user data.
+ * - **Associate Data Silos**: The primary security mechanism is confining Associates
+ *   to data paths that begin with their own user ID. An associate with ID `user_abc`
+ *   can only operate within `/associates/user_abc/...`.
+ *
+ * ## Denormalization for Authorization
+ * The ruleset relies on denormalization in two key ways:
+ * 1.  **Path-Based Security**: The path for tasks,
+ *     `/associates/{assocId}/.../tasks/{taskId}`, contains the associate's ID,
+ *     making ownership checks instantaneous without needing extra `get()` calls.
+ * 2.  **Ownership Fields**: For top-level collections like `/customers`, an
+ *     `associateId` field is denormalized onto each customer document. This allows
+ *     rules to verify that only the assigned associate can modify that customer,
+ *     avoiding complex and impossible queries.
+ *
+ * ## Structural Segregation
+ * Data is segregated by role and function into separate top-level collections. This
+ * creates clear security boundaries and improves query performance by ensuring that
+ * queries do not need to filter through documents with different access levels.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Authenticated state checks
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Ownership checks
+     * Verifies if the currently signed-in user's ID matches the given userId.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks for document existence, used for safe updates and deletes.
+     */
+    function isExistingDoc() {
+      return resource != null;
+    }
+
+    /**
+     * Combines ownership and existence checks for update/delete operations.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && isExistingDoc();
+    }
+
+    /**
+     * Role-based checks (Document-Based Access Control)
+     * A user's role is determined by the existence of a document in a role collection.
+     */
+    function isSuperAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/super_admins/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isAssociate() {
+      return isSignedIn() && exists(/databases/$(database)/documents/associates/$(request.auth.uid));
+    }
+
+    /**
+     * Checks if the logged-in associate is assigned to the specified customer.
+     * Requires a document read, which is counted towards usage quotas.
+     */
+    function isAssignedToCustomer(customerId) {
+      let customerData = get(/databases/$(database)/documents/customers/$(customerId)).data;
+      return isAssociate() && customerData.associateId == request.auth.uid;
+    }
+
+    /**
+     * Data integrity checks for Task creation.
+     * In prototyping mode, we only validate fields critical for authorization and relational integrity.
+     */
+    function isValidTaskCreate(associateId, customerId, familyMemberId) {
+      let data = request.resource.data;
+      return data.assigneeId == associateId
+          && data.customerId == customerId
+          && data.familyMemberId == familyMemberId
+          && data.createdById == request.auth.uid;
+    }
+
+    /**
+     * Enforces immutability of key relational fields on Task documents during updates.
+     */
+    function isImmutableTaskFields() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return after.assigneeId == before.assigneeId
+          && after.customerId == before.customerId
+          && after.familyMemberId == before.familyMemberId
+          && after.createdById == before.createdById;
+    }
+
+    // -------------------------------------------------------------------------
+    // User Role Collections
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Manages SuperAdmin user profile documents. These establish a user's role as a SuperAdmin.
+     * @path /super_admins/{superAdminId}
+     * @allow A user (create)s their own profile document, where {superAdminId} matches their auth UID.
+     * @deny An authenticated user tries to (list) all SuperAdmins.
+     * @principle Enforces Self-Creation and strict document ownership for role-defining profiles.
+     */
+    match /super_admins/{superAdminId} {
+      allow get: if isOwner(superAdminId);
+      allow list: if false;
+      allow create: if isOwner(superAdminId);
+      allow update: if isExistingOwner(superAdminId);
+      allow delete: if false;
+    }
+
+    /**
+     * @description Manages Admin user profile documents. These establish a user's role as an Admin.
+     * @path /admins/{adminId}
+     * @allow An Admin (update)s their own profile; a SuperAdmin (get)s an Admin's profile for review.
+     * @deny An Admin tries to (create) a profile for another user.
+     * @principle Enforces Self-Creation, ownership, and hierarchical read access from SuperAdmins.
+     */
+    match /admins/{adminId} {
+      allow get: if isOwner(adminId) || isSuperAdmin();
+      allow list: if false;
+      allow create: if isOwner(adminId);
+      allow update: if isExistingOwner(adminId);
+      allow delete: if false;
+    }
+
+    /**
+     * @description Manages Associate (RM) user profile documents. These establish a user's role as an Associate.
+     * @path /associates/{associateId}
+     * @allow An Associate (create)s their own profile; an Admin (get)s an Associate's profile.
+     * @deny An Associate attempts to (delete) their own profile.
+     * @principle Enforces Self-Creation, ownership, and hierarchical read access from Admins and SuperAdmins.
+     */
+    match /associates/{associateId} {
+      allow get: if isOwner(associateId) || isAdmin() || isSuperAdmin();
+      allow list: if false;
+      allow create: if isOwner(associateId);
+      allow update: if isExistingOwner(associateId);
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Generic User Profile Collection
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Manages generic user profiles for all roles, holding non-role-specific information.
+     * @path /users/{userId}
+     * @allow Any authenticated user (create)s or (update)s their own profile document.
+     * @deny A user tries to read or modify another user's profile document.
+     * @principle Restricts access to a user's own data tree for personal information.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    // -------------------------------------------------------------------------
+    // Core Business Logic Collections
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Manages Customer (Family Account) documents. Access is controlled by an `associateId` field within the document.
+     * @path /customers/{customerId}
+     * @allow An Associate (create)s a customer, setting `associateId` to their own UID. The assigned Associate (update)s it.
+     * @deny An Associate tries to (create) a customer and assign it to a different Associate.
+     * @principle Manages access via a denormalized ownership field (`associateId`) to secure a top-level collection.
+     */
+    match /customers/{customerId} {
+      allow get: if isSuperAdmin() || isAdmin() || (isAssociate() && isExistingDoc() && resource.data.associateId == request.auth.uid);
+      allow list: if isSuperAdmin() || isAdmin();
+      allow create: if isAssociate() && request.resource.data.associateId == request.auth.uid;
+      allow update: if isExistingDoc() && isAssociate() && resource.data.associateId == request.auth.uid && request.resource.data.associateId == resource.data.associateId;
+      allow delete: if isExistingDoc() && isAssociate() && resource.data.associateId == request.auth.uid;
+    }
+
+    /**
+     * @description Manages Family Members within a Customer account. Access is inherited from the parent customer.
+     * @path /customers/{customerId}/family_members/{familyMemberId}
+     * @allow The assigned Associate for the parent Customer (create)s a new Family Member. Admins and SuperAdmins can read.
+     * @deny An unassigned Associate tries to (list) family members for a customer they don't manage.
+     * @principle Secures a subcollection by performing a `get()` on the parent document to verify ownership.
+     */
+    match /customers/{customerId}/family_members/{familyMemberId} {
+      allow get, list: if isSuperAdmin() || isAdmin() || isAssignedToCustomer(customerId);
+      allow create: if isAssignedToCustomer(customerId) && request.resource.data.customerId == customerId;
+      allow update: if isExistingDoc() && isAssignedToCustomer(customerId) && request.resource.data.customerId == resource.data.customerId;
+      allow delete: if isExistingDoc() && isAssignedToCustomer(customerId);
+    }
     
-    // Default deny all
-    match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-
-    // Allow authenticated users to read roles and permissions
-    match /permissions/{roleId} {
-      allow read: if request.auth != null;
-    }
-
-    match /roles/{roleId} {
-      allow read: if request.auth != null;
+    /**
+     * @description Manages Tasks for a family member. Access is strictly controlled by the associateId in the path.
+     * @path /associates/{associateId}/customers/{customerId}/family_members/{familyMemberId}/tasks/{taskId}
+     * @allow The Associate matching {associateId} (create)s a new task, with fields matching the path.
+     * @deny An Associate ('user_abc') tries to create a task under another associate's path ('/associates/user_xyz/...').
+     * @principle Enforces strict ownership of a data tree based on the document path for maximum security and performance.
+     */
+    match /associates/{associateId}/customers/{customerId}/family_members/{familyMemberId}/tasks/{taskId} {
+      allow get, list: if isOwner(associateId) || isAdmin() || isSuperAdmin();
+      allow create: if isOwner(associateId) && isValidTaskCreate(associateId, customerId, familyMemberId);
+      allow update: if isExistingOwner(associateId) && isImmutableTaskFields();
+      allow delete: if isExistingOwner(associateId);
     }
   }
 }

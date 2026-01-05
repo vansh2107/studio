@@ -1,79 +1,275 @@
 {
   "entities": {
-    "Family": {
+    "Task": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Family",
+      "title": "Task",
       "type": "object",
-      "description": "Represents a family account within the Ascend Wealth application.",
+      "description": "Represents a task assigned within the financial management application.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Family entity."
+          "description": "Unique identifier for the Task entity."
         },
-        "familyName": {
+        "taskType": {
           "type": "string",
-          "description": "The name of the family, typically the head's last name."
+          "description": "The type of task (e.g., Mutual Funds, Insurance, General)."
         },
-        "familyHeadName": {
+        "title": {
           "type": "string",
-          "description": "The full name of the family head."
+          "description": "The title or name of the task."
         },
-        "phoneNumber": {
+        "description": {
           "type": "string",
-          "description": "The phone number of the family."
+          "description": "A detailed description of the task."
         },
-        "emailId": {
+        "dueDate": {
           "type": "string",
-          "description": "The email address of the family.",
-          "format": "email"
-        },
-        "dateOfBirth": {
-          "type": "string",
-          "description": "The date of birth of the family head.",
+          "description": "The date and time when the task is due.",
           "format": "date-time"
         },
-        "address": {
+        "status": {
           "type": "string",
-          "description": "The address of the family."
+          "description": "The current status of the task (e.g., Open, In Progress, Completed)."
         },
-        "anniversaryDate": {
+        "assigneeId": {
           "type": "string",
-          "description": "The anniversary date of the family (optional).",
+          "description": "Reference to Associate. (Relationship: Associate 1:N Task) The Associate assigned to this task."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Reference to Customer. (Relationship: Customer 1:N Task) The Customer (Family Account) associated with this task."
+        },
+        "familyMemberId": {
+          "type": "string",
+          "description": "Reference to FamilyMember. (Relationship: FamilyMember 1:N Task) The Family Member this task is for. "
+        },
+        "mutualFundDetails": {
+          "type": "string",
+          "description": "Additional details specific to Mutual Fund tasks, stored as a JSON string."
+        },
+        "insuranceDetails": {
+          "type": "string",
+          "description": "Additional details specific to Insurance tasks, stored as a JSON string."
+        },
+        "createdById": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Task). The user who created this task. "
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the task was created.",
           "format": "date-time"
         },
-        "panPhotoUrl": {
+        "updatedAt": {
           "type": "string",
-          "description": "URL of the PAN photo document."
-        },
-        "aadhaarPhotoUrl": {
-          "type": "string",
-          "description": "URL of the Aadhaar photo document."
-        },
-        "otherDocumentUrl": {
-          "type": "string",
-          "description": "URL of the other document."
-        },
-        "panFileName": {
-            "type": "string",
-            "description": "File name of the PAN photo document."
-        },
-        "aadhaarFileName": {
-            "type": "string",
-            "description": "File name of the Aadhaar photo document."
-        },
-        "otherDocumentFileName": {
-            "type": "string",
-            "description": "File name of the other document."
+          "description": "Timestamp indicating when the task was last updated.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
-        "familyName",
-        "familyHeadName",
-        "phoneNumber",
-        "emailId",
-        "dateOfBirth",
-        "address"
+        "taskType",
+        "title",
+        "description",
+        "dueDate",
+        "status",
+        "assigneeId",
+        "customerId",
+        "familyMemberId"
+      ]
+    },
+    "FamilyMember": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FamilyMember",
+      "type": "object",
+      "description": "Represents a member within a Customer's Family Account.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the FamilyMember entity."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Reference to Customer. (Relationship: Customer 1:N FamilyMember) The Customer (Family Account) this member belongs to."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the family member."
+        },
+        "relation": {
+          "type": "string",
+          "description": "The relation of this family member to the head of the family account."
+        }
+      },
+      "required": [
+        "id",
+        "customerId",
+        "name",
+        "relation"
+      ]
+    },
+    "Customer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Customer",
+      "type": "object",
+      "description": "Represents a Customer family account in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Customer (Family Account) entity."
+        },
+        "accountName": {
+          "type": "string",
+          "description": "The name of the Customer's family account."
+        },
+        "associateId": {
+          "type": "string",
+          "description": "Reference to Associate. (Relationship: Associate 1:N Customer) The Associate (RM) mapped to this customer."
+        }
+      },
+      "required": [
+        "id",
+        "accountName",
+        "associateId"
+      ]
+    },
+    "Associate": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Associate",
+      "type": "object",
+      "description": "Represents an Associate (RM) in the financial management application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Associate entity."
+        },
+        "adminId": {
+          "type": "string",
+          "description": "Reference to Admin. (Relationship: Admin 1:N Associate) The Admin who manages this Associate."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the associate."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the associate."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the Associate.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "id",
+        "adminId",
+        "firstName",
+        "lastName",
+        "email"
+      ]
+    },
+    "Admin": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Admin",
+      "type": "object",
+      "description": "Represents an Admin user in the financial management application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Admin entity."
+        },
+        "superAdminId": {
+          "type": "string",
+          "description": "Reference to SuperAdmin. (Relationship: SuperAdmin 1:N Admin) The SuperAdmin who manages this Admin."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the admin."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the admin."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the Admin.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "id",
+        "superAdminId",
+        "firstName",
+        "lastName",
+        "email"
+      ]
+    },
+    "SuperAdmin": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SuperAdmin",
+      "type": "object",
+      "description": "Represents a SuperAdmin user in the financial management application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SuperAdmin entity."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the super admin."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the super admin."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the SuperAdmin.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the system.  This could be a SuperAdmin, Admin, or Associate.  Used for auditing purposes.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user (e.g., SuperAdmin, Admin, Associate)."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the user."
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "email",
+        "firstName",
+        "lastName"
       ]
     }
   },
@@ -86,21 +282,134 @@
   "firestore": {
     "structure": [
       {
-        "path": "/families/{familyId}",
+        "path": "/admins/{adminId}",
         "definition": {
-          "entityName": "Family",
+          "entityName": "Admin",
           "schema": {
-            "$ref": "#/backend/entities/Family"
+            "$ref": "#/backend/entities/Admin"
           },
-          "description": "Stores family data. Includes information such as family head name, contact details, and document URLs.",
+          "description": "Stores Admin user data.  Used for identity and role management. No denormalization required as roles are determined by document existence.",
           "params": [
             {
-              "name": "familyId",
-              "description": "Unique identifier for the family document."
+              "name": "adminId",
+              "description": "The unique identifier for the Admin."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/associates/{associateId}",
+        "definition": {
+          "entityName": "Associate",
+          "schema": {
+            "$ref": "#/backend/entities/Associate"
+          },
+          "description": "Stores Associate user data. Used for identity and role management.  No denormalization required as roles are determined by document existence.",
+          "params": [
+            {
+              "name": "associateId",
+              "description": "The unique identifier for the Associate."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/customers/{customerId}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": {
+            "$ref": "#/backend/entities/Customer"
+          },
+          "description": "Stores Customer (Family Account) data.  Used for identity and role management. No denormalization required as roles are determined by document existence.",
+          "params": [
+            {
+              "name": "customerId",
+              "description": "The unique identifier for the Customer (Family Account)."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/super_admins/{superAdminId}",
+        "definition": {
+          "entityName": "SuperAdmin",
+          "schema": {
+            "$ref": "#/backend/entities/SuperAdmin"
+          },
+          "description": "Stores SuperAdmin user data. Used for identity and role management. No denormalization required as roles are determined by document existence.",
+          "params": [
+            {
+              "name": "superAdminId",
+              "description": "The unique identifier for the SuperAdmin."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores User profile data. Used for auditing and identifying the creator of tasks.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the User."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/customers/{customerId}/family_members/{familyMemberId}",
+        "definition": {
+          "entityName": "FamilyMember",
+          "schema": {
+            "$ref": "#/backend/entities/FamilyMember"
+          },
+          "description": "Stores data for individual family members within a customer's family account.",
+          "params": [
+            {
+              "name": "customerId",
+              "description": "The unique identifier for the Customer (Family Account)."
+            },
+            {
+              "name": "familyMemberId",
+              "description": "The unique identifier for the Family Member."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/associates/{associateId}/customers/{customerId}/family_members/{familyMemberId}/tasks/{taskId}",
+        "definition": {
+          "entityName": "Task",
+          "schema": {
+            "$ref": "#/backend/entities/Task"
+          },
+          "description": "Stores tasks associated with a family member. Requires associateId, customerId, and familyMemberId in the path for access control. Includes denormalized IDs for `associateId`, `customerId`, and `familyMemberId` from the path, ensuring authorization independence and efficient querying.",
+          "params": [
+            {
+              "name": "associateId",
+              "description": "The unique identifier for the Associate."
+            },
+            {
+              "name": "customerId",
+              "description": "The unique identifier for the Customer."
+            },
+            {
+              "name": "familyMemberId",
+              "description": "The unique identifier for the FamilyMember."
+            },
+            {
+              "name": "taskId",
+              "description": "The unique identifier for the Task."
             }
           ]
         }
       }
-    ]
+    ],
+    "reasoning": "The Firestore structure is designed to manage tasks and related entities within a financial management application, adhering to the principles of Authorization Independence, Structural Segregation, and Access Modeling. The primary focus is on securely storing and managing tasks, ensuring that access control is robust and easily debuggable. We are storing tasks within a path that includes the Associate, Customer, and Family Member.  This enables secure 'list' operations and eliminates the need for complex `get()` calls in security rules. We are also storing tasks in a flat structure within this path to enforce homogeneous security postures. Authorization independence is achieved by relying on the document path itself. The User entity is stored separately to provide role-based access control (DBAC)."
   }
 }
