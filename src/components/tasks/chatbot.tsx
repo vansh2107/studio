@@ -15,7 +15,7 @@ type Message = {
 };
 
 
-const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id' | 'status'>>; error?: string } => {
+const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id' | 'createDate' | 'status'>>; error?: string } => {
     const cleanInput = input.trim();
     const regex = /create task for (.*?) for (.*?) which is assigned to (.*?) by (.*)/i;
     const match = cleanInput.match(regex);
@@ -115,7 +115,7 @@ export function Chatbot() {
                    <Bot className="h-6 w-6 text-white" />
                    <CardTitle className="text-white">Assistant</CardTitle>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white hover:text-white/80 hover:bg-white/20">
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white hover:text-white/80 hover:bg-orange-500/80">
                   <X className="h-4 w-4" />
                 </Button>
               </CardHeader>
@@ -145,7 +145,7 @@ export function Chatbot() {
                     onKeyPress={handleKeyPress}
                     className="bg-white text-black placeholder:text-black/60"
                   />
-                  <Button onClick={handleSendMessage} className="bg-app-sidebar text-white hover:bg-app-sidebar/90">
+                  <Button onClick={handleSendMessage} className="bg-primary text-white hover:bg-primary/90">
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
