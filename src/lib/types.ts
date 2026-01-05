@@ -147,5 +147,18 @@ export interface Task {
     amount: number;
     documentStatus: "Received" | "Pending";
     signatureStatus: "Done" | "Pending";
+  };
+  insurance?: {
+    familyHead: string;
+    typeOfService: string;
+    associate: string;
+    policyNo: string;
+    company: string;
+    amount: number;
+    maturityStatus: string;
+    amountStatus: "Credited" | "Pending";
+    reinvestmentStatus: string;
   }
 }
+
+    

@@ -27,6 +27,17 @@ export interface Task {
     amount: number;
     documentStatus: "Received" | "Pending";
     signatureStatus: "Done" | "Pending";
+  };
+  insurance?: {
+    familyHead: string;
+    typeOfService: string;
+    associate: string;
+    policyNo: string;
+    company: string;
+    amount: number;
+    maturityStatus: string;
+    amountStatus: "Credited" | "Pending";
+    reinvestmentStatus: string;
   }
 }
 
@@ -51,6 +62,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         dueDate: task.dueDate || new Date().toISOString(),
         description: task.description,
         mutualFund: task.mutualFund,
+        insurance: task.insurance,
         id: `task-${Date.now()}`,
         status: 'Pending',
         createDate: new Date().toISOString(),
@@ -108,3 +120,5 @@ export const useTasks = () => {
   }
   return context;
 };
+
+    

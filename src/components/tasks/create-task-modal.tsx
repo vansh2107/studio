@@ -14,7 +14,7 @@ import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TASK_CATEGORIES, TASK_STATUSES, RM_NAMES } from '@/lib/constants';
-import { getAllClients, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
+import { getAllClients, getAllAssociates, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
 import { format, parse, parseISO } from 'date-fns';
 import { Separator } from '../ui/separator';
@@ -40,16 +40,39 @@ const mutualFundSchema = z.object({
     signatureStatus: z.enum(["Done", "Pending"]),
 });
 
+const insuranceSchema = z.object({
+  familyHead: z.string(),
+  typeOfService: z.string().min(1, "Type of Service is required"),
+  associate: z.string().min(1, "Associate is required"),
+  policyNo: z.string().min(1, "Policy No. is required"),
+  company: z.string().min(1, "Company is required"),
+  amount: z.preprocess(
+    (a) => parseFloat(z.string().parse(a)),
+    z.number().positive("Amount must be positive")
+  ),
+  maturityStatus: z.string().min(1, "Maturity status is required"),
+  amountStatus: z.enum(["Credited", "Pending"]),
+  reinvestmentStatus: z.string().min(1, "Re-investment status is required"),
+});
+
 const taskSchema = baseTaskSchema.extend({
-  mutualFund: mutualFundSchema.optional()
-}).refine(data => {
-    if (data.category === 'Mutual Funds') {
-        return !!data.mutualFund;
+  mutualFund: mutualFundSchema.optional(),
+  insurance: insuranceSchema.optional(),
+}).superRefine((data, ctx) => {
+    if (data.category === 'Mutual Funds' && !data.mutualFund) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Mutual Fund details are required for this category.",
+            path: ["mutualFund"],
+        });
     }
-    return true;
-}, {
-    message: "Mutual Fund details are required for this category.",
-    path: ["mutualFund"],
+    if (data.category === 'Life Insurance' && !data.insurance) {
+         ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Insurance details are required for this category.",
+            path: ["insurance"],
+        });
+    }
 });
 
 
@@ -127,6 +150,10 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
            ...task.mutualFund,
            amount: task.mutualFund.amount || 0,
          } : undefined,
+          insurance: task.insurance ? {
+           ...task.insurance,
+           amount: task.insurance.amount || 0,
+         } : undefined,
        }
       reset(defaultData);
     } else {
@@ -151,6 +178,9 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       if (submissionData.category !== 'Mutual Funds') {
         delete submissionData.mutualFund;
       }
+      if (submissionData.category !== 'Life Insurance') {
+        delete submissionData.insurance;
+      }
       
       onSave({ ...submissionData, id: task?.id });
       toast({
@@ -161,16 +191,29 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     }, 500);
   };
   
-  const familyHeadName = useMemo(() => {
-    const client = getAllClients().find(c => `${c.firstName} ${c.lastName}` === clientName);
-    return client ? `${client.firstName} ${client.lastName}` : '';
+  const selectedClientData = useMemo(() => {
+    return getAllClients().find(c => `${c.firstName} ${c.lastName}` === clientName);
   }, [clientName]);
+
+  const familyHeadName = useMemo(() => {
+    return selectedClientData ? `${selectedClientData.firstName} ${selectedClientData.lastName}` : '';
+  }, [selectedClientData]);
+
+  const assignedAssociate = useMemo(() => {
+      if (!selectedClientData) return '';
+      const associate = getAllAssociates().find(a => a.id === selectedClientData.associateId);
+      return associate ? associate.name : 'N/A';
+  }, [selectedClientData]);
   
   useEffect(() => {
       if(selectedCategory === 'Mutual Funds' && familyHeadName) {
           setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
       }
-  }, [familyHeadName, selectedCategory, setValue]);
+      if(selectedCategory === 'Life Insurance' && familyHeadName) {
+          setValue('insurance.familyHead', familyHeadName, { shouldValidate: true });
+          setValue('insurance.associate', assignedAssociate, { shouldValidate: true });
+      }
+  }, [familyHeadName, assignedAssociate, selectedCategory, setValue]);
 
 
   return (
@@ -336,6 +379,70 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               </div>
           )}
 
+          {selectedCategory === 'Life Insurance' && (
+              <div className="space-y-4 pt-4">
+                <Separator />
+                <h3 className="text-md font-semibold">Insurance Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label>Family Head</Label>
+                    <Input {...register('insurance.familyHead')} readOnly value={familyHeadName} />
+                  </div>
+                   <div className="space-y-1">
+                    <Label>Associate</Label>
+                    <Input {...register('insurance.associate')} readOnly value={assignedAssociate} />
+                  </div>
+                  <div className="space-y-1">
+                      <Label htmlFor="ins-typeOfService">Type of Service</Label>
+                      <Input id="ins-typeOfService" {...register('insurance.typeOfService')} disabled={isTerminal}/>
+                      {errors.insurance?.typeOfService && <p className="text-sm text-destructive">{errors.insurance.typeOfService.message}</p>}
+                  </div>
+                   <div className="space-y-1">
+                      <Label htmlFor="ins-policyNo">Policy No.</Label>
+                      <Input id="ins-policyNo" {...register('insurance.policyNo')} disabled={isTerminal}/>
+                       {errors.insurance?.policyNo && <p className="text-sm text-destructive">{errors.insurance.policyNo.message}</p>}
+                  </div>
+                   <div className="space-y-1">
+                      <Label htmlFor="ins-company">Company</Label>
+                      <Input id="ins-company" {...register('insurance.company')} disabled={isTerminal}/>
+                       {errors.insurance?.company && <p className="text-sm text-destructive">{errors.insurance.company.message}</p>}
+                  </div>
+                  <div className="space-y-1">
+                      <Label htmlFor="ins-amount">Amount</Label>
+                      <Input id="ins-amount" type="number" {...register('insurance.amount')} disabled={isTerminal}/>
+                       {errors.insurance?.amount && <p className="text-sm text-destructive">{errors.insurance.amount.message}</p>}
+                  </div>
+                   <div className="space-y-1">
+                      <Label htmlFor="ins-maturityStatus">Maturity Status</Label>
+                      <Input id="ins-maturityStatus" {...register('insurance.maturityStatus')} disabled={isTerminal}/>
+                       {errors.insurance?.maturityStatus && <p className="text-sm text-destructive">{errors.insurance.maturityStatus.message}</p>}
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Amount Status</Label>
+                    <Controller
+                        name="insurance.amountStatus"
+                        control={control}
+                        defaultValue="Pending"
+                        render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                            <SelectTrigger><SelectValue/></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Credited">Credited</SelectItem>
+                                <SelectItem value="Pending">Pending</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        )}
+                    />
+                  </div>
+                   <div className="space-y-1">
+                      <Label htmlFor="ins-reinvestmentStatus">Re-investment Status</Label>
+                      <Input id="ins-reinvestmentStatus" {...register('insurance.reinvestmentStatus')} disabled={isTerminal}/>
+                       {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
+                  </div>
+                </div>
+              </div>
+          )}
+
           <div className="space-y-1">
             <Label htmlFor="description">Description (Optional)</Label>
             <Textarea 
@@ -365,3 +472,5 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       </div>
   );
 }
+
+    
