@@ -1,28 +1,11 @@
 
+'use client';
+
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/app-header';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '../ui/skeleton';
 import { cn } from '@/lib/utils';
-
-function MainContent({ children }: { children: React.ReactNode }) {
-  const { state } = useSidebar();
-  return (
-    <main
-      className={cn(
-        'flex-1 p-4 sm:p-6 lg:p-8 transition-all duration-300 ease-in-out',
-        'data-[state=expanded]:md:ml-64 data-[state=collapsed]:md:ml-14'
-      )}
-      data-state={state}
-    >
-      <div className="mx-auto w-full max-w-7xl">{children}</div>
-      <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t mt-8">
-        © Ascend Wealth — All rights reserved
-      </footer>
-    </main>
-  );
-}
-
 
 function AppLayoutSkeleton() {
   return (
@@ -90,7 +73,12 @@ export function AppLayout({
         <AppHeader />
         <div className="flex">
           <AppSidebar />
-          <MainContent>{children}</MainContent>
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto h-[calc(100vh-3.5rem)]">
+             <div className="mx-auto w-full max-w-7xl">{children}</div>
+             <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t mt-8">
+                © Ascend Wealth — All rights reserved
+            </footer>
+          </main>
         </div>
       </div>
     </SidebarProvider>
