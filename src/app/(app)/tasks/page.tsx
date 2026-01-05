@@ -87,11 +87,11 @@ export default function TasksPage() {
     setEditingTask(null);
   };
 
-  const handleSaveTask = (task: Omit<Task, 'id' | 'createDate' | 'status'> & { id?: string }) => {
-    if (task.id) {
-        updateTask(task.id, task);
+  const handleSaveTask = (task: Task) => {
+    if (editingTask) {
+      updateTask(editingTask.id, task);
     } else {
-        addTask(task as Omit<Task, 'id' | 'createDate' | 'status'>);
+      addTask(task);
     }
     handleCloseModal();
   };

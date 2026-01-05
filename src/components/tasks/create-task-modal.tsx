@@ -80,7 +80,7 @@ type TaskFormData = z.infer<typeof taskSchema>;
 
 interface CreateTaskModalProps {
   onClose: () => void;
-  onSave: (task: Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'> & { id?: string }) => void;
+  onSave: (task: Task) => void;
   task?: Task | null;
 }
 
@@ -170,7 +170,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const processSave = (data: TaskFormData) => {
     setIsSaving(true);
     setTimeout(() => {
-      const submissionData = {
+      const submissionData: Task = {
+        ...(task || { id: '', createDate: new Date().toISOString(), status: 'Pending' }),
         ...data,
         dueDate: new Date(data.dueDate).toISOString(), 
       };
@@ -182,7 +183,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         delete submissionData.insurance;
       }
       
-      onSave({ ...submissionData, id: task?.id });
+      onSave(submissionData);
       toast({
         title: isEditMode ? 'Task Updated' : 'Task Created',
         description: `The task for "${data.clientName}" has been successfully saved.`,
