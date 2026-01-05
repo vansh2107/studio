@@ -52,7 +52,6 @@ const DocumentSlot = ({
           </div>
         </div>
         <div className="flex flex-col">
-            <p className="text-sm font-semibold truncate max-w-[120px]">{filename || label}</p>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete}>
                 <Trash2 className="h-4 w-4" />
             </Button>
