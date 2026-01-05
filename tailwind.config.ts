@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: {
       backgroundImage: {
-        'orange-gradient-vertical': 'linear-gradient(180deg, #ea7c13 0%, #c65a00 100%)',
-        'orange-gradient-horizontal': 'linear-gradient(90deg, #f28a17 0%, #d56a03 100%)',
+        'orange-gradient-vertical': 'linear-gradient(180deg, #ffd08b 0%, #f6a63b 100%)',
+        'orange-gradient-horizontal': 'linear-gradient(180deg, #f8a63c 0%, #e87500 100%)',
       },
       fontFamily: {
         body: ['Inter', 'sans-serif'],
