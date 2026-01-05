@@ -278,7 +278,13 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const insuranceCompanyOptions = useMemo(() => INSURANCE_COMPANIES.map(name => ({ label: name, value: name })), []);
 
   const nameFilter = (value: string, search: string) => {
-      return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
+      const option = amcOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
+      if (!option) return 0;
+      const searchTerm = search.toLowerCase();
+      if(option.label.toLowerCase().includes(searchTerm)) {
+        return 1;
+      }
+      return 0;
   }
 
   return (
@@ -359,12 +365,12 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     name="serviceableRM"
                     control={control}
                     render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isTerminal}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value ?? undefined} disabled={isTerminal}>
                         <SelectTrigger id="serviceableRM">
                           <SelectValue placeholder="Select Serviceable RM" />
                         </SelectTrigger>
                         <SelectContent>
-                           <SelectItem value="">None</SelectItem>
+                           <SelectItem value="none">None</SelectItem>
                           {allRms.map(rm => (
                              <SelectItem key={rm.value} value={rm.label}>
                                 {rm.label}
