@@ -198,8 +198,8 @@ const Sidebar = React.forwardRef<
         data-state={state}
         className={cn(
           "hidden md:flex flex-col z-30 bg-orange-gradient-vertical text-white transition-all duration-300 ease-in-out",
-          "fixed top-14 h-[calc(100vh-3.5rem)]",
-          "data-[state=expanded]:w-64 data-[state=collapsed]:w-[3.5rem]",
+          "fixed top-14 h-[calc(100vh-3.5rem)] border-r border-gray-200/20",
+          "data-[state=expanded]:w-64 data-[state=collapsed]:w-14",
           className
         )}
         {...props}
@@ -467,7 +467,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-ring transition-colors focus-visible:ring-2 active:bg-primary active:text-primary-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-orange-600/50 data-[active=true]:font-medium data-[active=true]:text-white data-[state=open]:bg-primary data-[state=open]:text-primary-foreground group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:p-2 [&>span]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-ring transition-colors focus-visible:ring-2 active:bg-primary active:text-primary-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-primary data-[active=true]:font-medium data-[active=true]:text-white data-[state=open]:bg-primary data-[state=open]:text-primary-foreground group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:p-2 [&>span]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
