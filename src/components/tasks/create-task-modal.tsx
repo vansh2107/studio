@@ -93,11 +93,21 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const isTerminal = isEditMode && task ? terminalStatuses.includes(task.status) : false;
 
   const clientOptions = useMemo(() => {
-    const clients = getAllClients();
-    return clients.map(c => ({
-      label: `${c.firstName} ${c.lastName}`,
-      value: `${c.firstName} ${c.lastName}`
+    const heads = getAllClients().map(c => ({
+      label: `${c.firstName} ${c.lastName} (Head)`,
+      value: c.id,
     }));
+
+    const members = mockFamilyMembers.map(m => {
+      const head = getAllClients().find(c => c.id === m.clientId);
+      return {
+        label: `${m.firstName} ${m.lastName} (${m.relation})`,
+        value: m.id,
+        clientId: m.clientId,
+      };
+    });
+
+    return [...heads, ...members].sort((a,b) => a.label.localeCompare(b.label));
   }, []);
 
   const {
@@ -121,7 +131,28 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   
   const descriptionValue = watch('description') || '';
   const selectedCategory = watch('category');
-  const clientName = watch('clientName');
+  const clientNameValue = watch('clientName');
+
+  const { familyHead, assignedAssociate } = useMemo(() => {
+    if (!clientNameValue) return { familyHead: null, assignedAssociate: 'N/A' };
+    
+    const selectedOption = clientOptions.find(opt => opt.value === clientNameValue);
+    if (!selectedOption) return { familyHead: null, assignedAssociate: 'N/A' };
+    
+    const headId = 'clientId' in selectedOption ? selectedOption.clientId : selectedOption.value;
+    const head = getAllClients().find(c => c.id === headId);
+
+    if (!head) return { familyHead: null, assignedAssociate: 'N/A' };
+    
+    const associate = getAllAssociates().find(a => a.id === head.associateId);
+
+    return {
+      familyHead: head,
+      assignedAssociate: associate ? associate.name : 'N/A',
+    };
+  }, [clientNameValue, clientOptions]);
+
+  const familyHeadName = familyHead ? `${familyHead.firstName} ${familyHead.lastName}` : '';
 
   useEffect(() => {
     if (task) {
@@ -170,9 +201,13 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const processSave = (data: TaskFormData) => {
     setIsSaving(true);
     setTimeout(() => {
+        
+      const selectedClient = clientOptions.find(c => c.value === data.clientName);
+
       const submissionData: Task = {
         ...(task || { id: '', createDate: new Date().toISOString(), status: 'Pending' }),
         ...data,
+        clientName: selectedClient?.label || data.clientName, // Use the full label
         dueDate: new Date(data.dueDate).toISOString(), 
       };
       
@@ -186,33 +221,25 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       onSave(submissionData);
       toast({
         title: isEditMode ? 'Task Updated' : 'Task Created',
-        description: `The task for "${data.clientName}" has been successfully saved.`,
+        description: `The task for "${submissionData.clientName}" has been successfully saved.`,
       });
       setIsSaving(false);
     }, 500);
   };
-  
-  const selectedClientData = useMemo(() => {
-    return getAllClients().find(c => `${c.firstName} ${c.lastName}` === clientName);
-  }, [clientName]);
-
-  const familyHeadName = useMemo(() => {
-    return selectedClientData ? `${selectedClientData.firstName} ${selectedClientData.lastName}` : '';
-  }, [selectedClientData]);
-
-  const assignedAssociate = useMemo(() => {
-      if (!selectedClientData) return '';
-      const associate = getAllAssociates().find(a => a.id === selectedClientData.associateId);
-      return associate ? associate.name : 'N/A';
-  }, [selectedClientData]);
-  
+    
   useEffect(() => {
-      if(selectedCategory === 'Mutual Funds' && familyHeadName) {
-          setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
+      if(familyHeadName) {
+        if(selectedCategory === 'Mutual Funds') {
+            setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
+        }
+        if(selectedCategory === 'Life Insurance') {
+            setValue('insurance.familyHead', familyHeadName, { shouldValidate: true });
+        }
       }
-      if(selectedCategory === 'Life Insurance' && familyHeadName) {
-          setValue('insurance.familyHead', familyHeadName, { shouldValidate: true });
-          setValue('insurance.associate', assignedAssociate, { shouldValidate: true });
+      if(assignedAssociate) {
+          if(selectedCategory === 'Life Insurance') {
+              setValue('insurance.associate', assignedAssociate, { shouldValidate: true });
+          }
       }
   }, [familyHeadName, assignedAssociate, selectedCategory, setValue]);
 
@@ -248,8 +275,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         options={clientOptions}
                         value={field.value}
                         onChange={(value) => {
-                            const selectedOption = clientOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
-                            setValue('clientName', selectedOption ? selectedOption.value : '');
+                           setValue('clientName', value);
                         }}
                         placeholder="Select Client"
                         searchPlaceholder="Search clients..."
@@ -473,5 +499,3 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       </div>
   );
 }
-
-    

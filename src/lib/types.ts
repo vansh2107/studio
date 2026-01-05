@@ -70,6 +70,7 @@ export interface RoleData {
 
 export interface FamilyMember {
   id: string;
+  name: string;
   clientId: string; // Link to the main Client record
   firstName: string;
   lastName: string;
@@ -160,5 +161,3 @@ export interface Task {
     reinvestmentStatus: string;
   }
 }
-
-    
