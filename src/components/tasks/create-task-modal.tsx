@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TASK_CATEGORIES, TASK_STATUSES, RM_NAMES } from '@/lib/constants';
 import { getAllClients, getAllAssociates, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
-import { Combobox } from '@/components/ui/combobox';
+import { Combobox, ComboboxOption } from '@/components/ui/combobox';
 import { format, parse, parseISO } from 'date-fns';
 import { Separator } from '../ui/separator';
 
@@ -96,6 +96,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     const heads = getAllClients().map(c => ({
       label: `${c.firstName} ${c.lastName} (Head)`,
       value: c.id,
+      relation: 'Head'
     }));
 
     const members = mockFamilyMembers.map(m => {
@@ -104,6 +105,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         label: `${m.firstName} ${m.lastName} (${m.relation})`,
         value: m.id,
         clientId: m.clientId,
+        relation: m.relation,
       };
     });
 
@@ -243,6 +245,14 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       }
   }, [familyHeadName, assignedAssociate, selectedCategory, setValue]);
 
+  const clientFilter = (value: string, search: string) => {
+    const option = clientOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
+    if (!option) return 0;
+
+    const searchTerm = search.toLowerCase();
+    const isMatch = option.label.toLowerCase().includes(searchTerm);
+    return isMatch ? 1 : 0;
+  };
 
   return (
       <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
@@ -275,11 +285,12 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         options={clientOptions}
                         value={field.value}
                         onChange={(value) => {
-                           setValue('clientName', value);
+                           setValue('clientName', value, { shouldValidate: true });
                         }}
                         placeholder="Select Client"
                         searchPlaceholder="Search clients..."
-                        emptyText="No clients found."
+                        emptyText="No matching clients."
+                        filter={clientFilter}
                       />
                     )}
                   />

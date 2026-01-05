@@ -33,6 +33,7 @@ interface ComboboxProps {
     searchPlaceholder?: string;
     emptyText?: string;
     className?: string;
+    filter?: (value: string, search: string) => number;
 }
 
 export function Combobox({ 
@@ -43,6 +44,7 @@ export function Combobox({
     searchPlaceholder = "Search...",
     emptyText = "No results found.",
     className,
+    filter,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -62,7 +64,7 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" style={{ width: 'var(--radix-popover-trigger-width)' }}>
-        <Command>
+        <Command filter={filter}>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
