@@ -50,9 +50,11 @@ export function AppSidebar() {
   if (!userRole) {
     return (
       <Sidebar>
-        <SidebarHeader className="flex items-center justify-between">
-          <AscendWealthLogo />
-          <SidebarTrigger />
+        <SidebarHeader>
+          <div className="flex w-full items-center justify-between gap-2">
+            <AscendWealthLogo className={cn(sidebarState === 'collapsed' && 'hidden')} />
+            <SidebarTrigger />
+          </div>
         </SidebarHeader>
       </Sidebar>
     );
@@ -62,9 +64,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="flex items-center justify-between">
-        <AscendWealthLogo className={cn(sidebarState === 'collapsed' && 'hidden')} />
-        <SidebarTrigger />
+      <SidebarHeader>
+        <div className="flex w-full items-center gap-2">
+          <AscendWealthLogo
+            className={cn(sidebarState === "collapsed" && "hidden")}
+          />
+          <SidebarTrigger className="ml-auto" />
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
