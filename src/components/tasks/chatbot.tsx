@@ -21,7 +21,7 @@ const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; er
     const match = cleanInput.match(regex);
 
     if (!match) {
-        return { error: 'Please use the format:\n`Create task for <CLIENT> for <CATEGORY> which is assigned to <RM> by <dd-mm-yyyy hh:mm> which is <STATUS>`' };
+        return { error: 'Please use the format:\n`Create task for <CLIENT NAME> for <CATEGORY> which is assigned to <RM NAME> by <dd-mm-yyyy hh:mm> which is <STATUS>`' };
     }
     
     const [, clientName, category, rmName, dueDate, status] = match.map(m => m.trim());
@@ -47,7 +47,7 @@ const parseTaskCommand = (input: string): { task?: Partial<Omit<Task, 'id'>>; er
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "To create a task, please use the format:\n`Create task for <CLIENT> for <CATEGORY> which is assigned to <RM> by <dd-mm-yyyy hh:mm> which is <STATUS>`", sender: 'bot' }
+    { id: 1, text: "To create a task, please use the format:\n`Create task for <CLIENT NAME> for <CATEGORY> which is assigned to <RM NAME> by <dd-mm-yyyy hh:mm> which is <STATUS>`", sender: 'bot' }
   ]);
   const [inputValue, setInputValue] = useState('');
   const { addTask } = useTasks();
@@ -120,7 +120,7 @@ export function Chatbot() {
             className="fixed bottom-24 right-5 z-50 w-full max-w-sm"
           >
             <Card className="flex flex-col h-[500px] shadow-2xl bg-white text-black">
-              <CardHeader className="flex flex-row items-center justify-between bg-[#1b51a0]">
+              <CardHeader className="flex flex-row items-center justify-between bg-app-header">
                 <div className="flex items-center gap-2">
                    <Bot className="h-6 w-6 text-white" />
                    <CardTitle className="text-white">Assistant</CardTitle>
@@ -149,7 +149,7 @@ export function Chatbot() {
               <CardFooter className="p-4 border-t">
                 <div className="flex w-full items-center space-x-2">
                   <Input
-                    placeholder="Create task for... (see format above)"
+                    placeholder="Create task for <CLIENT> for <CATEGORY>..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
