@@ -13,13 +13,11 @@ import {
   SidebarFooter,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { AscendWealthLogo } from '@/components/icons/logo';
 import {
   LayoutDashboard,
   Users,
   FolderOpen,
   ClipboardList,
-  Briefcase,
 } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { cn } from '@/lib/utils';
@@ -52,7 +50,6 @@ export function AppSidebar() {
       <Sidebar>
         <SidebarHeader>
           <div className="flex w-full items-center justify-between gap-2">
-            <AscendWealthLogo className={cn(sidebarState === 'collapsed' && 'hidden')} />
             <SidebarTrigger />
           </div>
         </SidebarHeader>
@@ -65,11 +62,8 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="flex w-full items-center justify-between gap-2">
-          <AscendWealthLogo
-            className={cn(sidebarState === "collapsed" && "hidden")}
-          />
-          <SidebarTrigger className="ml-auto" />
+        <div className="flex w-full items-center justify-end">
+          <SidebarTrigger />
         </div>
       </SidebarHeader>
       <SidebarContent>

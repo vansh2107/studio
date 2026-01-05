@@ -9,7 +9,7 @@ export function AscendWealthLogo({ className }: { className?: string }) {
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="text-primary"
+        className="text-current"
       >
         <path
           d="M3 17L9 11L13 15L21 7"

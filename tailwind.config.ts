@@ -20,7 +20,6 @@ export default {
         code: ['monospace'],
       },
       colors: {
-        'app-header': '#f78e1e',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

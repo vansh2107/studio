@@ -33,6 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { cn } from '@/lib/utils';
 import { HIERARCHY } from '@/lib/constants';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { AscendWealthLogo } from '../icons/logo';
 
 const settingsMenuItems = [
   { href: '/admins', label: 'Admins', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },
@@ -76,16 +77,20 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 bg-orange-gradient-horizontal px-4 text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] sm:h-16 sm:px-6">
       <SidebarTrigger className="md:hidden text-white hover:bg-white/20 hover:text-white" />
+      
+      <div className="flex items-center gap-4">
+        <AscendWealthLogo className="text-white" />
+      </div>
 
       {impersonatedUser && (
-        <div className="flex-1">
+        <div className="flex-1 md:flex-grow-0">
           <Badge variant="destructive" className="animate-pulse bg-white text-orange-600">
             Impersonating: {impersonatedUser.name} ({impersonatedUser.role})
           </Badge>
         </div>
       )}
 
-      <div className={cn('flex-1', impersonatedUser && 'hidden md:block')}></div>
+      <div className={cn('flex-1')}></div>
 
       <TooltipProvider>
         <div className="flex items-center gap-1">
