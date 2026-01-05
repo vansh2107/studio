@@ -5,42 +5,10 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 import type { TaskStatus, TaskCategory } from '@/lib/constants';
 import { format } from 'date-fns';
 import { useCurrentUser } from './use-current-user';
+import type { Task } from '@/lib/types';
 
-export type { TaskStatus, TaskCategory };
+export type { TaskStatus, TaskCategory, Task };
 
-export interface Task {
-  id: string;
-  clientName: string;
-  category: string;
-  rmName: string;
-  dueDate: string; // Should be in a format parsable by new Date()
-  status: TaskStatus;
-  description?: string;
-  createDate: string;
-  startDate?: string | null;
-  completeDate?: string | null;
-  mutualFund?: {
-    familyHead: string;
-    service: string;
-    folioNo: string;
-    nameOfAMC: string;
-    amount: number;
-    documentStatus: "Received" | "Pending";
-    signatureStatus: "Done" | "Pending";
-    amcSubmissionStatus?: "Done" | "Pending";
-  };
-  insurance?: {
-    familyHead: string;
-    typeOfService: string;
-    associate: string;
-    policyNo: string;
-    company: string;
-    amount: number;
-    maturityStatus: string;
-    amountStatus: "Credited" | "Pending";
-    reinvestmentStatus: string;
-  }
-}
 
 interface TaskContextType {
   tasks: Task[];
@@ -60,6 +28,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         clientName: task.clientName || 'N/A',
         category: task.category || 'N/A',
         rmName: task.rmName || 'N/A',
+        serviceableRM: task.serviceableRM,
         dueDate: task.dueDate || new Date().toISOString(),
         description: task.description,
         mutualFund: task.mutualFund,
@@ -121,5 +90,3 @@ export const useTasks = () => {
   }
   return context;
 };
-
-    

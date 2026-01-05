@@ -22,7 +22,7 @@ import {
   INSURANCE_SERVICES,
   INSURANCE_COMPANIES
 } from '@/lib/constants';
-import { getAllClients, getAllAssociates, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
+import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import { Combobox, ComboboxOption } from '@/components/ui/combobox';
 import { format, parse, parseISO } from 'date-fns';
 import { Separator } from '../ui/separator';
@@ -30,7 +30,8 @@ import { Separator } from '../ui/separator';
 const baseTaskSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
   category: z.string().min(1, 'Category is required'),
-  rmName: z.string().min(1, 'RM name is required'),
+  rmName: z.string().optional(),
+  serviceableRM: z.string().optional(),
   dueDate: z.string().min(1, 'Due date and time are required'),
   description: z.string().max(300, 'Description cannot exceed 300 characters.').optional(),
 });
@@ -101,6 +102,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const terminalStatuses: TaskStatus[] = ['Completed', 'Cancelled', 'Rejected'];
   const isTerminal = isEditMode && task ? terminalStatuses.includes(task.status) : false;
 
+  const allRms = useMemo(() => getAllRMs().map(rm => ({ label: `${rm.name} (RM)`, value: rm.id })), []);
+
   const clientOptions = useMemo(() => {
     const heads = getAllClients().map(c => ({
       label: `${c.firstName} ${c.lastName} (Head)`,
@@ -135,6 +138,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       clientName: '',
       category: '',
       rmName: '',
+      serviceableRM: '',
       dueDate: '',
       description: '',
     },
@@ -144,22 +148,24 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const selectedCategory = watch('category');
   const clientNameValue = watch('clientName');
 
-  const { familyHead, assignedAssociate } = useMemo(() => {
-    if (!clientNameValue) return { familyHead: null, assignedAssociate: 'N/A' };
+  const { familyHead, assignedAssociate, assignedRM } = useMemo(() => {
+    if (!clientNameValue) return { familyHead: null, assignedAssociate: 'N/A', assignedRM: 'N/A' };
     
     const selectedOption = clientOptions.find(opt => opt.value === clientNameValue);
-    if (!selectedOption) return { familyHead: null, assignedAssociate: 'N/A' };
+    if (!selectedOption) return { familyHead: null, assignedAssociate: 'N/A', assignedRM: 'N/A' };
     
     const headId = 'clientId' in selectedOption ? selectedOption.clientId : selectedOption.value;
     const head = getAllClients().find(c => c.id === headId);
 
-    if (!head) return { familyHead: null, assignedAssociate: 'N/A' };
+    if (!head) return { familyHead: null, assignedAssociate: 'N/A', assignedRM: 'N/A' };
     
     const associate = getAllAssociates().find(a => a.id === head.associateId);
+    const rm = associate ? getAllRMs().find(r => r.id === associate.rmId) : undefined;
 
     return {
       familyHead: head,
       assignedAssociate: associate ? associate.name : 'N/A',
+      assignedRM: rm ? rm.name : 'No RM assigned',
     };
   }, [clientNameValue, clientOptions]);
 
@@ -186,6 +192,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
          clientName: task.clientName || '',
          category: task.category || '',
          rmName: task.rmName || '',
+         serviceableRM: task.serviceableRM || '',
          dueDate: formattedDueDate,
          description: task.description || '',
          mutualFund: task.mutualFund ? {
@@ -203,6 +210,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         clientName: '',
         category: '',
         rmName: '',
+        serviceableRM: '',
         dueDate: '',
         description: '',
       });
@@ -239,32 +247,30 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   };
     
   useEffect(() => {
-      if(familyHeadName) {
-        if(selectedCategory === 'Mutual Funds') {
-            setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
-        }
+    setValue('rmName', assignedRM, { shouldValidate: true });
+
+    if(familyHeadName) {
+      if(selectedCategory === 'Mutual Funds') {
+          setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
+      }
+      if(selectedCategory === 'Life Insurance') {
+          setValue('insurance.familyHead', familyHeadName, { shouldValidate: true });
+      }
+    }
+    if(assignedAssociate) {
         if(selectedCategory === 'Life Insurance') {
-            setValue('insurance.familyHead', familyHeadName, { shouldValidate: true });
+            setValue('insurance.associate', assignedAssociate, { shouldValidate: true });
         }
-      }
-      if(assignedAssociate) {
-          if(selectedCategory === 'Life Insurance') {
-              setValue('insurance.associate', assignedAssociate, { shouldValidate: true });
-          }
-      }
-  }, [familyHeadName, assignedAssociate, selectedCategory, setValue]);
+    }
+  }, [familyHeadName, assignedAssociate, assignedRM, selectedCategory, setValue]);
 
   const clientFilter = (value: string, search: string) => {
     const option = clientOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
     if (!option) return 0;
-
     const searchTerm = search.toLowerCase();
-    
-    // Check against full label (which includes name and relation)
     if (option.label.toLowerCase().includes(searchTerm)) {
       return 1;
     }
-    
     return 0;
   };
   
@@ -342,27 +348,35 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               </div>
 
                <div className="space-y-1">
-                  <Label htmlFor="rmName">RM Name</Label>
+                  <Label htmlFor="rmName">Assigned RM</Label>
+                  <Input id="rmName" {...register('rmName')} readOnly disabled />
+                  {errors.rmName && <p className="text-sm text-destructive">{errors.rmName.message}</p>}
+              </div>
+              
+              <div className="space-y-1">
+                  <Label htmlFor="serviceableRM">Serviceable RM (Optional)</Label>
                   <Controller
-                    name="rmName"
+                    name="serviceableRM"
                     control={control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isTerminal}>
-                        <SelectTrigger id="rmName">
-                          <SelectValue placeholder="Select RM" />
+                        <SelectTrigger id="serviceableRM">
+                          <SelectValue placeholder="Select Serviceable RM" />
                         </SelectTrigger>
                         <SelectContent>
-                          {RM_NAMES.map(rm => (
-                             <SelectItem key={rm} value={rm}>
-                                {rm}
+                           <SelectItem value="">None</SelectItem>
+                          {allRms.map(rm => (
+                             <SelectItem key={rm.value} value={rm.label}>
+                                {rm.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     )}
                   />
-                  {errors.rmName && <p className="text-sm text-destructive">{errors.rmName.message}</p>}
+                  {errors.serviceableRM && <p className="text-sm text-destructive">{errors.serviceableRM.message}</p>}
               </div>
+
 
                <div className="space-y-1">
                   <Label htmlFor="dueDate">Due Date & Time</Label>
@@ -415,6 +429,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                             searchPlaceholder="Search AMCs..."
                             emptyText="No matching AMC found."
                             filter={nameFilter}
+                            disabled={isTerminal}
                           />
                         )}
                       />
@@ -528,6 +543,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                             searchPlaceholder="Search companies..."
                             emptyText="No matching company found."
                             filter={nameFilter}
+                            disabled={isTerminal}
                           />
                         )}
                       />
@@ -598,5 +614,3 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       </div>
   );
 }
-
-    

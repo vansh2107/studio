@@ -133,7 +133,8 @@ export interface Task {
   id: string;
   clientName: string;
   category: string;
-  rmName: string;
+  rmName?: string;
+  serviceableRM?: string;
   dueDate: string; // Should be in a format parsable by new Date()
   status: TaskStatus;
   description?: string;

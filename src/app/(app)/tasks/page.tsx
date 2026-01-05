@@ -182,7 +182,8 @@ export default function TasksPage() {
                 <TableRow>
                   <TableHead>Client</TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead>RM</TableHead>
+                  <TableHead>Assigned RM</TableHead>
+                  <TableHead>Serviceable RM</TableHead>
                   <TableHead>Create Date</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>Due Date</TableHead>
@@ -206,10 +207,11 @@ export default function TasksPage() {
                     const descriptionContent = task.insurance?.policyNo || task.mutualFund?.folioNo || task.description;
 
                     return (
-                        <TableRow key={task.id} className={cn(isOverdue && 'text-destructive')}>
+                        <TableRow key={task.id} className={cn(isOverdue && 'text-destructive', "hover:bg-transparent")}>
                           <TableCell className="font-medium">{task.clientName}</TableCell>
                           <TableCell>{task.category}</TableCell>
                           <TableCell>{task.rmName}</TableCell>
+                          <TableCell>{task.serviceableRM || '—'}</TableCell>
                           <TableCell>
                             <Tooltip>
                                 <TooltipTrigger>{task.createDate ? format(parseISO(task.createDate), 'dd MMM yyyy') : '—'}</TooltipTrigger>
@@ -322,7 +324,7 @@ export default function TasksPage() {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={14} className="h-24 text-center">
+                    <TableCell colSpan={15} className="h-24 text-center">
                       No tasks created yet. Try the chatbot or the 'Add Task' button!
                     </TableCell>
                   </TableRow>
@@ -358,5 +360,3 @@ export default function TasksPage() {
     </TooltipProvider>
   );
 }
-
-    

@@ -34,6 +34,7 @@ interface ComboboxProps {
     emptyText?: string;
     className?: string;
     filter?: (value: string, search: string) => number;
+    disabled?: boolean;
 }
 
 export function Combobox({ 
@@ -45,6 +46,7 @@ export function Combobox({
     emptyText = "No results found.",
     className,
     filter,
+    disabled,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -58,6 +60,7 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           className={cn("w-full justify-between font-normal", !value && "text-muted-foreground", className)}
+          disabled={disabled}
         >
           {value ? selectedLabel : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
