@@ -13,7 +13,15 @@ import { Task, TaskStatus } from '@/hooks/use-tasks';
 import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TASK_CATEGORIES, TASK_STATUSES, RM_NAMES } from '@/lib/constants';
+import {
+  TASK_CATEGORIES,
+  TASK_STATUSES,
+  RM_NAMES,
+  MUTUAL_FUND_SERVICES,
+  AMC_NAMES,
+  INSURANCE_SERVICES,
+  INSURANCE_COMPANIES
+} from '@/lib/constants';
 import { getAllClients, getAllAssociates, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import { Combobox, ComboboxOption } from '@/components/ui/combobox';
 import { format, parse, parseISO } from 'date-fns';
@@ -250,9 +258,21 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     if (!option) return 0;
 
     const searchTerm = search.toLowerCase();
-    const isMatch = option.label.toLowerCase().includes(searchTerm);
-    return isMatch ? 1 : 0;
+    
+    // Check against full label (which includes name and relation)
+    if (option.label.toLowerCase().includes(searchTerm)) {
+      return 1;
+    }
+    
+    return 0;
   };
+  
+  const amcOptions = useMemo(() => AMC_NAMES.map(name => ({ label: name, value: name })), []);
+  const insuranceCompanyOptions = useMemo(() => INSURANCE_COMPANIES.map(name => ({ label: name, value: name })), []);
+
+  const nameFilter = (value: string, search: string) => {
+      return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
+  }
 
   return (
       <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
@@ -360,9 +380,20 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     <Input {...register('mutualFund.familyHead')} readOnly value={familyHeadName} />
                   </div>
                   <div className="space-y-1">
-                      <Label htmlFor="mf-service">Service</Label>
-                      <Input id="mf-service" {...register('mutualFund.service')} disabled={isTerminal}/>
-                      {errors.mutualFund?.service && <p className="text-sm text-destructive">{errors.mutualFund.service.message}</p>}
+                    <Label htmlFor="mf-service">Service</Label>
+                    <Controller
+                        name="mutualFund.service"
+                        control={control}
+                        render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                            <SelectTrigger><SelectValue placeholder="Select a service"/></SelectTrigger>
+                            <SelectContent>
+                                {MUTUAL_FUND_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                        )}
+                    />
+                    {errors.mutualFund?.service && <p className="text-sm text-destructive">{errors.mutualFund.service.message}</p>}
                   </div>
                    <div className="space-y-1">
                       <Label htmlFor="mf-folioNo">Folio No.</Label>
@@ -371,7 +402,21 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   </div>
                    <div className="space-y-1">
                       <Label htmlFor="mf-nameOfAMC">Name of AMC</Label>
-                      <Input id="mf-nameOfAMC" {...register('mutualFund.nameOfAMC')} disabled={isTerminal}/>
+                      <Controller
+                        name="mutualFund.nameOfAMC"
+                        control={control}
+                        render={({ field }) => (
+                          <Combobox
+                            options={amcOptions}
+                            value={field.value}
+                            onChange={(value) => setValue('mutualFund.nameOfAMC', value, { shouldValidate: true })}
+                            placeholder="Select AMC"
+                            searchPlaceholder="Search AMCs..."
+                            emptyText="No matching AMC found."
+                            filter={nameFilter}
+                          />
+                        )}
+                      />
                        {errors.mutualFund?.nameOfAMC && <p className="text-sm text-destructive">{errors.mutualFund.nameOfAMC.message}</p>}
                   </div>
                   <div className="space-y-1">
@@ -431,9 +476,20 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     <Input {...register('insurance.associate')} readOnly value={assignedAssociate} />
                   </div>
                   <div className="space-y-1">
-                      <Label htmlFor="ins-typeOfService">Type of Service</Label>
-                      <Input id="ins-typeOfService" {...register('insurance.typeOfService')} disabled={isTerminal}/>
-                      {errors.insurance?.typeOfService && <p className="text-sm text-destructive">{errors.insurance.typeOfService.message}</p>}
+                    <Label htmlFor="ins-typeOfService">Type of Service</Label>
+                    <Controller
+                        name="insurance.typeOfService"
+                        control={control}
+                        render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                            <SelectTrigger><SelectValue placeholder="Select a service"/></SelectTrigger>
+                            <SelectContent>
+                                {INSURANCE_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                        )}
+                    />
+                    {errors.insurance?.typeOfService && <p className="text-sm text-destructive">{errors.insurance.typeOfService.message}</p>}
                   </div>
                    <div className="space-y-1">
                       <Label htmlFor="ins-policyNo">Policy No.</Label>
@@ -442,7 +498,21 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   </div>
                    <div className="space-y-1">
                       <Label htmlFor="ins-company">Company</Label>
-                      <Input id="ins-company" {...register('insurance.company')} disabled={isTerminal}/>
+                       <Controller
+                        name="insurance.company"
+                        control={control}
+                        render={({ field }) => (
+                          <Combobox
+                            options={insuranceCompanyOptions}
+                            value={field.value}
+                            onChange={(value) => setValue('insurance.company', value, { shouldValidate: true })}
+                            placeholder="Select Company"
+                            searchPlaceholder="Search companies..."
+                            emptyText="No matching company found."
+                            filter={nameFilter}
+                          />
+                        )}
+                      />
                        {errors.insurance?.company && <p className="text-sm text-destructive">{errors.insurance.company.message}</p>}
                   </div>
                   <div className="space-y-1">
@@ -510,3 +580,5 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       </div>
   );
 }
+
+    
