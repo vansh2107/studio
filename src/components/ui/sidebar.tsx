@@ -173,7 +173,7 @@ const Sidebar = React.forwardRef<
         <Sheet open={openMobile} onOpenChange={setOpenMobile}>
           <SheetContent
             side="left"
-            className="w-[var(--sidebar-width-mobile)] bg-orange-gradient-vertical p-0 text-white"
+            className="w-[var(--sidebar-width-mobile)] bg-orange-gradient-vertical p-0 text-white border-r border-gray-200/20"
             style={
               {
                 "--sidebar-width-mobile": SIDEBAR_WIDTH_MOBILE,
@@ -224,7 +224,7 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
-      className={cn("h-7 w-7 text-white hover:bg-white/20 hover:text-white", className)}
+      className={cn("h-7 w-7 text-white hover:bg-primary/90", className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()

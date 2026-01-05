@@ -99,7 +99,7 @@ export function AppHeader() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 hover:text-white">
+                      <Button variant="ghost" size="icon" className="text-white hover:bg-primary/90">
                         <Settings className="h-5 w-5" />
                         <span className="sr-only">Quick Settings</span>
                       </Button>
@@ -129,7 +129,7 @@ export function AppHeader() {
           {canViewAdminSettings && (
              <Tooltip>
                 <TooltipTrigger asChild>
-                   <Button variant="ghost" size="icon" asChild className="text-white hover:bg-white/20 hover:text-white">
+                   <Button variant="ghost" size="icon" asChild className="text-white hover:bg-primary/90">
                     <Link href="/admin-settings">
                       <UserCog className="h-5 w-5" />
                       <span className="sr-only">Admin Settings Page</span>
@@ -147,7 +147,7 @@ export function AppHeader() {
              <Tooltip>
                 <TooltipTrigger asChild>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full text-white hover:bg-white/20 hover:text-white">
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full text-white hover:bg-primary/90">
                       <Bell />
                       <span className="absolute top-0 right-0 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-5 w-auto min-w-5 px-1 rounded-full bg-blue-600 text-white text-xs font-bold">
                         9+
@@ -170,7 +170,7 @@ export function AppHeader() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 p-1 h-auto rounded-full text-white hover:bg-white/20 hover:text-white">
+              <Button variant="ghost" className="flex items-center gap-2 p-1 h-auto rounded-full text-white hover:bg-primary/90">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={effectiveUser?.avatarUrl} alt={effectiveUser?.name} />
                   <AvatarFallback>{effectiveUser ? getInitials(effectiveUser.name) : '...'}</AvatarFallback>
