@@ -191,6 +191,7 @@ export default function TasksPage() {
                   <TableHead>Doc Status</TableHead>
                   <TableHead>Sig Status</TableHead>
                    <TableHead>Amount Status</TableHead>
+                  <TableHead>AMC Sub Status</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -274,6 +275,13 @@ export default function TasksPage() {
                             ) : '—'}
                           </TableCell>
                           <TableCell>
+                            {task.mutualFund?.amcSubmissionStatus ? (
+                              <Badge variant={getStatusBadgeVariant(task.mutualFund.amcSubmissionStatus)}>
+                                {task.mutualFund.amcSubmissionStatus}
+                              </Badge>
+                            ) : '—'}
+                          </TableCell>
+                          <TableCell>
                             <Tooltip>
                               <TooltipTrigger>{truncateText(descriptionContent, 25)}</TooltipTrigger>
                               {(descriptionContent && descriptionContent.length > 25) && (
@@ -314,7 +322,7 @@ export default function TasksPage() {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={13} className="h-24 text-center">
+                    <TableCell colSpan={14} className="h-24 text-center">
                       No tasks created yet. Try the chatbot or the 'Add Task' button!
                     </TableCell>
                   </TableRow>

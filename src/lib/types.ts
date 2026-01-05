@@ -148,6 +148,7 @@ export interface Task {
     amount: number;
     documentStatus: "Received" | "Pending";
     signatureStatus: "Done" | "Pending";
+    amcSubmissionStatus?: "Done" | "Pending";
   };
   insurance?: {
     familyHead: string;

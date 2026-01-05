@@ -46,6 +46,7 @@ const mutualFundSchema = z.object({
     ),
     documentStatus: z.enum(["Received", "Pending"]),
     signatureStatus: z.enum(["Done", "Pending"]),
+    amcSubmissionStatus: z.enum(["Done", "Pending"]),
 });
 
 const insuranceSchema = z.object({
@@ -445,6 +446,23 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     <Label>Signature Status</Label>
                     <Controller
                         name="mutualFund.signatureStatus"
+                        control={control}
+                        defaultValue="Pending"
+                        render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                            <SelectTrigger><SelectValue/></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Done">Done</SelectItem>
+                                <SelectItem value="Pending">Pending</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        )}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Document Submitted to AMC</Label>
+                    <Controller
+                        name="mutualFund.amcSubmissionStatus"
                         control={control}
                         defaultValue="Pending"
                         render={({ field }) => (
