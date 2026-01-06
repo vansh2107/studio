@@ -76,16 +76,16 @@ export function AppHeader() {
   const canViewAdminSettings = userRole === 'SUPER_ADMIN' || userRole === 'ADMIN';
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center gap-4 bg-orange-gradient-horizontal px-4 text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] sm:px-6">
-      <SidebarTrigger className="md:hidden text-white hover:bg-white/20 hover:text-white" />
+    <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm sm:px-6">
+      <SidebarTrigger className="md:hidden text-foreground hover:bg-muted" />
       
-      <div className="flex items-center gap-4">
-        <AscendWealthLogo className="text-white" />
+      <div className="flex items-center">
+        <AscendWealthLogo className="h-7 w-7" />
       </div>
 
       {impersonatedUser && (
         <div className="flex-1 md:flex-grow-0">
-          <Badge variant="destructive" className="animate-pulse bg-white text-orange-600">
+          <Badge variant="destructive" className="animate-pulse">
             Impersonating: {impersonatedUser.name} ({impersonatedUser.role})
           </Badge>
         </div>
@@ -100,7 +100,7 @@ export function AppHeader() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-white hover:bg-primary/90">
+                      <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted">
                         <Settings className="h-5 w-5" />
                         <span className="sr-only">Quick Settings</span>
                       </Button>
@@ -130,7 +130,7 @@ export function AppHeader() {
           {canViewAdminSettings && (
              <Tooltip>
                 <TooltipTrigger asChild>
-                   <Button variant="ghost" size="icon" asChild className="text-white hover:bg-primary/90">
+                   <Button variant="ghost" size="icon" asChild className="text-foreground hover:bg-muted">
                     <Link href="/admin-settings">
                       <UserCog className="h-5 w-5" />
                       <span className="sr-only">Admin Settings Page</span>
@@ -148,9 +148,9 @@ export function AppHeader() {
              <Tooltip>
                 <TooltipTrigger asChild>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full text-white hover:bg-primary/90">
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full text-foreground hover:bg-muted">
                       <Bell />
-                      <span className="absolute top-0 right-0 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-5 w-auto min-w-5 px-1 rounded-full bg-blue-600 text-white text-xs font-bold">
+                      <span className="absolute top-0 right-0 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-5 w-auto min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">
                         9+
                       </span>
                     </Button>
@@ -171,14 +171,14 @@ export function AppHeader() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 p-1 h-auto rounded-full text-white hover:bg-primary/90">
+              <Button variant="ghost" className="flex items-center gap-2 p-1 h-auto rounded-full text-foreground hover:bg-muted">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={effectiveUser?.avatarUrl} alt={effectiveUser?.name} />
                   <AvatarFallback>{effectiveUser ? getInitials(effectiveUser.name) : '...'}</AvatarFallback>
                 </Avatar>
-                <div className="hidden md:flex flex-col items-start text-white">
+                <div className="hidden md:flex flex-col items-start">
                   <span className="text-sm font-medium">{effectiveUser?.name}</span>
-                  <span className="text-xs text-white/80">{effectiveUser?.role}</span>
+                  <span className="text-xs text-muted-foreground">{effectiveUser?.role}</span>
                 </div>
                 <ChevronDown className="h-4 w-4 hidden md:block" />
               </Button>

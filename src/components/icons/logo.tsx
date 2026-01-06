@@ -26,9 +26,6 @@ export function AscendWealthLogo({ className }: { className?: string }) {
           strokeLinejoin="round"
         />
       </svg>
-      <span className="font-headline text-lg font-semibold tracking-tighter">
-        FinArray
-      </span>
     </div>
   )
 }
