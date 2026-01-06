@@ -28,7 +28,7 @@ export default function AssociateDashboard({ user }: AssociateDashboardProps) {
     <>
       <h1 className="text-3xl font-bold font-headline">Associate Dashboard</h1>
       <div className="grid gap-4 md:grid-cols-2">
-        <StatCard label="Mapped Clients" value={mappedClients.length} href="/clients" icon={Users} />
+        <StatCard label="Mapped Clients" value={mappedClients.length} href="/customers" icon={Users} />
         <StatCard label="Tasks" value={relevantTasks.length} href="/tasks" icon={ClipboardList} />
       </div>
       <TaskOverview tasks={relevantTasks} />

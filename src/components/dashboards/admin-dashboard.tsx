@@ -56,7 +56,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
             <h1 className="text-3xl font-bold font-headline">RM Dashboard</h1>
              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <StatCard label="Total Associates" value={mappedAssociates.length} href="/associates" icon={Briefcase} />
-                <StatCard label="Total Clients" value={mappedClients.length} href="/clients" icon={Users} />
+                <StatCard label="Total Clients" value={mappedClients.length} href="/customers" icon={Users} />
                 <StatCard label="Total Tasks" value={relevantTasks.length} href="/tasks" icon={ClipboardList} />
              </div>
              <TaskOverview tasks={relevantTasks} />
@@ -70,7 +70,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard label="Mapped RMs" value={mappedRMs.length} href="/rms" icon={UserSquare} />
         <StatCard label="Mapped Associates" value={mappedAssociates.length} href="/associates" icon={Briefcase} />
-        <StatCard label="Total Mapped Clients" value={mappedClients.length} href="/clients" icon={Users} />
+        <StatCard label="Total Mapped Clients" value={mappedClients.length} href="/customers" icon={Users} />
       </div>
       <TaskOverview tasks={relevantTasks} />
     </>

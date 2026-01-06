@@ -192,7 +192,7 @@ export default function SuperAdminDashboard() {
         <StatCard label="Total Admins" value={admins.length} href="/admins" icon={ShieldCheck} />
         <StatCard label="Total RMs" value={rms.length} href="/rms" icon={UserSquare} />
         <StatCard label="Total Associates" value={associates.length} href="/associates" icon={Briefcase} />
-        <StatCard label="Total Clients" value={clients.length} href="/clients" icon={Users} />
+        <StatCard label="Total Clients" value={clients.length} href="/customers" icon={Users} />
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         {effectiveUser?.role === 'SUPER_ADMIN' && <TaskSummaryCard />}
