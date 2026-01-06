@@ -22,7 +22,7 @@ import {
   INSURANCE_SERVICES,
   INSURANCE_COMPANIES
 } from '@/lib/constants';
-import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
+import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
 import { Combobox, ComboboxOption } from '@/components/ui/combobox';
 import { format, parse, parseISO } from 'date-fns';
 import { Separator } from '../ui/separator';
@@ -148,28 +148,31 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const selectedCategory = watch('category');
   const clientNameValue = watch('clientName');
 
-  const { familyHead, assignedAssociate, assignedRM } = useMemo(() => {
-    if (!clientNameValue) return { familyHead: null, assignedAssociate: 'N/A', assignedRM: 'N/A' };
+  const { familyHead, assignedAssociate, assignedRM, assignedAdmin } = useMemo(() => {
+    if (!clientNameValue) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
     
     const selectedOption = clientOptions.find(opt => opt.value === clientNameValue);
-    if (!selectedOption) return { familyHead: null, assignedAssociate: 'N/A', assignedRM: 'N/A' };
+    if (!selectedOption) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
     
     const headId = 'clientId' in selectedOption ? selectedOption.clientId : selectedOption.value;
     const head = getAllClients().find(c => c.id === headId);
-
-    if (!head) return { familyHead: null, assignedAssociate: 'N/A', assignedRM: 'N/A' };
+    if (!head) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
     
     const associate = getAllAssociates().find(a => a.id === head.associateId);
     const rm = associate ? getAllRMs().find(r => r.id === associate.rmId) : undefined;
+    const admin = rm ? getAllAdmins().find(adm => adm.id === rm.adminId) : undefined;
 
     return {
       familyHead: head,
-      assignedAssociate: associate ? associate.name : 'N/A',
-      assignedRM: rm ? rm.name : 'No RM assigned',
+      assignedAssociate: associate,
+      assignedRM: rm,
+      assignedAdmin: admin,
     };
   }, [clientNameValue, clientOptions]);
 
   const familyHeadName = familyHead ? `${familyHead.firstName} ${familyHead.lastName}` : '';
+  const associateName = assignedAssociate ? assignedAssociate.name : 'N/A';
+  const rmName = assignedRM ? assignedRM.name : 'No RM assigned';
 
   useEffect(() => {
     if (task) {
@@ -229,6 +232,9 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         clientId: selectedClient?.value || 'N/A',
         clientName: selectedClient?.label || data.clientName, // Use the full label
         familyHeadId: familyHead?.id,
+        associateId: assignedAssociate?.id,
+        rmId: assignedRM?.id,
+        adminId: assignedAdmin?.id,
         dueDate: new Date(data.dueDate).toISOString(), 
       };
       
@@ -249,7 +255,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   };
     
   useEffect(() => {
-    setValue('rmName', assignedRM, { shouldValidate: true });
+    setValue('rmName', rmName, { shouldValidate: true });
 
     if(familyHeadName) {
       if(selectedCategory === 'Mutual Funds') {
@@ -259,12 +265,12 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
           setValue('insurance.familyHead', familyHeadName, { shouldValidate: true });
       }
     }
-    if(assignedAssociate) {
+    if(associateName) {
         if(selectedCategory === 'Life Insurance') {
-            setValue('insurance.associate', assignedAssociate, { shouldValidate: true });
+            setValue('insurance.associate', associateName, { shouldValidate: true });
         }
     }
-  }, [familyHeadName, assignedAssociate, assignedRM, selectedCategory, setValue]);
+  }, [familyHeadName, associateName, rmName, selectedCategory, setValue]);
 
   const clientFilter = (value: string, search: string) => {
     const option = clientOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
@@ -525,7 +531,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   </div>
                    <div className="space-y-1">
                     <Label>Associate</Label>
-                    <Input {...register('insurance.associate')} readOnly value={assignedAssociate} />
+                    <Input {...register('insurance.associate')} readOnly value={associateName} />
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="ins-typeOfService">Type of Service</Label>

@@ -38,9 +38,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { TASK_STATUSES } from '@/lib/constants';
-import { format, parseISO, parse } from 'date-fns';
+import { format, parse, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { isOverdue } from '@/lib/is-overdue';
+import { getAllRMs, getAllAssociates, getAllAdmins } from '@/lib/mock-data';
+import type { User } from '@/lib/types';
 
 
 export default function TasksPage() {
@@ -56,6 +58,39 @@ export default function TasksPage() {
   const canUpdate = hasPermission('TASK', 'edit');
   const canDelete = hasPermission('TASK', 'delete');
   const isSuperAdmin = effectiveUser?.role === 'SUPER_ADMIN';
+
+  const canViewTask = (user: User | null, task: Task): boolean => {
+    if (!user) return false;
+
+    if (user.role === 'SUPER_ADMIN') return true;
+    if (user.id === task.clientId) return true; // Customer can see their own tasks
+    if (user.id === task.familyHeadId) return true; // Family head can see member tasks
+
+    if (user.role === 'ASSOCIATE') {
+      return user.id === task.associateId;
+    }
+
+    if (user.role === 'RM') {
+      const allAssociates = getAllAssociates();
+      const taskAssociate = allAssociates.find(a => a.id === task.associateId);
+      return taskAssociate?.rmId === user.id;
+    }
+    
+    if (user.role === 'ADMIN') {
+        const allAssociates = getAllAssociates();
+        const allRms = getAllRMs();
+        const taskAssociate = allAssociates.find(a => a.id === task.associateId);
+        const taskRm = allRms.find(rm => rm.id === taskAssociate?.rmId);
+        return taskRm?.adminId === user.id;
+    }
+
+    return false;
+  };
+
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(task => canViewTask(effectiveUser, task));
+  }, [tasks, effectiveUser]);
+
 
   const getStatusBadgeVariant = (status: string) => {
     const lowerCaseStatus = status.toLowerCase();
@@ -199,8 +234,8 @@ export default function TasksPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tasks.length > 0 ? (
-                  tasks.map((task) => {
+                {filteredTasks.length > 0 ? (
+                  filteredTasks.map((task) => {
                     const overdue = isOverdue(task);
                     const isTerminal = terminalStatuses.includes(task.status);
                     const canEditTask = isSuperAdmin || !isTerminal;

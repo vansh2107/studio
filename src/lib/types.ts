@@ -133,6 +133,9 @@ export interface Task {
   id: string;
   clientId: string; // The ID of the assigned member
   familyHeadId?: string; // The ID of the family head
+  associateId?: string;
+  rmId?: string;
+  adminId?: string;
   clientName: string; // The display name of the family member or head
   category: string;
   rmName?: string;

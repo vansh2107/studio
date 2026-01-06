@@ -26,6 +26,9 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     const newTask: Task = {
         clientId: task.clientId || 'N/A',
         familyHeadId: task.familyHeadId,
+        associateId: task.associateId,
+        rmId: task.rmId,
+        adminId: task.adminId,
         clientName: task.clientName || 'N/A',
         category: task.category || 'N/A',
         rmName: task.rmName || 'N/A',

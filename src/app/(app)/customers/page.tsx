@@ -152,8 +152,20 @@ export default function ClientsPage() {
     if (showOnlyHeads) {
       return allDisplayClients.filter(c => c.isFamilyHead);
     }
-    return allDisplayClients;
-  }, [allDisplayClients, showOnlyHeads]);
+    
+    // If not showing only heads, show all members of all visible families
+    const visibleHeadIds = new Set(
+        allDisplayClients.filter(c => c.isFamilyHead).map(c => c.id)
+    );
+
+    return allDisplayClients.filter(c => {
+        if (c.isFamilyHead) {
+            return visibleHeadIds.has(c.id);
+        }
+        const member = c as FamilyMember;
+        return visibleHeadIds.has(member.clientId);
+    });
+}, [allDisplayClients, showOnlyHeads]);
 
 
   const handleCloseModal = () => {
