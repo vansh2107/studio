@@ -23,12 +23,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { format, parseISO, isPast } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import TaskOverview from './task-overview';
 import { StatCard } from '@/components/ui/stat-card';
+import { isOverdue } from '@/lib/is-overdue';
 
 
 const admins = getAllAdmins();
@@ -102,11 +103,11 @@ const TaskSummaryCard = () => {
                     </TableHeader>
                     <TableBody>
                         {latestTasks.map(task => {
-                            const isOverdue = (task.status === 'In Progress' || task.status === 'Pending') && task.dueDate && isPast(parseISO(task.dueDate));
+                            const overdue = isOverdue(task);
                             const canUpdateStatus = isSuperAdmin; // Always true for super admin
 
                              return (
-                                <TableRow key={task.id} className="hover:bg-transparent">
+                                <TableRow key={task.id} className={cn(overdue && "bg-destructive/5 text-destructive")}>
                                     <TableCell>{task.clientName}</TableCell>
                                     <TableCell>{task.category}</TableCell>
                                     <TableCell>{task.rmName || '—'}</TableCell>
@@ -123,10 +124,10 @@ const TaskSummaryCard = () => {
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild disabled={!canUpdateStatus}>
                                                 <Badge 
-                                                    variant={getStatusBadgeVariant(task.status)}
-                                                    className={cn(canUpdateStatus ? "cursor-pointer" : "cursor-not-allowed", isOverdue && 'border-destructive')}
+                                                    variant={overdue ? 'destructive' : getStatusBadgeVariant(task.status)}
+                                                    className={cn(canUpdateStatus ? "cursor-pointer" : "cursor-not-allowed")}
                                                 >
-                                                {task.status}
+                                                {overdue ? 'Overdue' : task.status}
                                                 </Badge>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>

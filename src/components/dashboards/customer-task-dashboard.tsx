@@ -25,8 +25,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { format, parseISO, isPast } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { isOverdue } from '@/lib/is-overdue';
 
 interface CustomerTaskDashboardProps {
   tasks: Task[];
@@ -66,7 +67,13 @@ export default function CustomerTaskDashboard({ tasks }: CustomerTaskDashboardPr
         return [...tasks].sort((a, b) => {
             if (!a.dueDate) return 1;
             if (!b.dueDate) return -1;
-            return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+            try {
+                const dateA = parseISO(a.dueDate);
+                const dateB = parseISO(b.dueDate);
+                return dateA.getTime() - dateB.getTime();
+            } catch {
+                return 0;
+            }
         });
     }, [tasks]);
 
@@ -99,11 +106,11 @@ export default function CustomerTaskDashboard({ tasks }: CustomerTaskDashboardPr
               <TableBody>
                 {sortedTasks.length > 0 ? (
                   sortedTasks.map((task) => {
-                    const isOverdue = task.status !== 'Completed' && task.dueDate && isPast(parseISO(task.dueDate));
+                    const overdue = isOverdue(task);
                     const descriptionContent = task.insurance?.policyNo || task.mutualFund?.folioNo || task.description;
 
                     return (
-                        <TableRow key={task.id} className={cn(isOverdue && 'text-destructive', "hover:bg-transparent")}>
+                        <TableRow key={task.id} className={cn(overdue && 'bg-destructive/5 text-destructive')}>
                           <TableCell className="font-medium">{task.clientName}</TableCell>
                           <TableCell>{task.category}</TableCell>
                           <TableCell>{task.rmName || '—'}</TableCell>
@@ -118,10 +125,10 @@ export default function CustomerTaskDashboard({ tasks }: CustomerTaskDashboardPr
                           <TableCell>{formatDate(task.dueDate)}</TableCell>
                           <TableCell>
                             <Badge
-                                variant={getStatusBadgeVariant(task.status)}
-                                className={cn("cursor-not-allowed", isOverdue && 'border-destructive')}
+                                variant={overdue ? 'destructive' : getStatusBadgeVariant(task.status)}
+                                className={cn("cursor-not-allowed")}
                             >
-                                {task.status}
+                                {overdue ? 'Overdue' : task.status}
                             </Badge>
                           </TableCell>
                           <TableCell>
