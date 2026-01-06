@@ -77,10 +77,10 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b bg-[#F2F3F5] px-4 shadow-sm sm:px-6">
-      <SidebarTrigger className="md:hidden text-foreground hover:bg-[#1D4ED8] hover:text-white" />
+      <SidebarTrigger className="md:hidden" />
       
       <div className="flex items-center">
-        <AscendWealthLogo className="h-7 w-7" />
+        <AscendWealthLogo />
       </div>
 
       {impersonatedUser && (

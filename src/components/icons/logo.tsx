@@ -1,31 +1,20 @@
 import { cn } from "@/lib/utils"
+import Image from "next/image"
+import Link from "next/link"
 
 export function AscendWealthLogo({ className }: { className?: string }) {
   return (
-    <div className={cn("flex items-center gap-2 text-foreground", className)}>
-      <svg
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="text-current"
-      >
-        <path
-          d="M3 17L9 11L13 15L21 7"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    <Link href="/" aria-label="Dashboard">
+      <div className={cn("flex items-center", className)}>
+        <Image
+          src="/finarray-logo.png"
+          alt="FinArray"
+          width={140}
+          height={36}
+          priority
+          style={{ height: 36, width: 'auto', objectFit: "contain" }}
         />
-        <path
-          d="M14 7H21V14"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </div>
+      </div>
+    </Link>
   )
 }
