@@ -26,16 +26,6 @@ const getStatusBadgeVariant = (status: string) => {
   return "outline";
 };
 
-function getTaskBadgeClasses(status: string) {
-  const normalized = status.toLowerCase();
-
-  if (normalized.includes("overdue")) {
-    return "!bg-red-500 !text-white !border-red-600 hover:!bg-red-600";
-  }
-
-  return "";
-}
-
 export default function TaskOverview({ tasks, onStatusClick, selectedStatus }: TaskOverviewProps) {
   const taskAnalytics = useMemo(() => {
     const allTasks = tasks;
@@ -54,6 +44,13 @@ export default function TaskOverview({ tasks, onStatusClick, selectedStatus }: T
   }, [tasks]);
 
   const statuses: (TaskStatus | 'Overdue' | 'All')[] = ['All', 'Pending', 'In Progress', 'Completed', 'Cancelled', 'Rejected', 'Overdue'];
+
+  function getTaskTextClass(status: string) {
+    if (status?.toLowerCase().includes("overdue")) {
+      return "!text-red-600";
+    }
+    return "";
+  }
 
   return (
     <Card className="lg:col-span-7">
@@ -75,7 +72,7 @@ export default function TaskOverview({ tasks, onStatusClick, selectedStatus }: T
                         className={cn(
                             `cursor-pointer transition-all`,
                             selectedStatus === status ? 'ring-2 ring-ring ring-offset-2' : '',
-                            getTaskBadgeClasses(status)
+                            getTaskTextClass(status)
                         )}
                         onClick={() => onStatusClick?.(status)}
                     >
