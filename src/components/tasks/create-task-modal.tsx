@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -15,17 +14,26 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   TASK_CATEGORIES,
-  TASK_STATUSES,
-  RM_NAMES,
   MUTUAL_FUND_SERVICES,
   AMC_NAMES,
   INSURANCE_SERVICES,
   INSURANCE_COMPANIES
 } from '@/lib/constants';
 import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
-import { Combobox, ComboboxOption } from '@/components/ui/combobox';
+import { Combobox } from '@/components/ui/combobox';
 import { format, parse, parseISO } from 'date-fns';
 import { Separator } from '../ui/separator';
+
+/* ---------- VALIDATION ---------- */
+
+const numberField = z.preprocess(
+  (a) => {
+    if (a === '' || a === null || a === undefined) return undefined;
+    const parsed = parseFloat(String(a));
+    return isNaN(parsed) ? undefined : parsed;
+  },
+  z.number().positive("Amount must be positive").optional()
+);
 
 const baseTaskSchema = z.object({
   clientName: z.string().min(1, 'Client name is required'),
@@ -37,17 +45,14 @@ const baseTaskSchema = z.object({
 });
 
 const mutualFundSchema = z.object({
-    familyHead: z.string(),
-    service: z.string().min(1, "Service is required"),
-    folioNo: z.string().min(1, "Folio No. is required"),
-    nameOfAMC: z.string().min(1, "Name of AMC is required"),
-    amount: z.preprocess(
-      (a) => parseFloat(z.string().parse(a)),
-      z.number().positive("Amount must be positive")
-    ),
-    documentStatus: z.enum(["Received", "Pending"]),
-    signatureStatus: z.enum(["Done", "Pending"]),
-    amcSubmissionStatus: z.enum(["Done", "Pending"]),
+  familyHead: z.string(),
+  service: z.string().min(1, "Service is required"),
+  folioNo: z.string().min(1, "Folio No. is required"),
+  nameOfAMC: z.string().min(1, "Name of AMC is required"),
+  amount: numberField,
+  documentStatus: z.enum(["Received", "Pending"]),
+  signatureStatus: z.enum(["Done", "Pending"]),
+  amcSubmissionStatus: z.enum(["Done", "Pending"]),
 });
 
 const insuranceSchema = z.object({
@@ -56,10 +61,7 @@ const insuranceSchema = z.object({
   associate: z.string().min(1, "Associate is required"),
   policyNo: z.string().min(1, "Policy No. is required"),
   company: z.string().min(1, "Company is required"),
-  amount: z.preprocess(
-    (a) => parseFloat(z.string().parse(a)),
-    z.number().positive("Amount must be positive")
-  ),
+  amount: numberField,
   maturityStatus: z.string().min(1, "Maturity status is required"),
   amountStatus: z.enum(["Credited", "Pending"]),
   reinvestmentStatus: z.string().min(1, "Re-investment status is required"),
@@ -69,22 +71,22 @@ const taskSchema = baseTaskSchema.extend({
   mutualFund: mutualFundSchema.optional(),
   insurance: insuranceSchema.optional(),
 }).superRefine((data, ctx) => {
-    if (data.category === 'Mutual Funds' && !data.mutualFund) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Mutual Fund details are required for this category.",
-            path: ["mutualFund"],
-        });
-    }
-    if (data.category === 'Life Insurance' && !data.insurance) {
-         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Insurance details are required for this category.",
-            path: ["insurance"],
-        });
-    }
-});
+  if (data.category === 'Mutual Funds' && !data.mutualFund) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Mutual Fund details are required.",
+      path: ["mutualFund"],
+    });
+  }
 
+  if (data.category === 'Life Insurance' && !data.insurance) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Insurance details are required.",
+      path: ["insurance"],
+    });
+  }
+});
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
@@ -111,17 +113,14 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       relation: 'Head'
     }));
 
-    const members = mockFamilyMembers.map(m => {
-      const head = getAllClients().find(c => c.id === m.clientId);
-      return {
-        label: `${m.firstName} ${m.lastName} (${m.relation})`,
-        value: m.id,
-        clientId: m.clientId,
-        relation: m.relation,
-      };
-    });
+    const members = mockFamilyMembers.map(m => ({
+      label: `${m.firstName} ${m.lastName} (${m.relation})`,
+      value: m.id,
+      clientId: m.clientId,
+      relation: m.relation,
+    }));
 
-    return [...heads, ...members].sort((a,b) => a.label.localeCompare(b.label));
+    return [...heads, ...members].sort((a, b) => a.label.localeCompare(b.label));
   }, []);
 
   const {
@@ -143,499 +142,458 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       description: '',
     },
   });
-  
-  const descriptionValue = watch('description') || '';
+
   const selectedCategory = watch('category');
   const clientNameValue = watch('clientName');
+  const descriptionValue = watch('description') || '';
+
+  /* ---------- AUTO POPULATE ---------- */
 
   const { familyHead, assignedAssociate, assignedRM, assignedAdmin } = useMemo(() => {
     if (!clientNameValue) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
-    
+
     const selectedOption = clientOptions.find(opt => opt.value === clientNameValue);
     if (!selectedOption) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
-    
+
     const headId = 'clientId' in selectedOption ? selectedOption.clientId : selectedOption.value;
     const head = getAllClients().find(c => c.id === headId);
     if (!head) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
-    
+
     const associate = getAllAssociates().find(a => a.id === head.associateId);
     const rm = associate ? getAllRMs().find(r => r.id === associate.rmId) : undefined;
     const admin = rm ? getAllAdmins().find(adm => adm.id === rm.adminId) : undefined;
 
-    return {
-      familyHead: head,
-      assignedAssociate: associate,
-      assignedRM: rm,
-      assignedAdmin: admin,
-    };
+    return { familyHead: head, assignedAssociate: associate, assignedRM: rm, assignedAdmin: admin };
   }, [clientNameValue, clientOptions]);
 
   const familyHeadName = familyHead ? `${familyHead.firstName} ${familyHead.lastName}` : '';
-  const associateName = assignedAssociate ? assignedAssociate.name : 'N/A';
-  const rmName = assignedRM ? assignedRM.name : 'No RM assigned';
+  const associateName = assignedAssociate?.name || 'N/A';
+  const rmName = assignedRM?.name || 'No RM assigned';
+
+  useEffect(() => {
+    setValue('rmName', rmName, { shouldValidate: true });
+
+    if (familyHeadName && selectedCategory === 'Mutual Funds')
+      setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
+
+    if (familyHeadName && selectedCategory === 'Life Insurance')
+      setValue('insurance.familyHead', familyHeadName, { shouldValidate: true });
+
+    if (associateName && selectedCategory === 'Life Insurance')
+      setValue('insurance.associate', associateName, { shouldValidate: true });
+
+  }, [familyHeadName, associateName, rmName, selectedCategory, setValue]);
+
+  /* ---------- RESET NESTED WHEN SWITCH CATEGORY ---------- */
+
+  useEffect(() => {
+    if (selectedCategory !== 'Mutual Funds') setValue('mutualFund', undefined);
+    if (selectedCategory !== 'Life Insurance') setValue('insurance', undefined);
+  }, [selectedCategory, setValue]);
+
+  /* ---------- LOAD EXISTING TASK ---------- */
 
   useEffect(() => {
     if (task) {
-        let formattedDueDate = '';
-        if (task.dueDate) {
-            try {
-                if (task.dueDate.includes(' ')) {
-                     const parsedDate = parse(task.dueDate, 'dd-MM-yyyy HH:mm', new Date());
-                     if (!isNaN(parsedDate.getTime())) {
-                        formattedDueDate = format(parsedDate, "yyyy-MM-dd'T'HH:mm");
-                     }
-                } else {
-                    formattedDueDate = format(parseISO(task.dueDate), "yyyy-MM-dd'T'HH:mm");
-                }
-            } catch (e) {
-                console.error("Error parsing due date:", e);
+      let formattedDueDate = '';
+
+      if (task.dueDate) {
+        try {
+          if (task.dueDate.includes(' ')) {
+            const parsedDate = parse(task.dueDate, 'dd-MM-yyyy HH:mm', new Date());
+            if (!isNaN(parsedDate.getTime())) {
+              formattedDueDate = format(parsedDate, "yyyy-MM-dd'T'HH:mm");
             }
-        }
-       const defaultData: TaskFormData = {
-         clientName: task.clientId || '',
-         category: task.category || '',
-         rmName: task.rmName || '',
-         serviceableRM: task.serviceableRM || '',
-         dueDate: formattedDueDate,
-         description: task.description || '',
-         mutualFund: task.mutualFund ? {
-           ...task.mutualFund,
-           amount: task.mutualFund.amount || 0,
-         } : undefined,
-          insurance: task.insurance ? {
-           ...task.insurance,
-           amount: task.insurance.amount || 0,
-         } : undefined,
-       }
-      reset(defaultData);
-    } else {
+          } else {
+            formattedDueDate = format(parseISO(task.dueDate), "yyyy-MM-dd'T'HH:mm");
+          }
+        } catch {}
+      }
+
       reset({
-        clientName: '',
-        category: '',
-        rmName: '',
-        serviceableRM: '',
-        dueDate: '',
-        description: '',
+        clientName: task.clientId || '',
+        category: task.category || '',
+        rmName: task.rmName || '',
+        serviceableRM: task.serviceableRM || '',
+        dueDate: formattedDueDate,
+        description: task.description || '',
+        mutualFund: task.mutualFund,
+        insurance: task.insurance
       });
+
+    } else {
+      reset();
     }
   }, [task, reset]);
 
+  /* ---------- SAVE ---------- */
+
   const processSave = (data: TaskFormData) => {
+    const parsedDue = new Date(data.dueDate);
+    if (isNaN(parsedDue.getTime())) {
+      toast({
+        title: "Invalid date",
+        description: "Please select a valid due date.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
+
     setTimeout(() => {
-        
       const selectedClient = clientOptions.find(c => c.value === data.clientName);
 
       const submissionData: Task = {
         ...(task || { id: '', createDate: new Date().toISOString(), status: 'Pending' }),
         ...data,
         clientId: selectedClient?.value || 'N/A',
-        clientName: selectedClient?.label || data.clientName, // Use the full label
+        clientName: selectedClient?.label || data.clientName,
         familyHeadId: familyHead?.id,
         associateId: assignedAssociate?.id,
         rmId: assignedRM?.id,
         adminId: assignedAdmin?.id,
-        dueDate: new Date(data.dueDate).toISOString(), 
+        dueDate: parsedDue.toISOString()
       };
-      
-      if (submissionData.category !== 'Mutual Funds') {
-        delete submissionData.mutualFund;
-      }
-      if (submissionData.category !== 'Life Insurance') {
-        delete submissionData.insurance;
-      }
-      
+
+      if (submissionData.category !== 'Mutual Funds') delete submissionData.mutualFund;
+      if (submissionData.category !== 'Life Insurance') delete submissionData.insurance;
+
       onSave(submissionData);
+
       toast({
         title: isEditMode ? 'Task Updated' : 'Task Created',
         description: `The task for "${submissionData.clientName}" has been successfully saved.`,
       });
+
       setIsSaving(false);
-    }, 500);
+    }, 400);
   };
-    
-  useEffect(() => {
-    setValue('rmName', rmName, { shouldValidate: true });
 
-    if(familyHeadName) {
-      if(selectedCategory === 'Mutual Funds') {
-          setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
-      }
-      if(selectedCategory === 'Life Insurance') {
-          setValue('insurance.familyHead', familyHeadName, { shouldValidate: true });
-      }
-    }
-    if(associateName) {
-        if(selectedCategory === 'Life Insurance') {
-            setValue('insurance.associate', associateName, { shouldValidate: true });
-        }
-    }
-  }, [familyHeadName, associateName, rmName, selectedCategory, setValue]);
-
-  const clientFilter = (value: string, search: string) => {
-    const option = clientOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
-    if (!option) return 0;
-    const searchTerm = search.toLowerCase();
-    
-    // Check first name, last name, full name, and relation
-    const [firstName, ...rest] = option.label.split(' ');
-    const lastName = rest.length > 1 ? rest[0] : '';
-    const relation = option.relation.toLowerCase();
-    
-    if (
-      option.label.toLowerCase().includes(searchTerm) ||
-      firstName.toLowerCase().startsWith(searchTerm) ||
-      lastName.toLowerCase().startsWith(searchTerm) ||
-      relation.includes(searchTerm)
-    ) {
-      return 1;
-    }
-    return 0;
-  };
-  
-  const amcOptions = useMemo(() => AMC_NAMES.map(name => ({ label: name, value: name })), []);
-  const insuranceCompanyOptions = useMemo(() => INSURANCE_COMPANIES.map(name => ({ label: name, value: name })), []);
-
-  const nameFilter = (value: string, search: string) => {
-      const option = amcOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
-      if (!option) return 0;
-      const searchTerm = search.toLowerCase();
-      if(option.label.toLowerCase().includes(searchTerm)) {
-        return 1;
-      }
-      return 0;
-  }
+  /* ---------- UI ---------- */
 
   return (
-      <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
-        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 z-[1002] close-icon">
-          <X className="h-4 w-4" />
-        </Button>
-        <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
-          <h2 className="text-lg font-semibold">
-              {isEditMode ? 'Edit Task' : 'Create Task Manually'}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-              {isTerminal 
-                ? 'This task is locked and cannot be edited.' 
-                : isEditMode 
-                ? 'Update the details for this task.' 
-                : 'Fill in the details to create a new task.'
-              }
-          </p>
-        </div>
+    <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
+      <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 z-[1002] close-icon">
+        <X className="h-4 w-4" />
+      </Button>
 
-        <form onSubmit={handleSubmit(processSave)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                  <Label htmlFor="clientName">Client Name</Label>
-                   <Controller
-                    name="clientName"
-                    control={control}
-                    render={({ field }) => (
-                      <Combobox
-                        options={clientOptions}
-                        value={field.value}
-                        onChange={(value) => {
-                           setValue('clientName', value, { shouldValidate: true });
-                        }}
-                        placeholder="Select Client"
-                        searchPlaceholder="Search clients..."
-                        emptyText="No matching clients."
-                        filter={clientFilter}
-                      />
-                    )}
-                  />
-                  {errors.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
-              </div>
+      <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
+        <h2 className="text-lg font-semibold">
+          {isEditMode ? 'Edit Task' : 'Create Task Manually'}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {isTerminal
+            ? 'This task is locked and cannot be edited.'
+            : isEditMode
+            ? 'Update the details for this task.'
+            : 'Fill in the details to create a new task.'}
+        </p>
+      </div>
 
-               <div className="space-y-1">
-                  <Label htmlFor="category">Category</Label>
-                   <Controller
-                    name="category"
-                    control={control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isTerminal}>
-                        <SelectTrigger id="category">
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {TASK_CATEGORIES.map(cat => (
-                             <SelectItem key={cat} value={cat}>
-                                {cat}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.category && <p className="text-sm text-destructive">{errors.category.message}</p>}
-              </div>
-
-               <div className="space-y-1">
-                  <Label htmlFor="rmName">Assigned RM</Label>
-                  <Input id="rmName" {...register('rmName')} readOnly disabled />
-                  {errors.rmName && <p className="text-sm text-destructive">{errors.rmName.message}</p>}
-              </div>
-              
-              <div className="space-y-1">
-                  <Label htmlFor="serviceableRM">Serviceable RM (Optional)</Label>
-                  <Controller
-                    name="serviceableRM"
-                    control={control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value ?? undefined} disabled={isTerminal}>
-                        <SelectTrigger id="serviceableRM">
-                          <SelectValue placeholder="Select Serviceable RM" />
-                        </SelectTrigger>
-                        <SelectContent>
-                           <SelectItem value="none">None</SelectItem>
-                          {allRms.map(rm => (
-                             <SelectItem key={rm.value} value={rm.label}>
-                                {rm.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.serviceableRM && <p className="text-sm text-destructive">{errors.serviceableRM.message}</p>}
-              </div>
-
-
-               <div className="space-y-1">
-                  <Label htmlFor="dueDate">Due Date & Time</Label>
-                  <Input id="dueDate" {...register('dueDate')} type="datetime-local" disabled={isTerminal} />
-                  {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
-              </div>
-          </div>
-          
-          {selectedCategory === 'Mutual Funds' && (
-              <div className="space-y-4 pt-4">
-                <Separator />
-                <h3 className="text-md font-semibold">Mutual Fund Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label>Family Head</Label>
-                    <Input {...register('mutualFund.familyHead')} readOnly value={familyHeadName} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="mf-service">Service</Label>
-                    <Controller
-                        name="mutualFund.service"
-                        control={control}
-                        render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
-                            <SelectTrigger><SelectValue placeholder="Select a service"/></SelectTrigger>
-                            <SelectContent>
-                                {MUTUAL_FUND_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        )}
-                    />
-                    {errors.mutualFund?.service && <p className="text-sm text-destructive">{errors.mutualFund.service.message}</p>}
-                  </div>
-                   <div className="space-y-1">
-                      <Label htmlFor="mf-folioNo">Folio No.</Label>
-                      <Input id="mf-folioNo" {...register('mutualFund.folioNo')} disabled={isTerminal}/>
-                       {errors.mutualFund?.folioNo && <p className="text-sm text-destructive">{errors.mutualFund.folioNo.message}</p>}
-                  </div>
-                   <div className="space-y-1">
-                      <Label htmlFor="mf-nameOfAMC">Name of AMC</Label>
-                      <Controller
-                        name="mutualFund.nameOfAMC"
-                        control={control}
-                        render={({ field }) => (
-                          <Combobox
-                            options={amcOptions}
-                            value={field.value}
-                            onChange={(value) => setValue('mutualFund.nameOfAMC', value, { shouldValidate: true })}
-                            placeholder="Select AMC"
-                            searchPlaceholder="Search AMCs..."
-                            emptyText="No matching AMC found."
-                            filter={nameFilter}
-                            disabled={isTerminal}
-                          />
-                        )}
-                      />
-                       {errors.mutualFund?.nameOfAMC && <p className="text-sm text-destructive">{errors.mutualFund.nameOfAMC.message}</p>}
-                  </div>
-                  <div className="space-y-1">
-                      <Label htmlFor="mf-amount">Amount</Label>
-                      <Input id="mf-amount" type="number" {...register('mutualFund.amount')} disabled={isTerminal}/>
-                       {errors.mutualFund?.amount && <p className="text-sm text-destructive">{errors.mutualFund.amount.message}</p>}
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Document Status</Label>
-                    <Controller
-                        name="mutualFund.documentStatus"
-                        control={control}
-                        defaultValue="Pending"
-                        render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
-                            <SelectTrigger><SelectValue/></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Received">Received</SelectItem>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        )}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Signature Status</Label>
-                    <Controller
-                        name="mutualFund.signatureStatus"
-                        control={control}
-                        defaultValue="Pending"
-                        render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
-                            <SelectTrigger><SelectValue/></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Done">Done</SelectItem>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        )}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Document Submitted to AMC</Label>
-                    <Controller
-                        name="mutualFund.amcSubmissionStatus"
-                        control={control}
-                        defaultValue="Pending"
-                        render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
-                            <SelectTrigger><SelectValue/></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Done">Done</SelectItem>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        )}
-                    />
-                  </div>
-                </div>
-              </div>
-          )}
-
-          {selectedCategory === 'Life Insurance' && (
-              <div className="space-y-4 pt-4">
-                <Separator />
-                <h3 className="text-md font-semibold">Insurance Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label>Family Head</Label>
-                    <Input {...register('insurance.familyHead')} readOnly value={familyHeadName} />
-                  </div>
-                   <div className="space-y-1">
-                    <Label>Associate</Label>
-                    <Input {...register('insurance.associate')} readOnly value={associateName} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="ins-typeOfService">Type of Service</Label>
-                    <Controller
-                        name="insurance.typeOfService"
-                        control={control}
-                        render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
-                            <SelectTrigger><SelectValue placeholder="Select a service"/></SelectTrigger>
-                            <SelectContent>
-                                {INSURANCE_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        )}
-                    />
-                    {errors.insurance?.typeOfService && <p className="text-sm text-destructive">{errors.insurance.typeOfService.message}</p>}
-                  </div>
-                   <div className="space-y-1">
-                      <Label htmlFor="ins-policyNo">Policy No.</Label>
-                      <Input id="ins-policyNo" {...register('insurance.policyNo')} disabled={isTerminal}/>
-                       {errors.insurance?.policyNo && <p className="text-sm text-destructive">{errors.insurance.policyNo.message}</p>}
-                  </div>
-                   <div className="space-y-1">
-                      <Label htmlFor="ins-company">Company</Label>
-                       <Controller
-                        name="insurance.company"
-                        control={control}
-                        render={({ field }) => (
-                          <Combobox
-                            options={insuranceCompanyOptions}
-                            value={field.value}
-                            onChange={(value) => setValue('insurance.company', value, { shouldValidate: true })}
-                            placeholder="Select Company"
-                            searchPlaceholder="Search companies..."
-                            emptyText="No matching company found."
-                            filter={nameFilter}
-                            disabled={isTerminal}
-                          />
-                        )}
-                      />
-                       {errors.insurance?.company && <p className="text-sm text-destructive">{errors.insurance.company.message}</p>}
-                  </div>
-                  <div className="space-y-1">
-                      <Label htmlFor="ins-amount">Amount</Label>
-                      <Input id="ins-amount" type="number" {...register('insurance.amount')} disabled={isTerminal}/>
-                       {errors.insurance?.amount && <p className="text-sm text-destructive">{errors.insurance.amount.message}</p>}
-                  </div>
-                   <div className="space-y-1">
-                      <Label htmlFor="ins-maturityStatus">Maturity Status</Label>
-                      <Input id="ins-maturityStatus" {...register('insurance.maturityStatus')} disabled={isTerminal}/>
-                       {errors.insurance?.maturityStatus && <p className="text-sm text-destructive">{errors.insurance.maturityStatus.message}</p>}
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Amount Status</Label>
-                    <Controller
-                        name="insurance.amountStatus"
-                        control={control}
-                        defaultValue="Pending"
-                        render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
-                            <SelectTrigger><SelectValue/></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Credited">Credited</SelectItem>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        )}
-                    />
-                  </div>
-                   <div className="space-y-1">
-                      <Label htmlFor="ins-reinvestmentStatus">Re-investment Status</Label>
-                      <Input id="ins-reinvestmentStatus" {...register('insurance.reinvestmentStatus')} disabled={isTerminal}/>
-                       {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
-                  </div>
-                </div>
-              </div>
-          )}
+      <form onSubmit={handleSubmit(processSave)} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <div className="space-y-1">
-            <Label htmlFor="description">Description (Optional)</Label>
-            <Textarea 
-              id="description" 
-              {...register('description')} 
-              disabled={isTerminal} 
-              maxLength={300}
+            <Label htmlFor="clientName">Client Name</Label>
+            <Controller
+              name="clientName"
+              control={control}
+              render={({ field }) => (
+                <Combobox
+                  options={clientOptions}
+                  value={field.value}
+                  onChange={(value) => setValue('clientName', value, { shouldValidate: true })}
+                  placeholder="Select Client"
+                  searchPlaceholder="Search clients..."
+                  emptyText="No matching clients."
+                />
+              )}
             />
-            <div className="flex justify-between text-sm text-muted-foreground">
-                {errors.description ? (
-                    <p className="text-destructive">{errors.description.message}</p>
-                ) : (
-                    <p></p> 
-                )}
-                <p>{descriptionValue.length} / 300</p>
+            {errors.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="category">Category</Label>
+            <Controller
+              name="category"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TASK_CATEGORIES.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.category && <p className="text-sm text-destructive">{errors.category.message}</p>}
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="rmName">Assigned RM</Label>
+            <Input id="rmName" {...register('rmName')} readOnly disabled />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="serviceableRM">Serviceable RM (Optional)</Label>
+            <Controller
+              name="serviceableRM"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value ?? undefined} disabled={isTerminal}>
+                  <SelectTrigger id="serviceableRM">
+                    <SelectValue placeholder="Select Serviceable RM" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {allRms.map(rm => (
+                      <SelectItem key={rm.value} value={rm.label}>{rm.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="dueDate">Due Date & Time</Label>
+            <Input id="dueDate" type="datetime-local" {...register('dueDate')} disabled={isTerminal} />
+            {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
+          </div>
+        </div>
+
+        {selectedCategory === 'Mutual Funds' && (
+          <div className="space-y-4 pt-4">
+            <Separator />
+            <h3 className="text-md font-semibold">Mutual Fund Details</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label>Family Head</Label>
+                <Input {...register('mutualFund.familyHead')} readOnly value={familyHeadName} />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Service</Label>
+                <Controller
+                  name="mutualFund.service"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
+                      <SelectContent>
+                        {MUTUAL_FUND_SERVICES.map(s => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Folio No.</Label>
+                <Input {...register('mutualFund.folioNo')} />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Name of AMC</Label>
+                <Controller
+                  name="mutualFund.nameOfAMC"
+                  control={control}
+                  render={({ field }) => (
+                    <Combobox
+                      options={AMC_NAMES.map(a => ({ label: a, value: a }))}
+                      value={field.value}
+                      onChange={(v) => setValue('mutualFund.nameOfAMC', v, { shouldValidate: true })}
+                      placeholder="Select AMC"
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Amount</Label>
+                <Input type="number" {...register('mutualFund.amount')} />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Document Status</Label>
+                <Controller
+                  name="mutualFund.documentStatus"
+                  control={control}
+                  defaultValue="Pending"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Received">Received</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Signature Status</Label>
+                <Controller
+                  name="mutualFund.signatureStatus"
+                  control={control}
+                  defaultValue="Pending"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Done">Done</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Document Submitted to AMC</Label>
+                <Controller
+                  name="mutualFund.amcSubmissionStatus"
+                  control={control}
+                  defaultValue="Pending"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Done">Done</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
             </div>
           </div>
-          
-          <div className="flex justify-end gap-2 pt-4">
-            {!isTerminal && (
-              <Button type="submit" disabled={isSaving}>
-                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : isEditMode ? 'Save Changes' : 'Save Task'}
-              </Button>
-            )}
+        )}
+
+        {selectedCategory === 'Life Insurance' && (
+          <div className="space-y-4 pt-4">
+            <Separator />
+            <h3 className="text-md font-semibold">Insurance Details</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label>Family Head</Label>
+                <Input {...register('insurance.familyHead')} readOnly value={familyHeadName} />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Associate</Label>
+                <Input {...register('insurance.associate')} readOnly value={associateName} />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Type of Service</Label>
+                <Controller
+                  name="insurance.typeOfService"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
+                      <SelectContent>
+                        {INSURANCE_SERVICES.map(s => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Policy No.</Label>
+                <Input {...register('insurance.policyNo')} />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Company</Label>
+                <Controller
+                  name="insurance.company"
+                  control={control}
+                  render={({ field }) => (
+                    <Combobox
+                      options={INSURANCE_COMPANIES.map(c => ({ label: c, value: c }))}
+                      value={field.value}
+                      onChange={(v) => setValue('insurance.company', v, { shouldValidate: true })}
+                      placeholder="Select Company"
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Amount</Label>
+                <Input type="number" {...register('insurance.amount')} />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Maturity Status</Label>
+                <Input {...register('insurance.maturityStatus')} />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Amount Status</Label>
+                <Controller
+                  name="insurance.amountStatus"
+                  control={control}
+                  defaultValue="Pending"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Credited">Credited</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Re-investment Status</Label>
+                <Input {...register('insurance.reinvestmentStatus')} />
+              </div>
+            </div>
           </div>
-        </form>
-      </div>
+        )}
+
+        <div className="space-y-1">
+          <Label>Description (Optional)</Label>
+          <Textarea {...register('description')} maxLength={300} />
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>{errors.description?.message}</span>
+            <span>{descriptionValue.length} / 300</span>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4">
+          {!isTerminal && (
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                </>
+              ) : (
+                isEditMode ? 'Save Changes' : 'Save Task'
+              )}
+            </Button>
+          )}
+        </div>
+
+      </form>
+    </div>
   );
 }
