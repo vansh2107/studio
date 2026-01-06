@@ -16,18 +16,23 @@ interface TaskOverviewProps {
 }
 
 const getStatusBadgeVariant = (status: string) => {
-  const lowerCaseStatus = status.toLowerCase();
-  if (lowerCaseStatus.includes('completed')) return 'default';
-  if (lowerCaseStatus.includes('pending')) return 'secondary';
-  if (lowerCaseStatus.includes('in progress')) return 'secondary';
-  if (lowerCaseStatus.includes('overdue')) return 'outline';
-  return 'outline';
+  const s = status.toLowerCase();
+
+  if (s.includes("completed")) return "default";
+  if (s.includes("pending")) return "secondary";
+  if (s.includes("in progress")) return "secondary";
+  if (s.includes("overdue")) return "outline";
+
+  return "outline";
 };
 
-const getStatusCustomClass = (status: string) => {
-  if (status === "Overdue") {
-    return "bg-red-100 text-red-700 border-red-300 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900";
+function getTaskBadgeClasses(status: string) {
+  const normalized = status.toLowerCase();
+
+  if (normalized.includes("overdue")) {
+    return "!bg-red-500 !text-white !border-red-600 hover:!bg-red-600";
   }
+
   return "";
 }
 
@@ -70,7 +75,7 @@ export default function TaskOverview({ tasks, onStatusClick, selectedStatus }: T
                         className={cn(
                             `cursor-pointer transition-all`,
                             selectedStatus === status ? 'ring-2 ring-ring ring-offset-2' : '',
-                            getStatusCustomClass(status)
+                            getTaskBadgeClasses(status)
                         )}
                         onClick={() => onStatusClick?.(status)}
                     >
