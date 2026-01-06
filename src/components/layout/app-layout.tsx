@@ -48,7 +48,7 @@ function AppLayoutSkeleton() {
             </div>
           </main>
           <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t mt-8">
-            © Ascend Wealth — All rights reserved
+            © FinArray — All rights reserved
           </footer>
         </div>
       </div>
@@ -76,7 +76,7 @@ export function AppLayout({
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto h-[calc(100vh-3.5rem)]">
              <div className="mx-auto w-full max-w-7xl">{children}</div>
              <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t mt-8">
-                © Ascend Wealth — All rights reserved
+                © FinArray — All rights reserved
             </footer>
           </main>
         </div>

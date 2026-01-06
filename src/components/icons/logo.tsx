@@ -27,7 +27,7 @@ export function AscendWealthLogo({ className }: { className?: string }) {
         />
       </svg>
       <span className="font-headline text-lg font-semibold tracking-tighter">
-        Ascend Wealth
+        FinArray
       </span>
     </div>
   )

@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { UserProvider } from '@/hooks/use-current-user';
 
 export const metadata: Metadata = {
-  title: 'Ascend Wealth',
+  title: 'FinArray',
   description: 'Hierarchical financial management for insurance and wealth companies.',
 };
 
