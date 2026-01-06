@@ -25,6 +25,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const addTask = (task: Partial<Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'>>) => {
     const newTask: Task = {
         clientId: task.clientId || 'N/A',
+        familyHeadId: task.familyHeadId,
         clientName: task.clientName || 'N/A',
         category: task.category || 'N/A',
         rmName: task.rmName || 'N/A',

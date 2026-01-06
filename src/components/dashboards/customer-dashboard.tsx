@@ -2,8 +2,8 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getAssetsForClient, getFamilyMembersForClient } from '@/lib/mock-data';
-import type { User, AssetCategory } from '@/lib/types';
+import { getAssetsForClient, getFamilyMembersForClient, clients } from '@/lib/mock-data';
+import type { User, AssetCategory, Client } from '@/lib/types';
 import { ASSET_CATEGORIES } from '@/lib/constants';
 import { useMemo, useState } from 'react';
 import {
@@ -46,10 +46,24 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   const familyMembers = useMemo(() => user.role === 'CUSTOMER' ? getFamilyMembersForClient(user.id): [], [user]);
 
   const { tasks } = useTasks();
+  
+  const isFamilyHead = useMemo(() => {
+    if (user.role !== 'CUSTOMER') return false;
+    const clientRecord = clients.find(c => c.id === user.id);
+    return !!clientRecord; // It's a head if they exist in the main clients array
+  }, [user]);
+
   const customerTasks = useMemo(() => {
     if (user.role !== 'CUSTOMER') return [];
-    return tasks.filter(task => task.clientId === user.id);
-  }, [tasks, user]);
+
+    if (isFamilyHead) {
+      // If user is a family head, show all tasks for their family
+      return tasks.filter(task => task.familyHeadId === user.id);
+    } else {
+      // If user is a family member, show only tasks assigned to them
+      return tasks.filter(task => task.clientId === user.id);
+    }
+  }, [tasks, user, isFamilyHead]);
 
   const totalPoliciesValue = useMemo(() => {
     return assets

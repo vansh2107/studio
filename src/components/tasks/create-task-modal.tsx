@@ -189,7 +189,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
             }
         }
        const defaultData: TaskFormData = {
-         clientName: task.clientName || '',
+         clientName: task.clientId || '',
          category: task.category || '',
          rmName: task.rmName || '',
          serviceableRM: task.serviceableRM || '',
@@ -226,7 +226,9 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       const submissionData: Task = {
         ...(task || { id: '', createDate: new Date().toISOString(), status: 'Pending' }),
         ...data,
+        clientId: selectedClient?.value || 'N/A',
         clientName: selectedClient?.label || data.clientName, // Use the full label
+        familyHeadId: familyHead?.id,
         dueDate: new Date(data.dueDate).toISOString(), 
       };
       
@@ -268,7 +270,18 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     const option = clientOptions.find(opt => opt.value.toLowerCase() === value.toLowerCase());
     if (!option) return 0;
     const searchTerm = search.toLowerCase();
-    if (option.label.toLowerCase().includes(searchTerm)) {
+    
+    // Check first name, last name, full name, and relation
+    const [firstName, ...rest] = option.label.split(' ');
+    const lastName = rest.length > 1 ? rest[0] : '';
+    const relation = option.relation.toLowerCase();
+    
+    if (
+      option.label.toLowerCase().includes(searchTerm) ||
+      firstName.toLowerCase().startsWith(searchTerm) ||
+      lastName.toLowerCase().startsWith(searchTerm) ||
+      relation.includes(searchTerm)
+    ) {
       return 1;
     }
     return 0;
