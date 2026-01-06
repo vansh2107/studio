@@ -10,7 +10,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, Trash2, Folder } from 'lucide-react';
+import { Upload, FileText, Trash2, Folder, Download } from 'lucide-react';
 import { DOC_CATEGORIES } from '@/lib/constants';
 import { useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -72,6 +72,15 @@ export default function DocVaultPage() {
       toast({ title: 'Success', description: 'Document delete functionality is a prototype.' });
   }
 
+  const handleDownload = (doc: Document) => {
+    const link = document.createElement("a");
+    link.href = doc.url;
+    link.download = doc.name || "document";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -113,6 +122,9 @@ export default function DocVaultPage() {
                                 </a>
                               </div>
                               <div className="flex items-center gap-2">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownload(doc)}>
+                                  <Download className="h-4 w-4 text-muted-foreground" />
+                                </Button>
                                 {canDelete && (
                                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDelete}>
                                     <Trash2 className="h-4 w-4 text-destructive" />
