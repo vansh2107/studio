@@ -76,7 +76,7 @@ export function AppHeader() {
   const canViewAdminSettings = userRole === 'SUPER_ADMIN' || userRole === 'ADMIN';
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm sm:px-6">
+    <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b bg-[#F7F7F5] px-4 shadow-sm sm:px-6">
       <SidebarTrigger className="md:hidden text-foreground hover:bg-muted" />
       
       <div className="flex items-center">
@@ -100,7 +100,7 @@ export function AppHeader() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted">
+                      <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-muted">
                         <Settings className="h-5 w-5" />
                         <span className="sr-only">Quick Settings</span>
                       </Button>
@@ -130,7 +130,7 @@ export function AppHeader() {
           {canViewAdminSettings && (
              <Tooltip>
                 <TooltipTrigger asChild>
-                   <Button variant="ghost" size="icon" asChild className="text-foreground hover:bg-muted">
+                   <Button variant="ghost" size="icon" asChild className="text-gray-600 hover:bg-muted">
                     <Link href="/admin-settings">
                       <UserCog className="h-5 w-5" />
                       <span className="sr-only">Admin Settings Page</span>
@@ -148,7 +148,7 @@ export function AppHeader() {
              <Tooltip>
                 <TooltipTrigger asChild>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full text-foreground hover:bg-muted">
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full text-gray-600 hover:bg-muted">
                       <Bell />
                       <span className="absolute top-0 right-0 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-5 w-auto min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">
                         9+
@@ -171,7 +171,7 @@ export function AppHeader() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 p-1 h-auto rounded-full text-foreground hover:bg-muted">
+              <Button variant="ghost" className="flex items-center gap-2 p-1 h-auto rounded-full text-gray-700 hover:bg-muted">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={effectiveUser?.avatarUrl} alt={effectiveUser?.name} />
                   <AvatarFallback>{effectiveUser ? getInitials(effectiveUser.name) : '...'}</AvatarFallback>
