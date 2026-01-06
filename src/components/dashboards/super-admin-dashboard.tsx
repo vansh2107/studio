@@ -2,7 +2,7 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Eye } from 'lucide-react';
+import { Eye, Users, Briefcase, ShieldCheck, UserSquare } from 'lucide-react';
 import { getAllAdmins, getAllRMs, getAllAssociates, getAllClients } from '@/lib/mock-data';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useTasks, Task, TaskStatus } from '@/hooks/use-tasks';
@@ -28,6 +28,8 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import TaskOverview from './task-overview';
+import { StatCard } from '@/components/ui/stat-card';
+
 
 const admins = getAllAdmins();
 const rms = getAllRMs();
@@ -104,7 +106,7 @@ const TaskSummaryCard = () => {
                             const canUpdateStatus = isSuperAdmin; // Always true for super admin
 
                              return (
-                                <TableRow key={task.id} className={cn(isOverdue && 'text-destructive', 'hover:bg-transparent')}>
+                                <TableRow key={task.id} className="hover:bg-transparent">
                                     <TableCell>{task.clientName}</TableCell>
                                     <TableCell>{task.category}</TableCell>
                                     <TableCell>{task.rmName || '—'}</TableCell>
@@ -187,38 +189,10 @@ export default function SuperAdminDashboard() {
     <>
       <h1 className="text-3xl font-bold font-headline">Super Admin Dashboard</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-[10px] border-primary border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Admins</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{admins.length}</div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-[10px] border-primary border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total RMs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{rms.length}</div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-[10px] border-primary border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Associates</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{associates.length}</div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-[10px] border-primary border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{clients.length}</div>
-          </CardContent>
-        </Card>
+        <StatCard label="Total Admins" value={admins.length} href="/admins" icon={ShieldCheck} />
+        <StatCard label="Total RMs" value={rms.length} href="/rms" icon={UserSquare} />
+        <StatCard label="Total Associates" value={associates.length} href="/associates" icon={Briefcase} />
+        <StatCard label="Total Clients" value={clients.length} href="/clients" icon={Users} />
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         {effectiveUser?.role === 'SUPER_ADMIN' && <TaskSummaryCard />}

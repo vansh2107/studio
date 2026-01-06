@@ -14,12 +14,16 @@ import {
   ShieldCheck,
   TrendingUp,
   FileText,
+  User as UserIcon,
+  ClipboardList,
+  FolderOpen
 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { AssetBreakdownModal } from './asset-breakdown-modal';
 import { cn } from '@/lib/utils';
 import { useTasks } from '@/hooks/use-tasks';
 import CustomerTaskDashboard from './customer-task-dashboard';
+import { StatCard } from '../ui/stat-card';
 
 interface CustomerDashboardProps {
   user: User;
@@ -79,7 +83,13 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   return (
     <>
       <h1 className="text-3xl font-bold font-headline">Family Dashboard</h1>
-      <Card className="rounded-[10px] border-primary border-2">
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatCard label="My Tasks" value={customerTasks.length} href="/tasks" icon={ClipboardList} />
+        <StatCard label="Doc Vault" value="View" href="/doc-vault" icon={FolderOpen} />
+        <StatCard label="My Profile" value="View" href="/profile" icon={UserIcon} />
+      </div>
+
+      <Card>
         <CardHeader>
           <CardTitle>Total Policy Value</CardTitle>
           <CardDescription>Sum of all Life and Term Insurance policies across the family.</CardDescription>
@@ -106,8 +116,8 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
               )}
             >
               <Card className={cn(
-                  "flex flex-col h-full rounded-[10px] border-primary/20 border-[1.5px]", 
-                  isClickable && "hover:bg-primary/5 transition-colors"
+                  "flex flex-col h-full", 
+                  isClickable && "hover:bg-muted transition-colors"
               )}>
                 <CardHeader className="flex-row items-center gap-4 space-y-0">
                     <div className="p-3 rounded-full bg-primary/10 text-primary">

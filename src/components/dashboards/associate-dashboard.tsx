@@ -7,6 +7,8 @@ import type { User } from '@/lib/types';
 import { useMemo } from 'react';
 import { useTasks } from '@/hooks/use-tasks';
 import TaskOverview from './task-overview';
+import { StatCard } from '../ui/stat-card';
+import { Users, ClipboardList } from 'lucide-react';
 
 interface AssociateDashboardProps {
   user: User;
@@ -25,15 +27,9 @@ export default function AssociateDashboard({ user }: AssociateDashboardProps) {
   return (
     <>
       <h1 className="text-3xl font-bold font-headline">Associate Dashboard</h1>
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="md:col-span-1 rounded-[10px] border-primary border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mapped Clients</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mappedClients.length}</div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 md:grid-cols-2">
+        <StatCard label="Mapped Clients" value={mappedClients.length} href="/clients" icon={Users} />
+        <StatCard label="Tasks" value={relevantTasks.length} href="/tasks" icon={ClipboardList} />
       </div>
       <TaskOverview tasks={relevantTasks} />
     </>

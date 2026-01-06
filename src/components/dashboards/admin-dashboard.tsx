@@ -2,13 +2,14 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Users, Briefcase, FileText, ClipboardList } from 'lucide-react';
+import { Users, Briefcase, FileText, ClipboardList, UserSquare } from 'lucide-react';
 import { getRMsForAdmin, getAssociatesForRM, getClientsForAssociate } from '@/lib/mock-data';
 import type { User } from '@/lib/types';
 import { useMemo, useState } from 'react';
 import { useTasks } from '@/hooks/use-tasks';
 import { isPast, parseISO } from 'date-fns';
 import TaskOverview from './task-overview';
+import { StatCard } from '@/components/ui/stat-card';
 
 interface AdminDashboardProps {
   user: User;
@@ -54,33 +55,9 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
           <>
             <h1 className="text-3xl font-bold font-headline">RM Dashboard</h1>
              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="rounded-[10px] border-primary border-2">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Associates</CardTitle>
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{mappedAssociates.length}</div>
-                  </CardContent>
-                </Card>
-                <Card className="rounded-[10px] border-primary border-2">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
-                     <Users className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{mappedClients.length}</div>
-                  </CardContent>
-                </Card>
-                 <Card className="rounded-[10px] border-primary border-2">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Families</CardTitle>
-                     <FileText className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{totalFamilies}</div>
-                  </CardContent>
-                </Card>
+                <StatCard label="Total Associates" value={mappedAssociates.length} href="/associates" icon={Briefcase} />
+                <StatCard label="Total Clients" value={mappedClients.length} href="/clients" icon={Users} />
+                <StatCard label="Total Tasks" value={relevantTasks.length} href="/tasks" icon={ClipboardList} />
              </div>
              <TaskOverview tasks={relevantTasks} />
           </>
@@ -91,30 +68,9 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     <>
       <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-[10px] border-primary border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mapped RMs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mappedRMs.length}</div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-[10px] border-primary border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mapped Associates</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mappedAssociates.length}</div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-[10px] border-primary border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Mapped Clients</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mappedClients.length}</div>
-          </CardContent>
-        </Card>
+        <StatCard label="Mapped RMs" value={mappedRMs.length} href="/rms" icon={UserSquare} />
+        <StatCard label="Mapped Associates" value={mappedAssociates.length} href="/associates" icon={Briefcase} />
+        <StatCard label="Total Mapped Clients" value={mappedClients.length} href="/clients" icon={Users} />
       </div>
       <TaskOverview tasks={relevantTasks} />
     </>
