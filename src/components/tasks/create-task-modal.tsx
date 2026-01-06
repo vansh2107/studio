@@ -49,7 +49,7 @@ const mutualFundSchema = z.object({
   service: z.string().min(1, "Service is required"),
   folioNo: z.string().min(1, "Folio No. is required"),
   nameOfAMC: z.string().min(1, "Name of AMC is required"),
-  amount: numberField,
+  amount: z.number().positive("Amount must be positive"),
   documentStatus: z.enum(["Received", "Pending"]),
   signatureStatus: z.enum(["Done", "Pending"]),
   amcSubmissionStatus: z.enum(["Done", "Pending"]),
@@ -253,7 +253,9 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         associateId: assignedAssociate?.id,
         rmId: assignedRM?.id,
         adminId: assignedAdmin?.id,
-        dueDate: parsedDue.toISOString()
+        dueDate: parsedDue.toISOString(),
+        mutualFund: data.mutualFund ? { ...data.mutualFund, amount: data.mutualFund.amount || 0 } : undefined,
+        insurance: data.insurance ? { ...data.insurance, amount: data.insurance.amount || 0 } : undefined
       };
 
       if (submissionData.category !== 'Mutual Funds') delete submissionData.mutualFund;
