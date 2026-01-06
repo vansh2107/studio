@@ -8,9 +8,9 @@ body {
 
 @layer base {
   :root {
-    --background: 255 100% 100%; /* #ffffff */
+    --background: 220 13% 96%; /* Light Grey */
     --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
+    --card: 0 0% 100%; /* White */
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
@@ -20,7 +20,7 @@ body {
     --secondary-foreground: 215 70% 34%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 29 95% 52%; /* #f78e1e */
+    --accent: 224 76% 48%; /* #1D4ED8 */
     --accent-foreground: 0 0% 100%;
     --destructive: 29 95% 52%; /* #f78e1e - Repurposed for orange action button */
     --destructive-foreground: 0 0% 100%;
@@ -47,7 +47,7 @@ body {
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 24%;
     --muted-foreground: 0 0% 63.9%;
-    --accent: 29 95% 58%; /* #f78e1e */
+    --accent: 224 76% 58%; /* Lighter Blue for Dark Mode Accent */
     --accent-foreground: 0 0% 98%;
     --destructive: 29 95% 58%; /* #f78e1e */
     --destructive-foreground: 0 0% 98%;
