@@ -60,7 +60,7 @@ export default function TasksPage() {
   const getStatusBadgeVariant = (status: string) => {
     const lowerCaseStatus = status.toLowerCase();
     if (lowerCaseStatus.includes('completed') || lowerCaseStatus.includes('received') || lowerCaseStatus.includes('done') || lowerCaseStatus.includes('credited')) return 'default';
-    if (lowerCaseStatus.includes('pending')) return 'destructive';
+    if (lowerCaseStatus.includes('pending')) return 'secondary';
     if (lowerCaseStatus.includes('in progress')) return 'secondary';
     return 'outline';
   };
@@ -208,7 +208,7 @@ export default function TasksPage() {
                     const descriptionContent = task.insurance?.policyNo || task.mutualFund?.folioNo || task.description;
 
                     return (
-                        <TableRow key={task.id} className={cn(overdue && 'bg-destructive/5 text-destructive')}>
+                        <TableRow key={task.id} className={cn(overdue && 'text-red-600')}>
                           <TableCell className="font-medium">{task.clientName}</TableCell>
                           <TableCell>{task.category}</TableCell>
                           <TableCell>{task.rmName}</TableCell>
@@ -349,7 +349,7 @@ export default function TasksPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will permanently delete the task for <strong>{taskToDelete?.clientName}</strong>.
+                    This will permanently delete the task for strong>{taskToDelete?.clientName}</strong>.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

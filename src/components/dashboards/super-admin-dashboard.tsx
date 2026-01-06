@@ -62,7 +62,7 @@ const TaskSummaryCard = () => {
     const getStatusBadgeVariant = (status: string) => {
         const lowerCaseStatus = status.toLowerCase();
         if (lowerCaseStatus.includes('completed')) return 'default';
-        if (lowerCaseStatus.includes('pending')) return 'destructive';
+        if (lowerCaseStatus.includes('pending')) return 'secondary';
         if (lowerCaseStatus.includes('in progress')) return 'secondary';
         return 'outline';
     };
@@ -107,7 +107,7 @@ const TaskSummaryCard = () => {
                             const canUpdateStatus = isSuperAdmin; // Always true for super admin
 
                              return (
-                                <TableRow key={task.id} className={cn(overdue && "bg-destructive/5 text-destructive")}>
+                                <TableRow key={task.id} className={cn(overdue && "text-red-600")}>
                                     <TableCell>{task.clientName}</TableCell>
                                     <TableCell>{task.category}</TableCell>
                                     <TableCell>{task.rmName || '—'}</TableCell>
