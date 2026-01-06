@@ -52,7 +52,7 @@ const DocumentSlot = ({
           </div>
         </div>
         <div className="flex flex-col">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive close-icon" onClick={onDelete}>
                 <Trash2 className="h-4 w-4" />
             </Button>
         </div>
@@ -103,7 +103,7 @@ const TheatreMode = ({ src, onClose }: { src: string; onClose: () => void }) => 
             </motion.div>
             <button
                 onClick={onClose}
-                className="absolute top-4 right-4 text-white z-[10000] p-2 rounded-full bg-black/50 hover:bg-black/75 transition-colors"
+                className="absolute top-4 right-4 text-white z-[10000] p-2 rounded-full bg-black/50 hover:bg-black/75 transition-colors close-icon"
                 aria-label="Close image viewer"
             >
                 <X className="h-6 w-6" />

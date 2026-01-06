@@ -122,7 +122,7 @@ export function ViewFamilyModal({
               <PlusCircle className="mr-2 h-4 w-4" /> Add Member
             </Button>
           )}
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 close-icon">
             <X className="h-4 w-4" />
           </Button>
         </div>

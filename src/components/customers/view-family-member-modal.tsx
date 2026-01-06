@@ -37,7 +37,7 @@ export function ViewFamilyMemberModal({
 }: ViewFamilyMemberModalProps) {
   return (
     <div className="relative p-1">
-      <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0">
+      <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 close-icon">
         <X className="h-4 w-4" />
       </Button>
       <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">

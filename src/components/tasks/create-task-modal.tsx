@@ -308,7 +308,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
   return (
       <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
-        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 z-[1002]">
+        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 z-[1002] close-icon">
           <X className="h-4 w-4" />
         </Button>
         <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">

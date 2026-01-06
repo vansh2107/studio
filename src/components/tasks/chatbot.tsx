@@ -115,7 +115,7 @@ export function Chatbot() {
                    <Bot className="h-6 w-6 text-white" />
                    <CardTitle className="text-white">Assistant</CardTitle>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white hover:text-white/80 hover:bg-primary/80">
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white hover:text-white/80 hover:bg-primary/80 close-icon">
                   <X className="h-4 w-4" />
                 </Button>
               </CardHeader>

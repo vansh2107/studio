@@ -79,3 +79,17 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Global style for all close icons */
+.close-icon:hover {
+  color: #dc2626 !important; /* red-600 */
+  stroke: #dc2626 !important;
+}
+
+/* Specific overrides for shadcn components */
+[class*="Dialog_DialogContent"] > button:hover > svg,
+[class*="Toast_ToastClose"] > svg:hover,
+[class*="Sheet_SheetContent"] > button:hover > svg {
+    color: #dc2626 !important;
+    stroke: #dc2626 !important;
+}

@@ -177,7 +177,7 @@ export function FamilyMemberFormModal({
           <div className="flex items-center p-2 mt-2 text-sm rounded-md bg-muted text-muted-foreground">
             <FileIcon className="w-4 h-4 mr-2" />
             <span className="truncate">{file.name}</span>
-            <Button variant="ghost" size="icon" className="w-6 h-6 ml-auto" onClick={() => setter(null)} disabled={isSaving}>
+            <Button variant="ghost" size="icon" className="w-6 h-6 ml-auto close-icon" onClick={() => setter(null)} disabled={isSaving}>
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -194,7 +194,7 @@ export function FamilyMemberFormModal({
 
   return (
     <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 -mr-4 relative">
-        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0">
+        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 close-icon">
             <X className="h-4 w-4" />
         </Button>
         <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">

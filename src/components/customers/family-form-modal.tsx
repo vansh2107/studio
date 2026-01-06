@@ -184,7 +184,7 @@ export function FamilyFormModal({
           <Button
             variant="ghost"
             size="icon"
-            className="w-6 h-6 ml-auto"
+            className="w-6 h-6 ml-auto close-icon"
             onClick={() => setter(null)}
             disabled={isSaving}
           >
@@ -197,7 +197,7 @@ export function FamilyFormModal({
 
   return (
     <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 -mr-4 relative">
-        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0">
+        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 close-icon">
             <X className="h-4 w-4" />
         </Button>
         <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
