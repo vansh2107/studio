@@ -15,6 +15,7 @@ import { Eye, Edit, Trash2, LogIn, PlusCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FamilyFormModal } from '@/components/customers/family-form-modal';
 import { ViewFamilyModal } from '@/components/customers/view-family-modal';
+import { ViewFamilyMemberModal } from '@/components/customers/view-family-member-modal';
 import { FamilyMemberFormModal } from '@/components/customers/family-member-form-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,7 +45,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
 
-type ActiveModal = 'form' | 'view' | 'member-form' | null;
+type ActiveModal = 'form' | 'view-family' | 'view-member' | 'member-form' | null;
 
 export default function ClientsPage() {
   const { effectiveUser, impersonate, hasPermission } = useCurrentUser();
@@ -184,9 +185,14 @@ export default function ClientsPage() {
     setActiveModal('form');
   };
   
-  const handleView = (client: Client) => {
-    setSelectedClient(client);
-    setActiveModal('view');
+  const handleView = (item: DisplayClient) => {
+    if (item.isFamilyHead) {
+        setSelectedClient(item as Client);
+        setActiveModal('view-family');
+    } else {
+        setSelectedMember(item as FamilyMember);
+        setActiveModal('view-member');
+    }
   };
   
   const handleDeleteTrigger = (item: DisplayClient) => {
@@ -388,11 +394,11 @@ export default function ClientsPage() {
                               {canView && clientHead && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => handleView(clientHead)} aria-label="View">
+                                    <Button variant="ghost" size="icon" onClick={() => handleView(client)} aria-label="View">
                                       <Eye className="h-4 w-4 hover:text-blue-500" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent><p>View Family</p></TooltipContent>
+                                  <TooltipContent><p>View Details</p></TooltipContent>
                                 </Tooltip>
                               )}
                               
@@ -472,7 +478,7 @@ export default function ClientsPage() {
               />
             )}
             
-            {activeModal === 'view' && selectedClient && (
+            {activeModal === 'view-family' && selectedClient && (
               <ViewFamilyModal
                 onClose={handleCloseModal}
                 client={selectedClient}
@@ -480,6 +486,13 @@ export default function ClientsPage() {
                 onAddMember={() => handleAddMember(selectedClient)}
                 onEditMember={(m) => handleEditItem(m)}
                 onDeleteMember={handleDeleteMember}
+              />
+            )}
+
+            {activeModal === 'view-member' && selectedMember && (
+              <ViewFamilyMemberModal
+                onClose={handleCloseModal}
+                member={selectedMember}
               />
             )}
 
