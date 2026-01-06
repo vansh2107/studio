@@ -77,7 +77,7 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b bg-[#F2F3F5] px-4 shadow-sm sm:px-6">
-      <SidebarTrigger className="md:hidden text-foreground hover:bg-muted" />
+      <SidebarTrigger className="md:hidden text-foreground hover:bg-[#1D4ED8] hover:text-white" />
       
       <div className="flex items-center">
         <AscendWealthLogo className="h-7 w-7" />
@@ -100,7 +100,7 @@ export function AppHeader() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-muted">
+                      <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-[#1D4ED8] hover:text-white">
                         <Settings className="h-5 w-5" />
                         <span className="sr-only">Quick Settings</span>
                       </Button>
@@ -130,7 +130,7 @@ export function AppHeader() {
           {canViewAdminSettings && (
              <Tooltip>
                 <TooltipTrigger asChild>
-                   <Button variant="ghost" size="icon" asChild className="text-gray-600 hover:bg-muted">
+                   <Button variant="ghost" size="icon" asChild className="text-gray-600 hover:bg-[#1D4ED8] hover:text-white">
                     <Link href="/admin-settings">
                       <UserCog className="h-5 w-5" />
                       <span className="sr-only">Admin Settings Page</span>
@@ -148,7 +148,7 @@ export function AppHeader() {
              <Tooltip>
                 <TooltipTrigger asChild>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full text-gray-600 hover:bg-muted">
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full text-gray-600 hover:bg-[#1D4ED8] hover:text-white">
                       <Bell />
                       <span className="absolute top-0 right-0 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-5 w-auto min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">
                         9+
@@ -171,7 +171,7 @@ export function AppHeader() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 p-1 h-auto rounded-full text-gray-700 hover:bg-muted">
+              <Button variant="ghost" className="flex items-center gap-2 p-1 h-auto rounded-full text-gray-700 hover:bg-[#1D4ED8] hover:text-white">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={effectiveUser?.avatarUrl} alt={effectiveUser?.name} />
                   <AvatarFallback>{effectiveUser ? getInitials(effectiveUser.name) : '...'}</AvatarFallback>
