@@ -3,8 +3,10 @@
 
 import { Button } from '@/components/ui/button';
 import { FamilyMember } from '@/lib/types';
-import { X } from 'lucide-react';
+import { X, Folder } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import Link from 'next/link';
+import { Separator } from '../ui/separator';
 
 interface ViewFamilyMemberModalProps {
   onClose: () => void;
@@ -57,6 +59,22 @@ export function ViewFamilyMemberModal({
         <div className="md:col-span-2">
             <DetailItem label="Address" value={member.address} />
         </div>
+      </div>
+
+      <Separator className="my-4" />
+
+      <div className="flex items-center justify-between">
+          <p className="text-sm font-medium">Documents</p>
+          <Link
+            href={`/documents/${member.id}?clientId=${member.clientId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button variant="outline" size="sm">
+              <Folder className="mr-2 h-4 w-4" />
+              View Documents
+            </Button>
+          </Link>
       </div>
     </div>
   );
