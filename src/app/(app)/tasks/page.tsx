@@ -349,7 +349,7 @@ export default function TasksPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will permanently delete the task for strong>{taskToDelete?.clientName}</strong>.
+                    This will permanently delete the task for <strong>{taskToDelete?.clientName}</strong>.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
