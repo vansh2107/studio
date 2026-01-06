@@ -46,7 +46,7 @@ import { Switch } from '@/components/ui/switch';
 
 type ActiveModal = 'form' | 'view' | 'member-form' | null;
 
-export default function CustomersPage() {
+export default function ClientsPage() {
   const { effectiveUser, impersonate, hasPermission } = useCurrentUser();
   const { toast } = useToast();
 
@@ -359,7 +359,7 @@ export default function CustomersPage() {
                     if (!clientHead) return null; // Should not happen if data is consistent
 
                     return (
-                        <TableRow key={client.id}>
+                        <TableRow key={client.id} className="hover:bg-transparent">
                           <TableCell className="font-medium">{client.firstName}</TableCell>
                           <TableCell>{client.lastName}</TableCell>
                           <TableCell>

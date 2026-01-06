@@ -89,11 +89,11 @@ export default function EditRolePage() {
     ADMIN: 'Admin',
     RM: 'RM',
     ASSOCIATE: 'Associate',
-    CUSTOMER: 'Customer',
+    CUSTOMER: 'Client',
     DOC_VAULT: 'Doc Vault',
     TASK: 'Task',
     CHATBOT: 'Chat-bot',
-    CUSTOMER_ACTIONS: 'View / Impersonate / Edit / Delete / Create New Family (Customer page actions)'
+    CUSTOMER_ACTIONS: 'View / Impersonate / Edit / Delete / Create New Family (Client page actions)'
   };
 
 

@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils';
 import { HIERARCHY } from '@/lib/constants';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { AscendWealthLogo } from '../icons/logo';
+import { ScrollArea } from '../ui/scroll-area';
 
 const settingsMenuItems = [
   { href: '/admins', label: 'Admins', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },
@@ -200,13 +201,15 @@ export function AppHeader() {
 
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">Switch Account</DropdownMenuLabel>
-              <DropdownMenuRadioGroup value={currentUser?.id} onValueChange={login}>
-                {sortedUsers.map(user => (
-                  <DropdownMenuRadioItem key={user.id} value={user.id}>
-                    {user.name} ({user.role})
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
+              <ScrollArea className="h-auto max-h-[350px]">
+                <DropdownMenuRadioGroup value={currentUser?.id} onValueChange={login}>
+                  {sortedUsers.map(user => (
+                    <DropdownMenuRadioItem key={user.id} value={user.id}>
+                      {user.name} ({user.role})
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -14,13 +14,13 @@ interface AssociateDashboardProps {
 
 export default function AssociateDashboard({ user }: AssociateDashboardProps) {
   const { tasks } = useTasks();
-  const mappedCustomers = useMemo(() => user.role === 'ASSOCIATE' ? getClientsForAssociate(user.id) : [], [user]);
+  const mappedClients = useMemo(() => user.role === 'ASSOCIATE' ? getClientsForAssociate(user.id) : [], [user]);
   
   const relevantTasks = useMemo(() => {
     if (!user || user.role !== 'ASSOCIATE') return [];
-    const customerNames = mappedCustomers.map(c => c.name);
+    const customerNames = mappedClients.map(c => c.name);
     return tasks.filter(task => customerNames.some(name => task.clientName.includes(name)));
-  }, [tasks, user, mappedCustomers]);
+  }, [tasks, user, mappedClients]);
 
   return (
     <>
@@ -31,7 +31,7 @@ export default function AssociateDashboard({ user }: AssociateDashboardProps) {
             <CardTitle className="text-sm font-medium">Mapped Clients</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mappedCustomers.length}</div>
+            <div className="text-2xl font-bold">{mappedClients.length}</div>
           </CardContent>
         </Card>
       </div>

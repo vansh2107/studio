@@ -17,22 +17,22 @@ interface AdminDashboardProps {
 export default function AdminDashboard({ user }: AdminDashboardProps) {
   const { tasks } = useTasks();
     
-  const { mappedRMs, mappedAssociates, mappedCustomers } = useMemo(() => {
+  const { mappedRMs, mappedAssociates, mappedClients } = useMemo(() => {
     if (user.role === 'ADMIN') {
         const rms = getRMsForAdmin(user.id);
         const associates = rms.flatMap(rm => getAssociatesForRM(rm.id));
         const customers = associates.flatMap(assoc => getClientsForAssociate(assoc.id));
-        return { mappedRMs: rms, mappedAssociates: associates, mappedCustomers: customers };
+        return { mappedRMs: rms, mappedAssociates: associates, mappedClients: customers };
     }
      if (user.role === 'RM') {
         const associates = getAssociatesForRM(user.id);
         const customers = associates.flatMap(assoc => getClientsForAssociate(assoc.id));
-        return { mappedRMs: [], mappedAssociates: associates, mappedCustomers: customers };
+        return { mappedRMs: [], mappedAssociates: associates, mappedClients: customers };
     }
-    return { mappedRMs: [], mappedAssociates: [], mappedCustomers: [] };
+    return { mappedRMs: [], mappedAssociates: [], mappedClients: [] };
   }, [user]);
 
-  const totalFamilies = mappedCustomers.length;
+  const totalFamilies = mappedClients.length;
 
   const relevantTasks = useMemo(() => {
     if (!user) return [];
@@ -65,11 +65,11 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                 </Card>
                 <Card className="rounded-[10px] border-primary border-2">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+                    <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
                      <Users className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{mappedCustomers.length}</div>
+                    <div className="text-2xl font-bold">{mappedClients.length}</div>
                   </CardContent>
                 </Card>
                  <Card className="rounded-[10px] border-primary border-2">
@@ -109,10 +109,10 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         </Card>
         <Card className="rounded-[10px] border-primary border-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Mapped Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Mapped Clients</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mappedCustomers.length}</div>
+            <div className="text-2xl font-bold">{mappedClients.length}</div>
           </CardContent>
         </Card>
       </div>

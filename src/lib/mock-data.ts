@@ -47,7 +47,7 @@ export const associates: Associate[] = [
 
 // 5. Clients (Child of Associate)
 export const clients: Client[] = [
-    // Customer for A1
+    // Client for A1
     {
         id: 'client-1',
         name: 'Bipin Hirpara',
@@ -63,7 +63,7 @@ export const clients: Client[] = [
         address: 'Mumbai, India',
         anniversaryDate: '2018-12-01',
     },
-     // Customer 1 for A4
+     // Client 1 for A4
     {
         id: 'client-2',
         name: 'Jitendra Hirpara',
@@ -78,7 +78,7 @@ export const clients: Client[] = [
         dateOfBirth: '1988-03-15',
         address: 'Ahmedabad, Gujarat',
     },
-    // Customer 2 for A4
+    // Client 2 for A4
     {
         id: 'client-4',
         name: 'Jivraj Hirpara',
@@ -93,7 +93,7 @@ export const clients: Client[] = [
         dateOfBirth: '1985-08-20',
         address: 'Surat, Gujarat',
     },
-    // Customer for A6
+    // Client for A6
     {
         id: 'client-3',
         name: 'Ramniklal Hirpara',
@@ -295,7 +295,7 @@ export const getAssetsForCustomer = getAssetsForClient;
 export const getDocumentsForCustomer = getDocumentsForClient;
 export const getAdmins = getAllAdmins;
 export const getAssociates = getAllAssociates;
-export const getCustomers = getAllClients;
+export const getClients = getAllClients;
 
 
 // --- MIGRATED MAPPINGS FOR DASHBOARD VIEWS ---
