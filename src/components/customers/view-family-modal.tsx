@@ -105,24 +105,27 @@ export function ViewFamilyModal({
 
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto pr-2 -mr-2 relative">
-      <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0">
-          <X className="h-4 w-4" />
-      </Button>
-      <div className="flex justify-between items-center mb-4 border-b pb-2">
-          <div className="flex flex-col space-y-1.5">
-            <h2 className="text-lg font-semibold leading-none tracking-tight">
-              Family Members
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Manage members of the {client.lastName} family.
-            </p>
-          </div>
+    <div className="max-h-[80vh] overflow-y-auto pr-2 -mr-2">
+      <div className="flex justify-between items-center mb-4 border-b pb-2 gap-4">
+        <div className="flex flex-col space-y-1.5">
+          <h2 className="text-lg font-semibold leading-none tracking-tight">
+            Family Members
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Manage members of the {client.lastName} family.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
           {canCreateMember && (
             <Button variant="outline" size="sm" onClick={handleAdd}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Member
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Member
             </Button>
-        )}
+          )}
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       <div className="grid gap-6 py-4">
         <div>
