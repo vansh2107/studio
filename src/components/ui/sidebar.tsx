@@ -173,7 +173,7 @@ const Sidebar = React.forwardRef<
         <Sheet open={openMobile} onOpenChange={setOpenMobile}>
           <SheetContent
             side="left"
-            className="w-[var(--sidebar-width-mobile)] bg-gradient-to-b from-[#C96A09] via-[#E38B19] to-[#6EA8FF] p-0 text-white border-r border-gray-200/20"
+            className="w-[var(--sidebar-width-mobile)] bg-gradient-to-b from-[#C96A09] via-[#E38B19] to-[#8fb9ff] p-0 text-white border-r border-gray-200/20"
             style={
               {
                 "--sidebar-width-mobile": SIDEBAR_WIDTH_MOBILE,
@@ -197,7 +197,7 @@ const Sidebar = React.forwardRef<
         ref={ref}
         data-state={state}
         className={cn(
-          "hidden md:flex flex-col z-30 bg-gradient-to-b from-[#C96A09] via-[#E38B19] to-[#6EA8FF] text-white transition-all duration-300 ease-in-out",
+          "hidden md:flex flex-col z-30 bg-gradient-to-b from-[#C96A09] via-[#E38B19] to-[#8fb9ff] text-white transition-all duration-300 ease-in-out",
           "sticky top-14 h-[calc(100vh-3.5rem)] border-r border-gray-200/20",
           "data-[state=expanded]:w-64 data-[state=collapsed]:w-14",
           className
