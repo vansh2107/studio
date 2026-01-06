@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ClipboardList } from 'lucide-react';
 import { isPast, parseISO } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface TaskOverviewProps {
   tasks: Task[];
@@ -17,10 +18,18 @@ interface TaskOverviewProps {
 const getStatusBadgeVariant = (status: string) => {
   const lowerCaseStatus = status.toLowerCase();
   if (lowerCaseStatus.includes('completed')) return 'default';
-  if (lowerCaseStatus.includes('pending') || lowerCaseStatus.includes('overdue')) return 'destructive';
+  if (lowerCaseStatus.includes('pending')) return 'secondary';
   if (lowerCaseStatus.includes('in progress')) return 'secondary';
+  if (lowerCaseStatus.includes('overdue')) return 'outline';
   return 'outline';
 };
+
+const getStatusCustomClass = (status: string) => {
+  if (status === "Overdue") {
+    return "bg-red-100 text-red-700 border-red-300 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900";
+  }
+  return "";
+}
 
 export default function TaskOverview({ tasks, onStatusClick, selectedStatus }: TaskOverviewProps) {
   const taskAnalytics = useMemo(() => {
@@ -58,7 +67,11 @@ export default function TaskOverview({ tasks, onStatusClick, selectedStatus }: T
                     <Badge
                         key={status}
                         variant={getStatusBadgeVariant(status)}
-                        className={`cursor-pointer transition-all ${selectedStatus === status ? 'ring-2 ring-ring ring-offset-2' : ''}`}
+                        className={cn(
+                            `cursor-pointer transition-all`,
+                            selectedStatus === status ? 'ring-2 ring-ring ring-offset-2' : '',
+                            getStatusCustomClass(status)
+                        )}
                         onClick={() => onStatusClick?.(status)}
                     >
                         {status}: {count}
