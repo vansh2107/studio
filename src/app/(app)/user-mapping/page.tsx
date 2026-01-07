@@ -6,202 +6,17 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
-  superAdmins,
-  getAdminsForSuperAdmin,
-  getRMsForAdmin,
-  getAssociatesForRM,
-  getClientsForAssociate,
-  getFamilyMembersForClient,
-  users as allUsers,
-  familyMembers as allFamilyMembers
-} from '@/lib/mock-data';
-import { User, Admin, RelationshipManager, Associate, Client, SuperAdmin } from '@/lib/types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Plus } from 'lucide-react';
-import React from 'react';
-
-const getInitials = (name: string) => name?.split(' ').map(n => n[0]).join('') || '';
-
-const UserCard = ({ user }: { user: User }) => (
-  <div className="flex items-center gap-3">
-    <Avatar className="h-8 w-8">
-      <AvatarImage src={user.avatarUrl} />
-      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-    </Avatar>
-    <div>
-      <p className="font-medium">{user.name}</p>
-      <Badge variant={user.role === 'SUPER_ADMIN' ? 'default' : 'secondary'}>{user.role}</Badge>
-    </div>
-  </div>
-);
-
-const NodeLayout = ({ user, children, isCollapsible = true }: { user: User, children: React.ReactNode, isCollapsible?: boolean }) => {
-    return (
-        <div className="flex items-center justify-between w-full">
-            {isCollapsible ? (
-                <AccordionTrigger className="hover:no-underline flex-1 py-0">
-                    <UserCard user={user} />
-                </AccordionTrigger>
-            ) : (
-                <div className="flex-1">
-                    <UserCard user={user} />
-                </div>
-            )}
-            <Button variant="ghost" size="icon" onClick={(e) => {
-                e.stopPropagation();
-                // Add action menu logic here
-                console.log(`Actions for ${user.name}`);
-            }}>
-                <MoreVertical className="h-4 w-4" />
-            </Button>
-        </div>
-    );
-};
-
-
-const CustomerNode = ({ client }: { client: Client }) => {
-    const familyMembers = getFamilyMembersForClient(client.id);
-    return (
-        <Accordion type="single" collapsible className="w-full pl-4">
-            <AccordionItem value={client.id}>
-                 <div className="flex items-center">
-                    <NodeLayout user={client}>
-                        {familyMembers.map(member => (
-                            <div key={member.id} className="flex items-center justify-between w-full py-2">
-                                <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarFallback>{getInitials(`${member.firstName} ${member.lastName}`)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-medium">{member.firstName} {member.lastName}</p>
-                                    <Badge variant="outline">{member.relation}</Badge>
-                                </div>
-                                </div>
-                                <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-                            </div>
-                        ))}
-                         {familyMembers.length === 0 && <p className="text-xs text-muted-foreground py-2">No family members.</p>}
-                    </NodeLayout>
-                </div>
-                <AccordionContent>
-                    <div className="pl-6 border-l ml-4">
-                        {familyMembers.map(member => (
-                            <div key={member.id} className="flex items-center justify-between w-full py-2">
-                                <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarFallback>{getInitials(`${member.firstName} ${member.lastName}`)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-medium">{member.firstName} {member.lastName}</p>
-                                    <Badge variant="outline">{member.relation}</Badge>
-                                </div>
-                                </div>
-                                <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-                            </div>
-                        ))}
-                         {familyMembers.length === 0 && <p className="text-xs text-muted-foreground py-2">No family members.</p>}
-                    </div>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
-    )
-}
-
-const AssociateNode = ({ associate }: { associate: Associate }) => {
-    const clients = getClientsForAssociate(associate.id);
-    return (
-         <Accordion type="single" collapsible className="w-full pl-4">
-            <AccordionItem value={associate.id}>
-                <div className="flex items-center">
-                    <NodeLayout user={associate}>
-                        {clients.map(client => <CustomerNode key={client.id} client={client} />)}
-                        {clients.length === 0 && <p className="text-xs text-muted-foreground py-2">No customers mapped.</p>}
-                    </NodeLayout>
-                </div>
-                <AccordionContent>
-                     <div className="pl-6 border-l ml-4">
-                        {clients.map(client => <CustomerNode key={client.id} client={client} />)}
-                        {clients.length === 0 && <p className="text-xs text-muted-foreground py-2">No customers mapped.</p>}
-                    </div>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
-    )
-}
-
-const RMNode = ({ rm }: { rm: RelationshipManager }) => {
-    const associates = getAssociatesForRM(rm.id);
-    return (
-        <Accordion type="single" collapsible className="w-full pl-4">
-            <AccordionItem value={rm.id}>
-                <div className="flex items-center">
-                    <NodeLayout user={rm}>
-                        {associates.map(associate => <AssociateNode key={associate.id} associate={associate} />)}
-                         {associates.length === 0 && <p className="text-xs text-muted-foreground py-2">No associates mapped.</p>}
-                    </NodeLayout>
-                </div>
-                <AccordionContent>
-                     <div className="pl-6 border-l ml-4">
-                        {associates.map(associate => <AssociateNode key={associate.id} associate={associate} />)}
-                         {associates.length === 0 && <p className="text-xs text-muted-foreground py-2">No associates mapped.</p>}
-                    </div>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
-    )
-}
-
-const AdminNode = ({ admin }: { admin: Admin }) => {
-    const rms = getRMsForAdmin(admin.id);
-    return (
-         <Accordion type="single" collapsible className="w-full pl-4">
-            <AccordionItem value={admin.id}>
-                <div className="flex items-center">
-                    <NodeLayout user={admin}>
-                        {rms.map(rm => <RMNode key={rm.id} rm={rm} />)}
-                        {rms.length === 0 && <p className="text-xs text-muted-foreground py-2">No RMs mapped.</p>}
-                    </NodeLayout>
-                </div>
-                <AccordionContent>
-                    <div className="pl-6 border-l ml-4">
-                        {rms.map(rm => <RMNode key={rm.id} rm={rm} />)}
-                        {rms.length === 0 && <p className="text-xs text-muted-foreground py-2">No RMs mapped.</p>}
-                    </div>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
-    )
-}
-
-const SuperAdminNode = ({ superAdmin }: { superAdmin: SuperAdmin }) => {
-    const admins = getAdminsForSuperAdmin(superAdmin.id);
-    return (
-        <Card>
-            <CardHeader className="flex flex-row items-center">
-                <NodeLayout user={superAdmin} isCollapsible={false} />
-            </CardHeader>
-            <CardContent className="pl-6 border-l ml-6">
-                {admins.map(admin => <AdminNode key={admin.id} admin={admin} />)}
-                {admins.length === 0 && <p className="text-sm text-muted-foreground py-2">No admins mapped.</p>}
-            </CardContent>
-        </Card>
-    )
-};
-
+import { PlusCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { CreateUserForm } from '@/components/users/create-user-form';
+import { users } from '@/lib/mock-data';
 
 export default function UserMappingPage() {
   const { hasPermission } = useCurrentUser();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!hasPermission('SUPER_ADMIN', 'view')) {
     return (
@@ -216,18 +31,39 @@ export default function UserMappingPage() {
     );
   }
 
+  const handleUserCreated = () => {
+    // In a real app, you might refresh data here.
+    // For the prototype, the mock-data is updated in-memory.
+    setIsModalOpen(false);
+  }
+
   return (
     <div className="space-y-6">
-       <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center">
         <div>
-            <h1 className="text-3xl font-bold font-headline">User Mapping</h1>
-            <p className="text-muted-foreground">Manage the hierarchy of users in the system.</p>
+          <h1 className="text-3xl font-bold font-headline">User Management</h1>
+          <p className="text-muted-foreground">
+            Create new users and assign their roles and hierarchy.
+          </p>
         </div>
+        <Button onClick={() => setIsModalOpen(true)}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Create New User
+        </Button>
       </div>
 
-      <div className="space-y-4">
-        {superAdmins.map(sa => <SuperAdminNode key={sa.id} superAdmin={sa} />)}
-      </div>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create a New User</DialogTitle>
+            <DialogDescription>
+              Fill out the form below to add a new user to the system.
+              The hierarchy will be assigned based on the selected role.
+            </DialogDescription>
+          </DialogHeader>
+          <CreateUserForm onUserCreated={handleUserCreated} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -10,6 +10,7 @@ export interface BaseUser {
   email: string;
   password?: string;
   avatarUrl: string;
+  phone?: string;
 }
 
 // Role-specific types with hierarchical links

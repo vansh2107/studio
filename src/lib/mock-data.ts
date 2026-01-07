@@ -11,18 +11,18 @@ const avatarUrls = PlaceHolderImages
 // --- HIERARCHICAL MOCK DATA ---
 
 // 1. Super Admin
-export const superAdmins: SuperAdmin[] = [
+export let superAdmins: SuperAdmin[] = [
     { id: 'sa-1', name: 'Biren Shah', email: 'superadmin@demo.app', password: 'SuperAdmin@123', role: 'SUPER_ADMIN', avatarUrl: avatarUrls[0] },
 ];
 
 // 2. Admins (Child of Super Admin)
-export const admins: Admin[] = [
+export let admins: Admin[] = [
     { id: 'admin-1', name: 'Keval Shah', email: 'admin@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[1], superAdminId: 'sa-1' },
     { id: 'admin-2', name: 'Parth Doshi', email: 'parth.doshi@demo.app', password: 'AdminDemo@123', role: 'ADMIN', avatarUrl: avatarUrls[2], superAdminId: 'sa-1' },
 ];
 
 // 3. Relationship Managers (Child of Admin)
-export const relationshipManagers: RelationshipManager[] = [
+export let relationshipManagers: RelationshipManager[] = [
     // RMs under Keval Shah
     { id: 'rm-1', name: 'Kashish Nathwani', email: 'rm@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[3], adminId: 'admin-1' },
     { id: 'rm-2', name: 'Priyesh Shah', email: 'priyesh.shah@demo.app', password: 'RMDemo@123', role: 'RM', avatarUrl: avatarUrls[4], adminId: 'admin-1' },
@@ -32,7 +32,7 @@ export const relationshipManagers: RelationshipManager[] = [
 ];
 
 // 4. Associates (Child of Relationship Manager)
-export const associates: Associate[] = [
+export let associates: Associate[] = [
     // Under Kashish Nathwani
     { id: 'assoc-1', name: 'Associate A1', email: 'associate@demo.app', password: 'Associate@123', role: 'ASSOCIATE', avatarUrl: avatarUrls[7], rmId: 'rm-1' },
     // Under Priyesh Shah
@@ -111,13 +111,86 @@ export const clients: Client[] = [
 ];
 
 // --- Combined list of all users for authentication ---
-export const users: User[] = [
+export let users: User[] = [
     ...superAdmins,
     ...admins,
     ...relationshipManagers,
     ...associates,
     ...clients,
 ];
+
+const updateUserList = () => {
+    users = [
+        ...superAdmins,
+        ...admins,
+        ...relationshipManagers,
+        ...associates,
+        ...clients,
+    ];
+};
+
+// --- Add User Functions ---
+type UserCreationData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+};
+
+export const addSuperAdmin = (data: UserCreationData) => {
+  const newUser: SuperAdmin = {
+    id: `sa-${Date.now()}`,
+    name: `${data.firstName} ${data.lastName}`,
+    email: data.email,
+    phone: data.phone,
+    role: 'SUPER_ADMIN',
+    avatarUrl: `https://avatar.vercel.sh/${data.email}.png`,
+  };
+  superAdmins.push(newUser);
+  updateUserList();
+};
+
+export const addAdmin = (data: UserCreationData, superAdminId: string) => {
+  const newUser: Admin = {
+    id: `admin-${Date.now()}`,
+    name: `${data.firstName} ${data.lastName}`,
+    email: data.email,
+    phone: data.phone,
+    superAdminId,
+    role: 'ADMIN',
+    avatarUrl: `https://avatar.vercel.sh/${data.email}.png`,
+  };
+  admins.push(newUser);
+  updateUserList();
+};
+
+export const addRM = (data: UserCreationData, adminId: string) => {
+  const newUser: RelationshipManager = {
+    id: `rm-${Date.now()}`,
+    name: `${data.firstName} ${data.lastName}`,
+    email: data.email,
+    phone: data.phone,
+    adminId,
+    role: 'RM',
+    avatarUrl: `https://avatar.vercel.sh/${data.email}.png`,
+  };
+  relationshipManagers.push(newUser);
+  updateUserList();
+};
+
+export const addAssociate = (data: UserCreationData, rmId: string) => {
+  const newUser: Associate = {
+    id: `assoc-${Date.now()}`,
+    name: `${data.firstName} ${data.lastName}`,
+    email: data.email,
+    phone: data.phone,
+    rmId,
+    role: 'ASSOCIATE',
+    avatarUrl: `https://avatar.vercel.sh/${data.email}.png`,
+  };
+  associates.push(newUser);
+  updateUserList();
+};
 
 
 // --- Other Mock Data (Family, Assets, etc.) ---
