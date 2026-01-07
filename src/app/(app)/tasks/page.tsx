@@ -14,7 +14,7 @@ import {
 import { useTasks } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, ChevronRight } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import { Task, TaskStatus } from '@/hooks/use-tasks';
@@ -45,6 +45,60 @@ import { getAllRMs, getAllAssociates, getAllAdmins } from '@/lib/mock-data';
 import type { User } from '@/lib/types';
 
 
+const ExpandedTaskDetails = ({ task }: { task: Task }) => {
+  const getStatusBadgeVariant = (status?: string) => {
+    if (!status) return 'outline';
+    const lowerCaseStatus = status.toLowerCase();
+    if (['completed', 'received', 'done', 'credited'].includes(lowerCaseStatus)) return 'default';
+    if (['pending', 'in progress'].includes(lowerCaseStatus)) return 'secondary';
+    return 'outline';
+  };
+
+  const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <div>
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+      <div className="text-sm">{children || '—'}</div>
+    </div>
+  );
+
+  return (
+    <div className="bg-muted/50 p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <DetailItem label="Assigned RM">{task.rmName}</DetailItem>
+      
+      {task.category === 'Mutual Funds' && task.mutualFund && (
+        <>
+          <DetailItem label="Doc Status">
+            <Badge variant={getStatusBadgeVariant(task.mutualFund.documentStatus)}>
+              {task.mutualFund.documentStatus}
+            </Badge>
+          </DetailItem>
+          <DetailItem label="Signature Status">
+            <Badge variant={getStatusBadgeVariant(task.mutualFund.signatureStatus)}>
+              {task.mutualFund.signatureStatus}
+            </Badge>
+          </DetailItem>
+          <DetailItem label="AMC Sub Status">
+             <Badge variant={getStatusBadgeVariant(task.mutualFund.amcSubmissionStatus)}>
+              {task.mutualFund.amcSubmissionStatus}
+            </Badge>
+          </DetailItem>
+        </>
+      )}
+
+      {task.category === 'Life Insurance' && task.insurance && (
+        <>
+          <DetailItem label="Amount Status">
+            <Badge variant={getStatusBadgeVariant(task.insurance.amountStatus)}>
+              {task.insurance.amountStatus}
+            </Badge>
+          </DetailItem>
+        </>
+      )}
+    </div>
+  );
+};
+
+
 export default function TasksPage() {
   const { effectiveUser, hasPermission } = useCurrentUser();
   const { toast } = useToast();
@@ -52,6 +106,7 @@ export default function TasksPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const canView = hasPermission('TASK', 'view');
   const canCreate = hasPermission('TASK', 'create');
@@ -153,17 +208,15 @@ export default function TasksPage() {
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return '—';
     try {
-        // Handle 'dd-MM-yyyy HH:mm' from chatbot
         if (dateString.includes(' ')) {
             const parsedDate = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
             if (!isNaN(parsedDate.getTime())) {
-                return format(parsedDate, 'dd MMM yyyy, h:mm a');
+                return format(parsedDate, 'dd MMM yy, h:mm a');
             }
         }
-      // Handle ISO string from datetime-local input
-      return format(parseISO(dateString), 'dd MMM yyyy, h:mm a');
+      return format(parseISO(dateString), 'dd MMM yy, h:mm a');
     } catch {
-      return dateString; // Fallback to original string if parsing fails
+      return dateString;
     }
   };
   
@@ -171,6 +224,10 @@ export default function TasksPage() {
     if (!text) return '—';
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
+  };
+
+  const toggleExpandRow = (taskId: string) => {
+    setExpandedRow(current => (current === taskId ? null : taskId));
   };
 
   const terminalStatuses: TaskStatus[] = ['Completed', 'Cancelled', 'Rejected'];
@@ -216,19 +273,15 @@ export default function TasksPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12"></TableHead>
                   <TableHead>Client</TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead>Assigned RM</TableHead>
                   <TableHead>Serviceable RM</TableHead>
                   <TableHead>Create Date</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Complete Date</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Doc Status</TableHead>
-                  <TableHead>Sig Status</TableHead>
-                   <TableHead>Amount Status</TableHead>
-                  <TableHead>AMC Sub Status</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -236,6 +289,7 @@ export default function TasksPage() {
               <TableBody>
                 {filteredTasks.length > 0 ? (
                   filteredTasks.map((task) => {
+                    const isExpanded = expandedRow === task.id;
                     const overdue = isOverdue(task);
                     const isTerminal = terminalStatuses.includes(task.status);
                     const canEditTask = isSuperAdmin || !isTerminal;
@@ -243,124 +297,109 @@ export default function TasksPage() {
                     const descriptionContent = task.insurance?.policyNo || task.mutualFund?.folioNo || task.description;
 
                     return (
-                        <TableRow key={task.id} className={cn(overdue && 'text-red-600')}>
-                          <TableCell className="font-medium">{task.clientName}</TableCell>
-                          <TableCell>{task.category}</TableCell>
-                          <TableCell>{task.rmName}</TableCell>
-                          <TableCell>{task.serviceableRM || '—'}</TableCell>
-                          <TableCell>
-                            <Tooltip>
-                                <TooltipTrigger>{task.createDate ? format(parseISO(task.createDate), 'dd MMM yyyy') : '—'}</TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Created: {task.createDate ? format(parseISO(task.createDate), 'PPpp') : 'N/A'}</p>
-                                    {task.completeDate && <p>Completed: {format(parseISO(task.completeDate), 'PPpp')}</p>}
-                                </TooltipContent>
-                            </Tooltip>
-                          </TableCell>
-                          <TableCell>{formatDate(task.startDate)}</TableCell>
-                          <TableCell>{formatDate(task.dueDate)}</TableCell>
-                          <TableCell>{formatDate(task.completeDate)}</TableCell>
-                          <TableCell>
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild disabled={!canUpdate || !canEditTask}>
-                                    <Badge 
-                                        variant={overdue ? 'destructive' : getStatusBadgeVariant(task.status)}
-                                        className={cn((canUpdate && canEditTask) ? "cursor-pointer" : "cursor-not-allowed")}
-                                    >
-                                    {overdue ? 'Overdue' : task.status}
-                                    </Badge>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    {task.status === 'Pending' && (
-                                        <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'In Progress')}>
-                                            Move to In Progress
-                                        </DropdownMenuItem>
-                                    )}
-                                    {(task.status === 'In Progress' || (isSuperAdmin && isTerminal)) && (
-                                        <>
-                                            {isSuperAdmin && task.status !== 'In Progress' && (
+                        <React.Fragment key={task.id}>
+                            <TableRow className={cn(overdue && 'text-red-600', isExpanded && 'bg-muted/50')}>
+                                <TableCell>
+                                    <Button variant="ghost" size="icon" onClick={() => toggleExpandRow(task.id)}>
+                                        <ChevronRight className={cn('h-4 w-4 transition-transform', isExpanded && 'rotate-90')} />
+                                    </Button>
+                                </TableCell>
+                                <TableCell className="font-medium">{task.clientName}</TableCell>
+                                <TableCell>{task.category}</TableCell>
+                                <TableCell>{task.serviceableRM || '—'}</TableCell>
+                                <TableCell>
+                                    <Tooltip>
+                                        <TooltipTrigger>{task.createDate ? format(parseISO(task.createDate), 'dd MMM yy') : '—'}</TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Created: {task.createDate ? format(parseISO(task.createDate), 'PPpp') : 'N/A'}</p>
+                                            {task.completeDate && <p>Completed: {format(parseISO(task.completeDate), 'PPpp')}</p>}
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TableCell>
+                                <TableCell>{formatDate(task.startDate)}</TableCell>
+                                <TableCell>{formatDate(task.dueDate)}</TableCell>
+                                <TableCell>{formatDate(task.completeDate)}</TableCell>
+                                <TableCell>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild disabled={!canUpdate || !canEditTask}>
+                                            <Badge 
+                                                variant={overdue ? 'destructive' : getStatusBadgeVariant(task.status)}
+                                                className={cn((canUpdate && canEditTask) ? "cursor-pointer" : "cursor-not-allowed")}
+                                            >
+                                            {overdue ? 'Overdue' : task.status}
+                                            </Badge>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            {task.status === 'Pending' && (
                                                 <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'In Progress')}>
-                                                    Re-open to In Progress
+                                                    Move to In Progress
                                                 </DropdownMenuItem>
                                             )}
-                                            <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Completed')}>Completed</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Cancelled')}>Cancelled</DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Rejected')}>Rejected</DropdownMenuItem>
-                                        </>
+                                            {(task.status === 'In Progress' || (isSuperAdmin && isTerminal)) && (
+                                                <>
+                                                    {isSuperAdmin && task.status !== 'In Progress' && (
+                                                        <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'In Progress')}>
+                                                            Re-open to In Progress
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Completed')}>Completed</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Cancelled')}>Cancelled</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => handleStatusChange(task.id, 'Rejected')}>Rejected</DropdownMenuItem>
+                                                </>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                                <TableCell>
+                                    <Tooltip>
+                                    <TooltipTrigger>{truncateText(descriptionContent, 25)}</TooltipTrigger>
+                                    {(descriptionContent && descriptionContent.length > 25) && (
+                                        <TooltipContent><p className="max-w-xs">{descriptionContent}</p></TooltipContent>
                                     )}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                           <TableCell>
-                            {task.mutualFund?.documentStatus ? (
-                              <Badge variant={getStatusBadgeVariant(task.mutualFund.documentStatus)}>
-                                {task.mutualFund.documentStatus}
-                              </Badge>
-                            ) : '—'}
-                          </TableCell>
-                          <TableCell>
-                            {task.mutualFund?.signatureStatus ? (
-                              <Badge variant={getStatusBadgeVariant(task.mutualFund.signatureStatus)}>
-                                {task.mutualFund.signatureStatus}
-                              </Badge>
-                            ) : '—'}
-                          </TableCell>
-                          <TableCell>
-                            {task.insurance?.amountStatus ? (
-                              <Badge variant={getStatusBadgeVariant(task.insurance.amountStatus)}>
-                                {task.insurance.amountStatus}
-                              </Badge>
-                            ) : '—'}
-                          </TableCell>
-                          <TableCell>
-                            {task.mutualFund?.amcSubmissionStatus ? (
-                              <Badge variant={getStatusBadgeVariant(task.mutualFund.amcSubmissionStatus)}>
-                                {task.mutualFund.amcSubmissionStatus}
-                              </Badge>
-                            ) : '—'}
-                          </TableCell>
-                          <TableCell>
-                            <Tooltip>
-                              <TooltipTrigger>{truncateText(descriptionContent, 25)}</TooltipTrigger>
-                              {(descriptionContent && descriptionContent.length > 25) && (
-                                <TooltipContent><p className="max-w-xs">{descriptionContent}</p></TooltipContent>
-                              )}
-                            </Tooltip>
-                          </TableCell>
-                          <TableCell className="text-right">
-                             <div className="flex items-center justify-end gap-1">
-                                {canUpdate && (
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={!canEditTask}>
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>{canEditTask ? 'Edit Task' : 'Task is locked'}</p>
-                                        </TooltipContent>
                                     </Tooltip>
-                                )}
-                                {canDelete && (
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={!canEditTask}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>{canEditTask ? 'Delete Task' : 'Cannot delete locked task'}</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                )}
-                             </div>
-                          </TableCell>
-                        </TableRow>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-1">
+                                        {canUpdate && (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={!canEditTask}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>{canEditTask ? 'Edit Task' : 'Task is locked'}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        )}
+                                        {canDelete && (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => setTaskToDelete(task)} disabled={!canEditTask}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>{canEditTask ? 'Delete Task' : 'Cannot delete locked task'}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        )}
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                            {isExpanded && (
+                                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                    <TableCell colSpan={11}>
+                                        <ExpandedTaskDetails task={task} />
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </React.Fragment>
                     );
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={15} className="h-24 text-center">
+                    <TableCell colSpan={11} className="h-24 text-center">
                       No tasks created yet. Try the chatbot or the 'Add Task' button!
                     </TableCell>
                   </TableRow>
