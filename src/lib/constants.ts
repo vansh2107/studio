@@ -155,6 +155,12 @@ export const INSURANCE_SERVICES = [
   'Mobile updation',
   'Mail updation',
   'Loan',
+  'Death Claim',
+  'Change/Update Bank Details',
+  'Change/Update Of Nominee',
+  'Change/Update Policy Holder',
+  'Status Modification From Minor To Major',
+  'Duplicate Policy',
 ] as const;
 
 export const INSURANCE_COMPANIES = [
