@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -396,11 +397,13 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     </Select>
                   )}
                 />
+                 {errors.mutualFund?.service && <p className="text-sm text-destructive">{errors.mutualFund.service.message}</p>}
               </div>
 
               <div className="space-y-1">
                 <Label>Folio No.</Label>
                 <Input {...register('mutualFund.folioNo')} />
+                {errors.mutualFund?.folioNo && <p className="text-sm text-destructive">{errors.mutualFund.folioNo.message}</p>}
               </div>
 
               <div className="space-y-1">
@@ -417,11 +420,13 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     />
                   )}
                 />
+                {errors.mutualFund?.nameOfAMC && <p className="text-sm text-destructive">{errors.mutualFund.nameOfAMC.message}</p>}
               </div>
 
               <div className="space-y-1">
                 <Label>Amount</Label>
-                <Input type="number" {...register('mutualFund.amount')} />
+                <Input type="number" {...register('mutualFund.amount', { valueAsNumber: true })} />
+                {errors.mutualFund?.amount && <p className="text-sm text-destructive">{errors.mutualFund.amount.message}</p>}
               </div>
 
               <div className="space-y-1">
@@ -513,11 +518,13 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     </Select>
                   )}
                 />
+                {errors.insurance?.typeOfService && <p className="text-sm text-destructive">{errors.insurance.typeOfService.message}</p>}
               </div>
 
               <div className="space-y-1">
                 <Label>Policy No.</Label>
                 <Input {...register('insurance.policyNo')} />
+                {errors.insurance?.policyNo && <p className="text-sm text-destructive">{errors.insurance.policyNo.message}</p>}
               </div>
 
               <div className="space-y-1">
@@ -534,16 +541,19 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     />
                   )}
                 />
+                 {errors.insurance?.company && <p className="text-sm text-destructive">{errors.insurance.company.message}</p>}
               </div>
 
               <div className="space-y-1">
                 <Label>Amount</Label>
                 <Input type="number" {...register('insurance.amount')} />
+                {errors.insurance?.amount && <p className="text-sm text-destructive">{errors.insurance.amount.message}</p>}
               </div>
 
               <div className="space-y-1">
                 <Label>Maturity Status</Label>
                 <Input {...register('insurance.maturityStatus')} />
+                {errors.insurance?.maturityStatus && <p className="text-sm text-destructive">{errors.insurance.maturityStatus.message}</p>}
               </div>
 
               <div className="space-y-1">
@@ -567,6 +577,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               <div className="space-y-1">
                 <Label>Re-investment Status</Label>
                 <Input {...register('insurance.reinvestmentStatus')} />
+                {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
               </div>
             </div>
           </div>

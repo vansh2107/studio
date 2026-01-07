@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -130,18 +131,18 @@ export function AssociateList({ initialAssociates }: { initialAssociates: Associ
                     <div className="space-y-2">
                         <Label htmlFor="firstName">First Name</Label>
                         <Input id="firstName" {...register('firstName')} />
-                        {errors.firstName && <p className="text-destructive text-sm">{errors.firstName.message}</p>}
+                        {errors.firstName && <p className="text-sm text-destructive">{errors.firstName.message}</p>}
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="lastName">Last Name</Label>
                         <Input id="lastName" {...register('lastName')} />
-                        {errors.lastName && <p className="text-destructive text-sm">{errors.lastName.message}</p>}
+                        {errors.lastName && <p className="text-sm text-destructive">{errors.lastName.message}</p>}
                     </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" {...register('email')} />
-                    {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
+                    {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="rmId">Assign RM</Label>
@@ -155,7 +156,7 @@ export function AssociateList({ initialAssociates }: { initialAssociates: Associ
                             ))}
                         </SelectContent>
                     </Select>
-                     {errors.rmId && <p className="text-destructive text-sm">{errors.rmId.message}</p>}
+                     {errors.rmId && <p className="text-sm text-destructive">{errors.rmId.message}</p>}
                 </div>
 
                  <DialogFooter>

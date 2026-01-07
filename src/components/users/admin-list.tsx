@@ -175,18 +175,18 @@ export function AdminList({ initialAdmins }: { initialAdmins: Admin[] }) {
                     <div className="space-y-2">
                         <Label htmlFor="firstName">First Name</Label>
                         <Input id="firstName" {...registerAdmin('firstName')} />
-                        {adminErrors.firstName && <p className="text-destructive text-sm">{adminErrors.firstName.message}</p>}
+                        {adminErrors.firstName && <p className="text-sm text-destructive">{adminErrors.firstName.message}</p>}
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="lastName">Last Name</Label>
                         <Input id="lastName" {...registerAdmin('lastName')} />
-                        {adminErrors.lastName && <p className="text-destructive text-sm">{adminErrors.lastName.message}</p>}
+                        {adminErrors.lastName && <p className="text-sm text-destructive">{adminErrors.lastName.message}</p>}
                     </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" {...registerAdmin('email')} />
-                    {adminErrors.email && <p className="text-destructive text-sm">{adminErrors.email.message}</p>}
+                    {adminErrors.email && <p className="text-sm text-destructive">{adminErrors.email.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
@@ -219,23 +219,23 @@ export function AdminList({ initialAdmins }: { initialAdmins: Admin[] }) {
                     <div className="space-y-2">
                         <Label htmlFor="sa-firstName">First Name</Label>
                         <Input id="sa-firstName" {...registerSuperAdmin('firstName')} />
-                        {superAdminErrors.firstName && <p className="text-destructive text-sm">{superAdminErrors.firstName.message}</p>}
+                        {superAdminErrors.firstName && <p className="text-sm text-destructive">{superAdminErrors.firstName.message}</p>}
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="sa-lastName">Last Name</Label>
                         <Input id="sa-lastName" {...registerSuperAdmin('lastName')} />
-                        {superAdminErrors.lastName && <p className="text-destructive text-sm">{superAdminErrors.lastName.message}</p>}
+                        {superAdminErrors.lastName && <p className="text-sm text-destructive">{superAdminErrors.lastName.message}</p>}
                     </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="sa-email">Email</Label>
                     <Input id="sa-email" type="email" {...registerSuperAdmin('email')} />
-                    {superAdminErrors.email && <p className="text-destructive text-sm">{superAdminErrors.email.message}</p>}
+                    {superAdminErrors.email && <p className="text-sm text-destructive">{superAdminErrors.email.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="sa-password">Password</Label>
                     <Input id="sa-password" type="password" {...registerSuperAdmin('password')} />
-                    {superAdminErrors.password && <p className="text-destructive text-sm">{superAdminErrors.password.message}</p>}
+                    {superAdminErrors.password && <p className="text-sm text-destructive">{superAdminErrors.password.message}</p>}
                 </div>
                  <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => setIsAddSuperAdminModalOpen(false)}>Cancel</Button>
