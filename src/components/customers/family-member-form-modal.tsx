@@ -15,6 +15,9 @@ import { Loader2, X, UploadCloud, File as FileIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { isValid, parseISO, format } from 'date-fns';
 
+const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+const aadhaarRegex = /^[0-9]{12}$/;
+
 const memberSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
@@ -24,8 +27,16 @@ const memberSchema = z.object({
   address: z.string().min(1, 'Address is required'),
   anniversaryDate: z.string().optional().refine(date => !date || (z.string().regex(/^\d{4}-\d{2}-\d{2}$/).safeParse(date).success && isValid(parseISO(date))), { message: "Invalid date format. Use YYYY-MM-DD or leave empty." }),
   relation: z.string().min(1, 'Relation is required'),
-  panNumber: z.string().optional(),
-  aadhaarNumber: z.string().optional(),
+  panNumber: z.string()
+    .optional()
+    .refine(val => !val || panRegex.test(val), {
+        message: 'Please enter a valid PAN number (e.g., ABCDE1234F)',
+    }),
+  aadhaarNumber: z.string()
+    .optional()
+    .refine(val => !val || aadhaarRegex.test(val), {
+        message: 'Please enter a valid 12-digit Aadhaar number',
+    }),
 });
 
 type MemberFormData = z.infer<typeof memberSchema>;
@@ -39,6 +50,29 @@ interface FamilyMemberFormModalProps {
   member: FamilyMember | null;
   onSave: (member: FamilyMember) => void;
 }
+
+
+// Aadhaar Input Component for auto-formatting
+const AadhaarInput = ({ value, onChange, ...props }: { value: string, onChange: (value: string) => void } & React.ComponentProps<typeof Input>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Remove non-digit characters
+    const digitsOnly = e.target.value.replace(/\D/g, '');
+    // Take only the first 12 digits
+    const trimmedValue = digitsOnly.slice(0, 12);
+    // Pass the raw digits to the form handler
+    onChange(trimmedValue);
+  };
+
+  // Format the value for display
+  const formattedValue = (value || "")
+    .replace(/\D/g, '')
+    .slice(0, 12)
+    .replace(/(\d{4})/g, '$1 ')
+    .trim();
+
+  return <Input {...props} value={formattedValue} onChange={handleInputChange} />;
+};
+
 
 export function FamilyMemberFormModal({
   onClose,
@@ -61,6 +95,7 @@ export function FamilyMemberFormModal({
     handleSubmit,
     reset,
     control,
+    setValue,
     formState: { errors },
   } = useForm<MemberFormData>({
     resolver: zodResolver(memberSchema),
@@ -157,7 +192,9 @@ export function FamilyMemberFormModal({
     id: string,
     numberValue?: string,
     numberRegister?: any,
-    numberLabel?: string
+    numberLabel?: string,
+    error?: string,
+    isAadhaar?: boolean
   ) => (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -186,7 +223,31 @@ export function FamilyMemberFormModal({
       {numberRegister && numberLabel && (
         <div className="space-y-2">
             <Label htmlFor={id}>{numberLabel}</Label>
-            <Input id={id} {...numberRegister} disabled={isSaving} defaultValue={numberValue} />
+             {isAadhaar ? (
+                <Controller
+                  name={numberRegister.name}
+                  control={control}
+                  render={({ field }) => (
+                    <AadhaarInput
+                      id={id}
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      disabled={isSaving}
+                    />
+                  )}
+                />
+            ) : (
+                <Input
+                  id={id}
+                  {...numberRegister}
+                  onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    e.target.value = e.target.value.toUpperCase();
+                  }}
+                  disabled={isSaving}
+                  defaultValue={numberValue}
+                />
+            )}
+            {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
         </div>
       )}
     </div>
@@ -272,8 +333,29 @@ export function FamilyMemberFormModal({
 
           {step === 2 && (
              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {renderFileUploader('PAN Card', panFile, setPanFile, 'pan', 'panNumber', member?.panNumber, register('panNumber'), 'PAN Number')}
-              {renderFileUploader('Aadhaar Card', aadhaarFile, setAadhaarFile, 'aadhaar', 'aadhaarNumber', member?.aadhaarNumber, register('aadhaarNumber'), 'Aadhaar Number')}
+              {renderFileUploader(
+                  'PAN Card',
+                  panFile,
+                  setPanFile,
+                  'pan',
+                  'panNumber',
+                  member?.panNumber,
+                  register('panNumber'),
+                  'PAN Number',
+                  errors.panNumber?.message
+              )}
+              {renderFileUploader(
+                  'Aadhaar Card',
+                  aadhaarFile,
+                  setAadhaarFile,
+                  'aadhaar',
+                  'aadhaarNumber',
+                  member?.aadhaarNumber,
+                  register('aadhaarNumber'),
+                  'Aadhaar Number',
+                  errors.aadhaarNumber?.message,
+                  true // isAadhaar
+              )}
               {renderFileUploader('Other Documents', otherFile, setOtherFile, 'other', 'otherDocs')}
             </div>
           )}
