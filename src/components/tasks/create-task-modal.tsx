@@ -786,62 +786,60 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                    {amountStatus === 'Credited' && (
                      <>
                         <div className="md:col-span-2"><Separator /></div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <Label>Received Date</Label>
-                            <Input type="date" {...register('insurance.receivedDate')} />
-                            {errors.insurance?.receivedDate && <p className="text-sm text-destructive">{errors.insurance.receivedDate.message}</p>}
-                          </div>
-                          <div className="space-y-1">
-                            <Label>Received Amount</Label>
-                            <Input type="number" {...register('insurance.receivedAmount', { valueAsNumber: true })} />
-                            {errors.insurance?.receivedAmount && <p className="text-sm text-destructive">{errors.insurance.receivedAmount.message}</p>}
-                          </div>
-                          <div className="md:col-span-2 space-y-1">
-                            <Label>Re-Investment Status</Label>
-                            <Controller
-                              name="insurance.reinvestmentStatus"
-                              control={control}
-                              render={({ field }) => (
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Pending">Pending</SelectItem>
-                                    <SelectItem value="No">No</SelectItem>
-                                    <SelectItem value="Yes">Yes</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              )}
-                            />
-                            {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
-                          </div>
-                          
-                          {reinvestmentStatus === 'Pending' && (
-                            <div className="space-y-1">
-                              <Label>Approx Date</Label>
-                              <Input type="date" {...register('insurance.reinvestmentApproxDate')} />
-                               {errors.insurance?.reinvestmentApproxDate && <p className="text-sm text-destructive">{errors.insurance.reinvestmentApproxDate.message}</p>}
-                            </div>
-                          )}
-                          {reinvestmentStatus === 'No' && (
-                            <div className="space-y-1">
-                              <Label>Reason</Label>
-                               <Controller
-                                  name="insurance.reinvestmentReason"
-                                  control={control}
-                                  render={({ field }) => (
-                                  <Select onValueChange={field.onChange} value={field.value}>
-                                      <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
-                                      <SelectContent>
-                                      {REINVESTMENT_REASONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                                      </SelectContent>
-                                  </Select>
-                                  )}
-                              />
-                              {errors.insurance?.reinvestmentReason && <p className="text-sm text-destructive">{errors.insurance.reinvestmentReason.message}</p>}
-                            </div>
-                          )}
+                        <div className="space-y-1">
+                          <Label>Received Date</Label>
+                          <Input type="date" {...register('insurance.receivedDate')} />
+                          {errors.insurance?.receivedDate && <p className="text-sm text-destructive">{errors.insurance.receivedDate.message}</p>}
                         </div>
+                        <div className="space-y-1">
+                          <Label>Received Amount</Label>
+                          <Input type="number" {...register('insurance.receivedAmount', { valueAsNumber: true })} />
+                          {errors.insurance?.receivedAmount && <p className="text-sm text-destructive">{errors.insurance.receivedAmount.message}</p>}
+                        </div>
+                        <div className="md:col-span-2 space-y-1">
+                          <Label>Re-Investment Status</Label>
+                          <Controller
+                            name="insurance.reinvestmentStatus"
+                            control={control}
+                            render={({ field }) => (
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Pending">Pending</SelectItem>
+                                  <SelectItem value="No">No</SelectItem>
+                                  <SelectItem value="Yes">Yes</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
+                        </div>
+                        
+                        {reinvestmentStatus === 'Pending' && (
+                          <div className="space-y-1">
+                            <Label>Approx Date</Label>
+                            <Input type="date" {...register('insurance.reinvestmentApproxDate')} />
+                             {errors.insurance?.reinvestmentApproxDate && <p className="text-sm text-destructive">{errors.insurance.reinvestmentApproxDate.message}</p>}
+                          </div>
+                        )}
+                        {reinvestmentStatus === 'No' && (
+                          <div className="space-y-1">
+                            <Label>Reason</Label>
+                             <Controller
+                                name="insurance.reinvestmentReason"
+                                control={control}
+                                render={({ field }) => (
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
+                                    <SelectContent>
+                                    {REINVESTMENT_REASONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                )}
+                            />
+                            {errors.insurance?.reinvestmentReason && <p className="text-sm text-destructive">{errors.insurance.reinvestmentReason.message}</p>}
+                          </div>
+                        )}
                      </>
                    )}
                 </>
@@ -876,5 +874,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
+
+    
 
     
