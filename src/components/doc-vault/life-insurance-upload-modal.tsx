@@ -1,39 +1,34 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { X, PlusCircle, Trash2, Loader2 } from 'lucide-react';
 import { FamilyMember } from '@/lib/types';
-import { TASK_CATEGORIES } from '@/lib/constants';
+import { INSURANCE_COMPANIES } from '@/lib/constants';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface UploadItem {
   id: number;
-  category: string;
+  company: string;
   file: File | null;
 }
 
-interface UploadDocModalProps {
+interface LifeInsuranceUploadModalProps {
   member: FamilyMember;
   onClose: () => void;
-  onSave: (files: { category: string; file: File }[], member: FamilyMember) => void;
-  initialCategory?: string;
+  onSave: (files: { company: string; file: File }[], member: FamilyMember) => void;
 }
 
-export function UploadDocModal({ member, onClose, onSave, initialCategory }: UploadDocModalProps) {
-  const [uploads, setUploads] = useState<UploadItem[]>([{ id: 1, category: initialCategory || '', file: null }]);
+export function LifeInsuranceUploadModal({ member, onClose, onSave }: LifeInsuranceUploadModalProps) {
+  const [uploads, setUploads] = useState<UploadItem[]>([{ id: 1, company: '', file: null }]);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    // If the initialCategory changes (e.g., modal is reused), reset the first item's category
-    setUploads([{ id: 1, category: initialCategory || '', file: null }]);
-  }, [initialCategory]);
-
   const handleAddRow = () => {
-    setUploads([...uploads, { id: Date.now(), category: '', file: null }]);
+    setUploads([...uploads, { id: Date.now(), company: '', file: null }]);
   };
 
   const handleRemoveRow = (id: number) => {
@@ -42,7 +37,7 @@ export function UploadDocModal({ member, onClose, onSave, initialCategory }: Upl
     }
   };
 
-  const handleUpdate = (id: number, field: 'category' | 'file', value: string | File | null) => {
+  const handleUpdate = (id: number, field: 'company' | 'file', value: string | File | null) => {
     setUploads(uploads.map(item => (item.id === id ? { ...item, [field]: value } : item)));
   };
 
@@ -51,18 +46,16 @@ export function UploadDocModal({ member, onClose, onSave, initialCategory }: Upl
     handleUpdate(id, 'file', file);
   };
 
-  const canSave = uploads.every(item => item.category && item.file);
+  const canSave = uploads.every(item => item.company && item.file);
 
   const handleSave = () => {
     if (!canSave) return;
     setIsSaving(true);
     
-    // Filter out any potential null files just in case
     const filesToSave = uploads
-      .map(({ category, file }) => ({ category, file }))
-      .filter((item): item is { category: string; file: File } => item.file !== null);
+      .map(({ company, file }) => ({ company, file }))
+      .filter((item): item is { company: string; file: File } => item.file !== null);
 
-    // Simulate async save
     setTimeout(() => {
       onSave(filesToSave, member);
       setIsSaving(false);
@@ -76,23 +69,25 @@ export function UploadDocModal({ member, onClose, onSave, initialCategory }: Upl
       </Button>
 
       <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
-        <h2 className="text-lg font-semibold">Upload Documents for {member.firstName}</h2>
-        <p className="text-sm text-muted-foreground">Select a service type and upload the corresponding file.</p>
+        <h2 className="text-lg font-semibold">Upload Life Insurance Documents</h2>
+        <p className="text-sm text-muted-foreground">Select an insurance company and upload the policy document for {member.firstName}.</p>
       </div>
 
       <div className="space-y-4">
         {uploads.map((item, index) => (
           <div key={item.id} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
             <div className="space-y-1">
-              {index === 0 && <Label>Service Type</Label>}
-              <Select value={item.category} onValueChange={value => handleUpdate(item.id, 'category', value)}>
+              {index === 0 && <Label>Insurance Company</Label>}
+              <Select value={item.company} onValueChange={value => handleUpdate(item.id, 'company', value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select service..." />
+                  <SelectValue placeholder="Select company..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {TASK_CATEGORIES.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
+                  <ScrollArea className="h-72">
+                    {INSURANCE_COMPANIES.map(company => (
+                      <SelectItem key={company} value={company}>{company}</SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -116,7 +111,7 @@ export function UploadDocModal({ member, onClose, onSave, initialCategory }: Upl
       <div className="mt-4">
         <Button variant="outline" size="sm" onClick={handleAddRow}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add Another Document
+          Add Another
         </Button>
       </div>
 

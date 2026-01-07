@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import Modal from '@/components/ui/Modal';
 import { UploadDocModal } from '@/components/doc-vault/upload-doc-modal';
 import type { FamilyMember } from '@/lib/types';
+import { LifeInsuranceUploadModal } from '@/components/doc-vault/life-insurance-upload-modal';
 
 
 export default function DocVaultPage() {
@@ -28,7 +29,9 @@ export default function DocVaultPage() {
   );
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isLiUploadModalOpen, setIsLiUploadModalOpen] = useState(false);
   const [selectedMemberForUpload, setSelectedMemberForUpload] = useState<FamilyMember | null>(null);
+  const [activeCategoryForUpload, setActiveCategoryForUpload] = useState<string | null>(null);
 
   const familyMembers = useMemo(() => 
     (effectiveUser?.role === 'CUSTOMER') ? getFamilyMembersForClient(effectiveUser.id) : [],
@@ -60,18 +63,25 @@ export default function DocVaultPage() {
     return documents.filter(doc => doc.memberId === memberId).length;
   }
 
-  const handleOpenUploadModal = (member: FamilyMember) => {
+  const handleOpenUploadModal = (member: FamilyMember, category: string) => {
       if (!canCreate) {
           toast({ title: 'Permission Denied', description: 'You do not have permission to upload documents.', variant: 'destructive'});
           return;
       }
       setSelectedMemberForUpload(member);
-      setIsUploadModalOpen(true);
+      setActiveCategoryForUpload(category);
+      if (category === 'Life Insurance') {
+        setIsLiUploadModalOpen(true);
+      } else {
+        setIsUploadModalOpen(true);
+      }
   }
   
   const handleCloseUploadModal = () => {
     setIsUploadModalOpen(false);
+    setIsLiUploadModalOpen(false);
     setSelectedMemberForUpload(null);
+    setActiveCategoryForUpload(null);
   }
 
   const handleSaveUploads = (uploadedFiles: { category: string; file: File }[], member: FamilyMember) => {
@@ -88,6 +98,21 @@ export default function DocVaultPage() {
     toast({ title: 'Success', description: `${uploadedFiles.length} document(s) have been uploaded.` });
     handleCloseUploadModal();
   };
+  
+  const handleSaveLiUploads = (uploadedFiles: { company: string; file: File }[], member: FamilyMember) => {
+    const newDocs: Document[] = uploadedFiles.map(({ company, file }) => ({
+      id: `doc-${Date.now()}-${Math.random()}`,
+      clientId: member.clientId,
+      memberId: member.id,
+      category: 'Life Insurance',
+      name: `${company} - ${file.name}`, // Prepend company name to file name
+      url: URL.createObjectURL(file), // Mock URL
+    }));
+
+    setDocuments(prev => [...prev, ...newDocs]);
+    toast({ title: 'Success', description: `${uploadedFiles.length} document(s) have been uploaded.` });
+    handleCloseUploadModal();
+  }
 
 
   const handleDelete = (docId: string) => {
@@ -138,7 +163,7 @@ export default function DocVaultPage() {
                         <CardHeader className="flex flex-row items-center justify-between py-4">
                           <CardTitle className="text-base">{category}</CardTitle>
                           {canCreate && (
-                              <Button variant="outline" size="sm" onClick={() => handleOpenUploadModal(member)}>
+                              <Button variant="outline" size="sm" onClick={() => handleOpenUploadModal(member, category)}>
                                 <Upload className="mr-2 h-4 w-4" />
                                 Upload
                               </Button>
@@ -175,7 +200,7 @@ export default function DocVaultPage() {
                   })}
                   <div className="pt-4">
                       {canCreate && (
-                          <Button variant="outline" onClick={() => handleOpenUploadModal(member)}>
+                          <Button variant="outline" onClick={() => handleOpenUploadModal(member, 'General')}>
                               <Upload className="mr-2 h-4 w-4" />
                               Upload New Document for {member.firstName}
                           </Button>
@@ -189,11 +214,22 @@ export default function DocVaultPage() {
       </div>
 
       <Modal open={isUploadModalOpen} onClose={handleCloseUploadModal}>
-        {selectedMemberForUpload && (
+        {selectedMemberForUpload && activeCategoryForUpload && (
           <UploadDocModal 
             member={selectedMemberForUpload}
             onClose={handleCloseUploadModal}
             onSave={handleSaveUploads}
+            initialCategory={activeCategoryForUpload}
+          />
+        )}
+      </Modal>
+
+      <Modal open={isLiUploadModalOpen} onClose={handleCloseUploadModal}>
+        {selectedMemberForUpload && (
+          <LifeInsuranceUploadModal
+            member={selectedMemberForUpload}
+            onClose={handleCloseUploadModal}
+            onSave={handleSaveLiUploads}
           />
         )}
       </Modal>

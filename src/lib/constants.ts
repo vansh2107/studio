@@ -1,4 +1,5 @@
 
+
 export const ROLES = ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'] as const;
 export type Role = typeof ROLES[number];
 
@@ -164,29 +165,32 @@ export const INSURANCE_SERVICES = [
 ] as const;
 
 export const INSURANCE_COMPANIES = [
-  'ICICI Prudential Life Insurance',
-  'HDFC Life',
-  'Axis Max',
-  'Aditya Birla Capital',
-  'Bandhan Life',
-  'Ageas Federal',
-  'Aviva',
-  'Bajaj Allianz',
-  'Bharti AXA',
-  'Canara HSBC Life',
-  'Edelweiss Life',
-  'Future Generali',
-  'IndiaFirst Life',
-  'Kotak Life',
-  'LIC',
-  'PNB MetLife',
-  'Pramerica Life',
-  'Reliance Life',
-  'Sahara Life',
-  'SBI Life',
-  'Shriram Life',
-  'Star Union Dai-ichi Life',
-  'Tata AIA',
+  'Aditya Birla Sun Life Insurance Co. Ltd.',
+  'Acko Life Insurance Ltd',
+  'Ageas Federal Life Insurance Company Ltd.',
+  'Aviva Life Insurance Co. India Ltd.',
+  'Bajaj Life Insurance Co. Ltd.',
+  'Bharti AXA Life Insurance Co. Ltd.',
+  '(AEGON) Bandhan Life Insurance Company Limited',
+  'Canara HSBC Life Insurance Co. Ltd.',
+  'Edelweiss Tokio Life Insurance Company Limited',
+  'Exide Life - Life Products',
+  'Future Generali India Life Insurance Co. Ltd.',
+  'Go Digit Life Insurance Limited',
+  'HDFC Life Insurance Co. Ltd',
+  'ICICI Prudential Life Insurance Co. Ltd',
+  'India First Life Insurance Company Ltd.',
+  'Kotak Mahindra Life Insurance Company Ltd.',
+  'Life Insurance Corporation of India',
+  'Max Life Insurance Company Limited',
+  'PNB MetLife India Insurance Co. Ltd.',
+  'Pramerica Life Insurance Limited',
+  'Reliance Nippon Life Insurance Co. Ltd.',
+  'SBI Life Insurance Co Ltd',
+  'Sahara India Life Insurance Co. Ltd.',
+  'Star Union Dai-ichi Life Insurance Company Ltd.',
+  'Shriram Life Insurance Co. Ltd.',
+  'TATA AIA Life Insurance Co. Ltd.',
 ] as const;
 
 export const FINANCIAL_SERVICES = ['Maturity', 'Death Claim', 'Surrender'] as const;
