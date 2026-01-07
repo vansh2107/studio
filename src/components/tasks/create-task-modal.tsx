@@ -166,28 +166,13 @@ interface CreateTaskModalProps {
   task?: Task | null;
 }
 
-// Function to convert a string to Title Case
-const toTitleCase = (str: string) => {
-  if (!str) return '';
-  return str.replace(
-    /\w\S*/g,
-    (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
-  );
-};
+const sortedMutualFundServices = [...MUTUAL_FUND_SERVICES].sort((a, b) =>
+  a.toLowerCase().localeCompare(b.toLowerCase())
+);
 
-// Create a mapped array for display with original values for storage
-const mutualFundServiceOptions = MUTUAL_FUND_SERVICES.map(service => ({
-  value: service, // The original value to be stored
-  label: toTitleCase(service), // The Title Case value for display
-}));
-
-const nonFinancialInsuranceServiceOptions = INSURANCE_SERVICES
+const sortedNonFinancialInsuranceServices = [...INSURANCE_SERVICES]
   .filter(service => !FINANCIAL_SERVICES.includes(service as any))
-  .map(service => ({
-    value: service,
-    label: toTitleCase(service),
-  }));
-
+  .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
 export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps) {
   const [isSaving, setIsSaving] = useState(false);
@@ -505,8 +490,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                       <SelectContent>
-                        {mutualFundServiceOptions.map(option => (
-                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                        {sortedMutualFundServices.map(service => (
+                          <SelectItem key={service} value={service}>{service}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -674,8 +659,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                           <SelectContent>
-                            {nonFinancialInsuranceServiceOptions.map(option => (
-                              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                            {sortedNonFinancialInsuranceServices.map(service => (
+                              <SelectItem key={service} value={service}>{service}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -877,5 +862,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
+
+    
 
     
