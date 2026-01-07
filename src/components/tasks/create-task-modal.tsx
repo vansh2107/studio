@@ -18,12 +18,19 @@ import {
   MUTUAL_FUND_SERVICES,
   AMC_NAMES,
   INSURANCE_SERVICES,
-  INSURANCE_COMPANIES
+  INSURANCE_COMPANIES,
+  FINANCIAL_SERVICES,
+  REINVESTMENT_REASONS,
 } from '@/lib/constants';
 import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
-import { format, parse, parseISO } from 'date-fns';
+import { format, parse, parseISO, addDays } from 'date-fns';
 import { Separator } from '../ui/separator';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { Calendar } from '../ui/calendar';
+import { cn } from '@/lib/utils';
 
 /* ---------- VALIDATION ---------- */
 
@@ -56,17 +63,79 @@ const mutualFundSchema = z.object({
   amcSubmissionStatus: z.enum(["Done", "Pending"]),
 });
 
+// Updated Insurance Schema
 const insuranceSchema = z.object({
   familyHead: z.string(),
-  typeOfService: z.string().min(1, "Type of Service is required"),
-  associate: z.string().min(1, "Associate is required"),
+  typeOfService: z.string().optional(), // Now optional
+  associate: z.string(),
   policyNo: z.string().min(1, "Policy No. is required"),
   company: z.string().min(1, "Company is required"),
-  amount: numberField,
-  maturityStatus: z.string().min(1, "Maturity status is required"),
-  amountStatus: z.enum(["Credited", "Pending"]),
-  reinvestmentStatus: z.string().min(1, "Re-investment status is required"),
+  
+  // New conditional fields
+  insuranceType: z.enum(['Financial', 'Non-Financial']),
+  financialService: z.string().optional(),
+  nonFinancialDate: z.string().optional(),
+
+  // Maturity
+  maturityDueDate: z.string().optional(),
+  maturityAmount: numberField,
+
+  // Death Claim
+  deathClaimProcessDate: z.string().optional(),
+
+  // Surrender
+  surrenderProcessDate: z.string().optional(),
+
+  amountStatus: z.enum(["Credited", "Pending"]).optional(),
+  
+  // Received Amount details
+  receivedDate: z.string().optional(),
+  receivedAmount: numberField,
+  reinvestmentStatus: z.string().optional(),
+  reinvestmentApproxDate: z.string().optional(),
+  reinvestmentReason: z.string().optional(),
+
+}).superRefine((data, ctx) => {
+  if (data.insuranceType === 'Non-Financial') {
+    if (!data.typeOfService) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Service is required for Non-Financial types.", path: ["typeOfService"] });
+    }
+    if (!data.nonFinancialDate) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Date is required for Non-Financial types.", path: ["nonFinancialDate"] });
+    }
+  }
+
+  if (data.insuranceType === 'Financial') {
+    if (!data.financialService) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Financial Service is required.", path: ["financialService"] });
+    }
+
+    if (data.financialService === 'Maturity') {
+      if (!data.maturityDueDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Maturity Due Date is required.", path: ["maturityDueDate"] });
+      if (!data.maturityAmount) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Maturity Amount is required.", path: ["maturityAmount"] });
+    }
+    if (data.financialService === 'Death Claim') {
+      if (!data.deathClaimProcessDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Death Claim Process Date is required.", path: ["deathClaimProcessDate"] });
+    }
+    if (data.financialService === 'Surrender') {
+      if (!data.surrenderProcessDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Surrender Process Date is required.", path: ["surrenderProcessDate"] });
+    }
+    
+    if (data.amountStatus === 'Credited') {
+      if (!data.receivedDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Received Date is required.", path: ["receivedDate"] });
+      if (!data.receivedAmount) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Received Amount is required.", path: ["receivedAmount"] });
+      if (!data.reinvestmentStatus) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Re-investment Status is required.", path: ["reinvestmentStatus"] });
+
+      if (data.reinvestmentStatus === 'Pending') {
+        if (!data.reinvestmentApproxDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Approx Date is required.", path: ["reinvestmentApproxDate"] });
+      }
+      if (data.reinvestmentStatus === 'No') {
+        if (!data.reinvestmentReason) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Reason is required.", path: ["reinvestmentReason"] });
+      }
+    }
+  }
 });
+
 
 const taskSchema = baseTaskSchema.extend({
   mutualFund: mutualFundSchema.optional(),
@@ -162,12 +231,21 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       serviceableRM: '',
       dueDate: '',
       description: '',
+      insurance: {
+        insuranceType: 'Non-Financial',
+        amountStatus: 'Pending',
+      }
     },
   });
 
   const selectedCategory = watch('category');
   const clientNameValue = watch('clientName');
   const descriptionValue = watch('description') || '';
+  const insuranceType = watch('insurance.insuranceType');
+  const financialService = watch('insurance.financialService');
+  const amountStatus = watch('insurance.amountStatus');
+  const reinvestmentStatus = watch('insurance.reinvestmentStatus');
+
 
   /* ---------- AUTO POPULATE ---------- */
 
@@ -210,8 +288,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
   useEffect(() => {
     if (selectedCategory !== 'Mutual Funds') setValue('mutualFund', undefined);
-    if (selectedCategory !== 'Life Insurance') setValue('insurance', undefined);
-  }, [selectedCategory, setValue]);
+    if (selectedCategory !== 'Life Insurance') {
+      setValue('insurance', undefined);
+    } else {
+      // When switching to LI, set default values
+      if (!watch('insurance')) {
+        setValue('insurance', {
+          insuranceType: 'Non-Financial',
+          amountStatus: 'Pending',
+          familyHead: familyHeadName,
+          associate: associateName,
+          policyNo: '',
+          company: '',
+        });
+      }
+    }
+  }, [selectedCategory, setValue, watch, familyHeadName, associateName]);
 
   /* ---------- LOAD EXISTING TASK ---------- */
 
@@ -276,8 +368,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         rmId: assignedRM?.id,
         adminId: assignedAdmin?.id,
         dueDate: parsedDue.toISOString(),
-        mutualFund: data.mutualFund ? { ...data.mutualFund, amount: data.mutualFund.amount || 0 } : undefined,
-        insurance: data.insurance ? { ...data.insurance, amount: data.insurance.amount || 0 } : undefined
+        mutualFund: data.mutualFund,
+        insurance: data.insurance
       };
 
       if (submissionData.category !== 'Mutual Funds') delete submissionData.mutualFund;
@@ -511,44 +603,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
           <div className="space-y-4 pt-4">
             <Separator />
             <h3 className="text-md font-semibold">Insurance Details</h3>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Common Fields */}
               <div className="space-y-1">
                 <Label>Family Head</Label>
                 <Input {...register('insurance.familyHead')} readOnly value={familyHeadName} />
               </div>
-
               <div className="space-y-1">
                 <Label>Associate</Label>
                 <Input {...register('insurance.associate')} readOnly value={associateName} />
               </div>
-
-              <div className="space-y-1">
-                <Label>Type of Service</Label>
-                <Controller
-                  name="insurance.typeOfService"
-                  control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
-                      <SelectContent>
-                        {insuranceServiceOptions.map(option => (
-                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.insurance?.typeOfService && <p className="text-sm text-destructive">{errors.insurance.typeOfService.message}</p>}
-              </div>
-
-              <div className="space-y-1">
+              <div className="md:col-span-2">
                 <Label>Policy No.</Label>
                 <Input {...register('insurance.policyNo')} />
                 {errors.insurance?.policyNo && <p className="text-sm text-destructive">{errors.insurance.policyNo.message}</p>}
               </div>
-
-              <div className="space-y-1">
+              <div className="md:col-span-2">
                 <Label>Company</Label>
                 <Controller
                   name="insurance.company"
@@ -562,44 +632,219 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     />
                   )}
                 />
-                 {errors.insurance?.company && <p className="text-sm text-destructive">{errors.insurance.company.message}</p>}
+                {errors.insurance?.company && <p className="text-sm text-destructive">{errors.insurance.company.message}</p>}
               </div>
 
-              <div className="space-y-1">
-                <Label>Amount</Label>
-                <Input type="number" {...register('insurance.amount')} />
-                {errors.insurance?.amount && <p className="text-sm text-destructive">{errors.insurance.amount.message}</p>}
-              </div>
-
-              <div className="space-y-1">
-                <Label>Maturity Status</Label>
-                <Input {...register('insurance.maturityStatus')} />
-                {errors.insurance?.maturityStatus && <p className="text-sm text-destructive">{errors.insurance.maturityStatus.message}</p>}
-              </div>
-
-              <div className="space-y-1">
-                <Label>Amount Status</Label>
+              {/* Type Switcher */}
+              <div className="md:col-span-2">
+                <Label>Type</Label>
                 <Controller
-                  name="insurance.amountStatus"
+                  name="insurance.insuranceType"
                   control={control}
-                  defaultValue="Pending"
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Credited">Credited</SelectItem>
-                        <SelectItem value="Pending">Pending</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      className="flex space-x-4 mt-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="Non-Financial" id="non-financial" />
+                        <Label htmlFor="non-financial">Non-Financial</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="Financial" id="financial" />
+                        <Label htmlFor="financial">Financial</Label>
+                      </div>
+                    </RadioGroup>
                   )}
                 />
               </div>
 
-              <div className="space-y-1">
-                <Label>Re-investment Status</Label>
-                <Input {...register('insurance.reinvestmentStatus')} />
-                {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
-              </div>
+              {/* Non-Financial Flow */}
+              {insuranceType === 'Non-Financial' && (
+                <>
+                  <div className="space-y-1">
+                    <Label>Service</Label>
+                    <Controller
+                      name="insurance.typeOfService"
+                      control={control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
+                          <SelectContent>
+                            {insuranceServiceOptions.map(option => (
+                              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.insurance?.typeOfService && <p className="text-sm text-destructive">{errors.insurance.typeOfService.message}</p>}
+                  </div>
+                   <div className="space-y-1">
+                    <Label>Date</Label>
+                    <Input type="date" {...register('insurance.nonFinancialDate')} />
+                    {errors.insurance?.nonFinancialDate && <p className="text-sm text-destructive">{errors.insurance.nonFinancialDate.message}</p>}
+                  </div>
+                </>
+              )}
+
+              {/* Financial Flow */}
+              {insuranceType === 'Financial' && (
+                <>
+                  <div className="md:col-span-2">
+                    <Label>Financial Service</Label>
+                    <Controller
+                      name="insurance.financialService"
+                      control={control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger><SelectValue placeholder="Select Financial Service" /></SelectTrigger>
+                          <SelectContent>
+                            {FINANCIAL_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.insurance?.financialService && <p className="text-sm text-destructive">{errors.insurance.financialService.message}</p>}
+                  </div>
+                  
+                  {/* Financial Service: Maturity */}
+                  {financialService === 'Maturity' && (
+                    <>
+                      <div className="space-y-1">
+                        <Label>Maturity Due Date</Label>
+                        <Controller
+                            name="insurance.maturityDueDate"
+                            control={control}
+                            render={({ field }) => (
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {field.value ? format(parseISO(field.value), "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                            mode="single"
+                                            selected={field.value ? parseISO(field.value) : undefined}
+                                            onSelect={(date) => field.onChange(date?.toISOString())}
+                                            disabled={(date) => date < new Date() || date > addDays(new Date(), 7)}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            )}
+                        />
+                        {errors.insurance?.maturityDueDate && <p className="text-sm text-destructive">{errors.insurance.maturityDueDate.message}</p>}
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Maturity Amount</Label>
+                        <Input type="number" {...register('insurance.maturityAmount')} />
+                        {errors.insurance?.maturityAmount && <p className="text-sm text-destructive">{errors.insurance.maturityAmount.message}</p>}
+                      </div>
+                    </>
+                  )}
+
+                   {/* Financial Service: Death Claim */}
+                  {financialService === 'Death Claim' && (
+                     <div className="space-y-1">
+                        <Label>Death Claim Process Date</Label>
+                        <Input type="date" {...register('insurance.deathClaimProcessDate')} />
+                        {errors.insurance?.deathClaimProcessDate && <p className="text-sm text-destructive">{errors.insurance.deathClaimProcessDate.message}</p>}
+                     </div>
+                  )}
+
+                  {/* Financial Service: Surrender */}
+                  {financialService === 'Surrender' && (
+                     <div className="space-y-1">
+                        <Label>Surrender Process Date</Label>
+                        <Input type="date" {...register('insurance.surrenderProcessDate')} />
+                        {errors.insurance?.surrenderProcessDate && <p className="text-sm text-destructive">{errors.insurance.surrenderProcessDate.message}</p>}
+                     </div>
+                  )}
+
+                  {/* Common Amount Status for Financial */}
+                   <div className="md:col-span-2">
+                        <Label>Amount Status</Label>
+                        <Controller
+                          name="insurance.amountStatus"
+                          control={control}
+                          render={({ field }) => (
+                            <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4 mt-2">
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="Pending" id="pending" /><Label htmlFor="pending">Pending</Label></div>
+                                <div className="flex items-center space-x-2"><RadioGroupItem value="Credited" id="credited" /><Label htmlFor="credited">Received</Label></div>
+                            </RadioGroup>
+                          )}
+                        />
+                   </div>
+
+                   {/* If Amount Received */}
+                   {amountStatus === 'Credited' && (
+                     <>
+                        <div className="md:col-span-2"><Separator /></div>
+                        <div className="space-y-1">
+                          <Label>Received Date</Label>
+                          <Input type="date" {...register('insurance.receivedDate')} />
+                          {errors.insurance?.receivedDate && <p className="text-sm text-destructive">{errors.insurance.receivedDate.message}</p>}
+                        </div>
+                        <div className="space-y-1">
+                          <Label>Received Amount</Label>
+                          <Input type="number" {...register('insurance.receivedAmount')} />
+                          {errors.insurance?.receivedAmount && <p className="text-sm text-destructive">{errors.insurance.receivedAmount.message}</p>}
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label>Re-Investment Status</Label>
+                          <Controller
+                            name="insurance.reinvestmentStatus"
+                            control={control}
+                            render={({ field }) => (
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Pending">Pending</SelectItem>
+                                  <SelectItem value="No">No</SelectItem>
+                                  <SelectItem value="Yes">Yes</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
+                        </div>
+
+                        {reinvestmentStatus === 'Pending' && (
+                          <div className="space-y-1">
+                            <Label>Approx Date</Label>
+                            <Input type="date" {...register('insurance.reinvestmentApproxDate')} />
+                             {errors.insurance?.reinvestmentApproxDate && <p className="text-sm text-destructive">{errors.insurance.reinvestmentApproxDate.message}</p>}
+                          </div>
+                        )}
+                        {reinvestmentStatus === 'No' && (
+                          <div className="space-y-1">
+                            <Label>Reason</Label>
+                             <Controller
+                                name="insurance.reinvestmentReason"
+                                control={control}
+                                render={({ field }) => (
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
+                                    <SelectContent>
+                                    {REINVESTMENT_REASONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                )}
+                            />
+                            {errors.insurance?.reinvestmentReason && <p className="text-sm text-destructive">{errors.insurance.reinvestmentReason.message}</p>}
+                          </div>
+                        )}
+                     </>
+                   )}
+                </>
+              )}
             </div>
           </div>
         )}
@@ -626,7 +871,6 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
             </Button>
           )}
         </div>
-
       </form>
     </div>
   );

@@ -189,4 +189,12 @@ export const INSURANCE_COMPANIES = [
   'Tata AIA',
 ] as const;
 
-    
+export const FINANCIAL_SERVICES = ['Maturity', 'Death Claim', 'Surrender'] as const;
+
+export const REINVESTMENT_REASONS = [
+  "Client's Own Business",
+  "Daughter's Wedding",
+  "Son's Wedding",
+  "Real Estate Investment",
+  "Other",
+] as const;

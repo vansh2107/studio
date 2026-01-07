@@ -128,6 +128,39 @@ export interface Family {
   otherDocumentFileName?: string;
 }
 
+export interface InsuranceDetails {
+  familyHead: string;
+  associate: string;
+  policyNo: string;
+  company: string;
+  insuranceType: 'Financial' | 'Non-Financial';
+  
+  // Non-Financial
+  typeOfService?: string;
+  nonFinancialDate?: string;
+
+  // Financial
+  financialService?: 'Maturity' | 'Death Claim' | 'Surrender';
+  
+  // Maturity
+  maturityDueDate?: string;
+  maturityAmount?: number;
+
+  // Death Claim
+  deathClaimProcessDate?: string;
+
+  // Surrender
+  surrenderProcessDate?: string;
+
+  // Common Financial Fields
+  amountStatus?: 'Credited' | 'Pending';
+  receivedDate?: string;
+  receivedAmount?: number;
+  reinvestmentStatus?: 'Pending' | 'No' | 'Yes';
+  reinvestmentApproxDate?: string;
+  reinvestmentReason?: string;
+}
+
 
 export interface Task {
   id: string;
@@ -156,15 +189,5 @@ export interface Task {
     signatureStatus: "Done" | "Pending";
     amcSubmissionStatus?: "Done" | "Pending";
   };
-  insurance?: {
-    familyHead: string;
-    typeOfService: string;
-    associate: string;
-    policyNo: string;
-    company: string;
-    amount: number;
-    maturityStatus: string;
-    amountStatus: "Credited" | "Pending";
-    reinvestmentStatus: string;
-  }
+  insurance?: InsuranceDetails;
 }
