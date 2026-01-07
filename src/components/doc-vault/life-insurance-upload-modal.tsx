@@ -23,6 +23,10 @@ interface LifeInsuranceUploadModalProps {
   onSave: (files: { company: string; file: File }[], member: FamilyMember) => void;
 }
 
+const sortedInsuranceCompanies = [...INSURANCE_COMPANIES]
+  .slice()
+  .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
 export function LifeInsuranceUploadModal({ member, onClose, onSave }: LifeInsuranceUploadModalProps) {
   const [uploads, setUploads] = useState<UploadItem[]>([{ id: 1, company: '', file: null }]);
   const [isSaving, setIsSaving] = useState(false);
@@ -84,7 +88,7 @@ export function LifeInsuranceUploadModal({ member, onClose, onSave }: LifeInsura
                 </SelectTrigger>
                 <SelectContent>
                   <ScrollArea className="h-72">
-                    {INSURANCE_COMPANIES.map(company => (
+                    {sortedInsuranceCompanies.map(company => (
                       <SelectItem key={company} value={company}>{company}</SelectItem>
                     ))}
                   </ScrollArea>

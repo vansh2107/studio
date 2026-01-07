@@ -166,12 +166,13 @@ interface CreateTaskModalProps {
   task?: Task | null;
 }
 
-const sortedMutualFundServices = [...MUTUAL_FUND_SERVICES].sort((a, b) =>
-  a.toLowerCase().localeCompare(b.toLowerCase())
-);
+const sortedMutualFundServices = [...MUTUAL_FUND_SERVICES]
+  .slice()
+  .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
 const sortedNonFinancialInsuranceServices = [...INSURANCE_SERVICES]
   .filter(service => !FINANCIAL_SERVICES.includes(service as any))
+  .slice()
   .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
 export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps) {
@@ -862,7 +863,3 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
-
-    
-
-    
