@@ -22,8 +22,8 @@ body {
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 224 76% 48%; /* #1D4ED8 */
     --accent-foreground: 0 0% 100%;
-    --destructive: 29 95% 52%; /* #f78e1e - Repurposed for orange action button */
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 215 70% 34%; /* #1b51a0 */
@@ -49,7 +49,7 @@ body {
     --muted-foreground: 0 0% 63.9%;
     --accent: 224 76% 58%; /* Lighter Blue for Dark Mode Accent */
     --accent-foreground: 0 0% 98%;
-    --destructive: 29 95% 58%; /* #f78e1e */
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 215 70% 25%;
     --input: 215 70% 25%;
