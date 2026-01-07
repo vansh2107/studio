@@ -97,6 +97,21 @@ interface CreateTaskModalProps {
   task?: Task | null;
 }
 
+// Function to convert a string to Title Case
+const toTitleCase = (str: string) => {
+  return str.replace(
+    /\w\S*/g,
+    (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
+  );
+};
+
+// Create a mapped array for display with original values for storage
+const mutualFundServiceOptions = MUTUAL_FUND_SERVICES.map(service => ({
+  value: service, // The original value to be stored
+  label: toTitleCase(service), // The Title Case value for display
+}));
+
+
 export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps) {
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
@@ -390,8 +405,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                       <SelectContent>
-                        {MUTUAL_FUND_SERVICES.map(s => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        {mutualFundServiceOptions.map(option => (
+                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

@@ -83,6 +83,8 @@ export const RM_NAMES = [
 export const MUTUAL_FUND_SERVICES = [
   'Change/Update Email Address',
   'Change/Update Mobile Number',
+  'Change/Update Name',
+  'Change/Update PAN Card Details',
   'Consolidation of Folios',
   'Update Nominee Details',
   'Change of Bank Account Details',
