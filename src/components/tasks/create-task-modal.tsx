@@ -24,13 +24,9 @@ import {
 } from '@/lib/constants';
 import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
-import { format, parse, parseISO, addDays } from 'date-fns';
+import { format, parse, parseISO } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { Calendar } from '../ui/calendar';
-import { cn } from '@/lib/utils';
 
 /* ---------- VALIDATION ---------- */
 
@@ -63,32 +59,29 @@ const mutualFundSchema = z.object({
   amcSubmissionStatus: z.enum(["Done", "Pending"]),
 });
 
-// Updated Insurance Schema
+const toDate = z.preprocess((arg) => {
+  if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
+}, z.date());
+
 const insuranceSchema = z.object({
   familyHead: z.string(),
-  typeOfService: z.string().optional(), // Now optional
+  typeOfService: z.string().optional(),
   associate: z.string(),
   policyNo: z.string().min(1, "Policy No. is required"),
   company: z.string().min(1, "Company is required"),
   
-  // New conditional fields
   insuranceType: z.enum(['Financial', 'Non-Financial']),
   financialService: z.string().optional(),
   nonFinancialDate: z.string().optional(),
 
-  // Maturity
   maturityDueDate: z.string().optional(),
   maturityAmount: numberField,
 
-  // Death Claim
   deathClaimProcessDate: z.string().optional(),
-
-  // Surrender
   surrenderProcessDate: z.string().optional(),
 
   amountStatus: z.enum(["Credited", "Pending"]).optional(),
   
-  // Received Amount details
   receivedDate: z.string().optional(),
   receivedAmount: numberField,
   reinvestmentStatus: z.string().optional(),
@@ -279,7 +272,6 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     if (selectedCategory !== 'Life Insurance') {
       setValue('insurance', undefined);
     } else {
-      // When switching to LI, set default values
       if (!watch('insurance')) {
         setValue('insurance', {
           insuranceType: 'Non-Financial',
@@ -713,32 +705,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     <>
                       <div className="space-y-1">
                         <Label>Maturity Due Date</Label>
-                        <Controller
-                            name="insurance.maturityDueDate"
-                            control={control}
-                            render={({ field }) => (
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant={"outline"}
-                                            className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")}
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {field.value ? format(parseISO(field.value), "PPP") : <span>Pick a date</span>}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
-                                        <Calendar
-                                            mode="single"
-                                            selected={field.value ? parseISO(field.value) : undefined}
-                                            onSelect={(date) => field.onChange(date?.toISOString())}
-                                            disabled={(date) => date < new Date() || date > addDays(new Date(), 7)}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            )}
-                        />
+                        <Input type="date" {...register('insurance.maturityDueDate')} />
                         {errors.insurance?.maturityDueDate && <p className="text-sm text-destructive">{errors.insurance.maturityDueDate.message}</p>}
                       </div>
                       <div className="space-y-1">
@@ -784,8 +751,9 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
                    {/* If Amount Received */}
                    {amountStatus === 'Credited' && (
-                     <>
+                    <>
                         <div className="md:col-span-2"><Separator /></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
                         <div className="space-y-1">
                           <Label>Received Date</Label>
                           <Input type="date" {...register('insurance.receivedDate')} />
@@ -796,7 +764,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                           <Input type="number" {...register('insurance.receivedAmount', { valueAsNumber: true })} />
                           {errors.insurance?.receivedAmount && <p className="text-sm text-destructive">{errors.insurance.receivedAmount.message}</p>}
                         </div>
-                        <div className="md:col-span-2 space-y-1">
+                        <div className="space-y-1 md:col-span-2">
                           <Label>Re-Investment Status</Label>
                           <Controller
                             name="insurance.reinvestmentStatus"
@@ -840,6 +808,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                             {errors.insurance?.reinvestmentReason && <p className="text-sm text-destructive">{errors.insurance.reinvestmentReason.message}</p>}
                           </div>
                         )}
+                        </div>
                      </>
                    )}
                 </>
@@ -874,7 +843,3 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
-
-    
-
-    

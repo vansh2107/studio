@@ -17,16 +17,16 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Client } from '@/lib/types';
-import { isValid, parseISO, format } from 'date-fns';
+import { format, parse, isValid } from 'date-fns';
 
 const clientSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
   email: z.string().email('Invalid email address'),
-  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format').refine(date => isValid(parseISO(date)), { message: "Invalid date" }),
+  dateOfBirth: z.string().refine(val => val && isValid(parse(val, 'yyyy-MM-dd', new Date())), { message: "Invalid date" }),
   address: z.string().min(1, 'Address is required'),
-  anniversaryDate: z.string().optional().refine(date => !date || (z.string().regex(/^\d{4}-\d{2}-\d{2}$/).safeParse(date).success && isValid(parseISO(date))), { message: "Invalid date format. Use YYYY-MM-DD or leave empty." }),
+  anniversaryDate: z.string().optional().refine(val => !val || (val && isValid(parse(val, 'yyyy-MM-dd', new Date()))), { message: "Invalid date format. Use YYYY-MM-DD or leave empty." }),
 });
 
 
@@ -81,8 +81,8 @@ export function FamilyFormModal({
     if (family) {
       reset({
         ...family,
-        dateOfBirth: family.dateOfBirth ? format(parseISO(family.dateOfBirth), 'yyyy-MM-dd') : '',
-        anniversaryDate: family.anniversaryDate ? format(parseISO(family.anniversaryDate), 'yyyy-MM-dd') : '',
+        dateOfBirth: family.dateOfBirth ? format(new Date(family.dateOfBirth), 'yyyy-MM-dd') : '',
+        anniversaryDate: family.anniversaryDate ? format(new Date(family.anniversaryDate), 'yyyy-MM-dd') : '',
       });
       setPanFile(family.panFileName ? new File([], family.panFileName) : null);
       setAadhaarFile(family.aadhaarFileName ? new File([], family.aadhaarFileName) : null);
@@ -270,8 +270,7 @@ export function FamilyFormModal({
                 <Label htmlFor="dateOfBirth">Date of Birth</Label>
                 <Input
                     id="dateOfBirth"
-                    type="text"
-                    placeholder="YYYY-MM-DD"
+                    type="date"
                     {...register('dateOfBirth')}
                     disabled={isSaving}
                 />
@@ -285,8 +284,7 @@ export function FamilyFormModal({
                 <Label htmlFor="anniversaryDate">Anniversary Date (Optional)</Label>
                 <Input
                     id="anniversaryDate"
-                    type="text"
-                    placeholder="YYYY-MM-DD"
+                    type="date"
                     {...register('anniversaryDate')}
                     disabled={isSaving}
                 />

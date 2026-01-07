@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Client, FamilyMember } from '@/lib/types';
 import { Loader2, X, UploadCloud, File as FileIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { isValid, parseISO, format } from 'date-fns';
+import { format, parse, isValid } from 'date-fns';
 
 const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 const aadhaarRegex = /^[0-9]{12}$/;
@@ -23,9 +23,9 @@ const memberSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
   emailId: z.string().email('Invalid email address'),
-  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format').refine(date => isValid(parseISO(date)), { message: "Invalid date" }),
+  dateOfBirth: z.string().refine(val => val && isValid(parse(val, 'yyyy-MM-dd', new Date())), { message: "Invalid date" }),
   address: z.string().min(1, 'Address is required'),
-  anniversaryDate: z.string().optional().refine(date => !date || (z.string().regex(/^\d{4}-\d{2}-\d{2}$/).safeParse(date).success && isValid(parseISO(date))), { message: "Invalid date format. Use YYYY-MM-DD or leave empty." }),
+  anniversaryDate: z.string().optional().refine(val => !val || (val && isValid(parse(val, 'yyyy-MM-dd', new Date()))), { message: "Invalid date format. Use YYYY-MM-DD or leave empty." }),
   relation: z.string().min(1, 'Relation is required'),
   panNumber: z.string()
     .optional()
@@ -148,8 +148,8 @@ export function FamilyMemberFormModal({
     if (member) {
        reset({
         ...member,
-        dateOfBirth: member.dateOfBirth ? format(parseISO(member.dateOfBirth), 'yyyy-MM-dd') : '',
-        anniversaryDate: member.anniversaryDate ? format(parseISO(member.anniversaryDate), 'yyyy-MM-dd') : '',
+        dateOfBirth: member.dateOfBirth ? format(new Date(member.dateOfBirth), 'yyyy-MM-dd') : '',
+        anniversaryDate: member.anniversaryDate ? format(new Date(member.anniversaryDate), 'yyyy-MM-dd') : '',
       });
       setPanFile(member.panFileName ? new File([], member.panFileName) : null);
       setAadhaarFile(member.aadhaarFileName ? new File([], member.aadhaarFileName) : null);
@@ -323,12 +323,12 @@ export function FamilyMemberFormModal({
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input id="dateOfBirth" type="text" placeholder="YYYY-MM-DD" {...register('dateOfBirth')} disabled={isSaving} />
+                  <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} disabled={isSaving} />
                    {errors.dateOfBirth && <p className="text-sm text-destructive">{errors.dateOfBirth.message}</p>}
                 </div>
                  <div className="flex flex-col gap-1.5">
                   <Label htmlFor="anniversaryDate">Anniversary Date (Optional)</Label>
-                  <Input id="anniversaryDate" type="text" placeholder="YYYY-MM-DD" {...register('anniversaryDate')} disabled={isSaving} />
+                  <Input id="anniversaryDate" type="date" {...register('anniversaryDate')} disabled={isSaving} />
                   {errors.anniversaryDate && <p className="text-sm text-destructive">{errors.anniversaryDate.message}</p>}
                 </div>
                 <div className="flex flex-col gap-1.5">
