@@ -2,7 +2,7 @@
 'use client';
 
 import { Client, FamilyMember } from '@/lib/types';
-import { Trash2, Eye, X } from 'lucide-react';
+import { Trash2, Eye, X, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -22,12 +22,14 @@ const DocumentSlot = ({
   filename,
   onDelete,
   onView,
+  onDownload,
 }: {
   label: string;
   url?: string | null;
   filename?: string;
   onDelete: () => void;
   onView: () => void;
+  onDownload: () => void;
 }) => {
   if (!url) {
     return <DetailItem label={label} value="Not uploaded" />;
@@ -52,6 +54,9 @@ const DocumentSlot = ({
           </div>
         </div>
         <div className="flex flex-col">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onDownload}>
+              <Download className="h-4 w-4 text-muted-foreground" />
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive close-icon" onClick={onDelete}>
                 <Trash2 className="h-4 w-4" />
             </Button>
@@ -131,6 +136,16 @@ export function DocumentViewer({ person }: DocumentViewerProps) {
       }
   }
 
+  const handleDownload = (url?: string | null, filename?: string) => {
+    if (!url) return;
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename || "document";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Use a placeholder if the URL is not available for demonstration
   const getUrl = (url?: string | null) => url || 'https://picsum.photos/seed/doc/400/300';
 
@@ -146,6 +161,7 @@ export function DocumentViewer({ person }: DocumentViewerProps) {
             url={documents.pan.url ? getUrl(documents.pan.url) : null}
             filename={documents.pan.name}
             onView={() => documents.pan.url && setViewingImage(getUrl(documents.pan.url))}
+            onDownload={() => handleDownload(documents.pan.url, documents.pan.name)}
             onDelete={() => handleDelete('pan')}
           />
           <DocumentSlot
@@ -153,6 +169,7 @@ export function DocumentViewer({ person }: DocumentViewerProps) {
             url={documents.aadhaar.url ? getUrl(documents.aadhaar.url) : null}
             filename={documents.aadhaar.name}
             onView={() => documents.aadhaar.url && setViewingImage(getUrl(documents.aadhaar.url))}
+            onDownload={() => handleDownload(documents.aadhaar.url, documents.aadhaar.name)}
             onDelete={() => handleDelete('aadhaar')}
           />
           <DocumentSlot
@@ -160,6 +177,7 @@ export function DocumentViewer({ person }: DocumentViewerProps) {
             url={documents.other.url ? getUrl(documents.other.url) : null}
             filename={documents.other.name}
             onView={() => documents.other.url && setViewingImage(getUrl(documents.other.url))}
+            onDownload={() => handleDownload(documents.other.url, documents.other.name)}
             onDelete={() => handleDelete('other')}
           />
         </div>
