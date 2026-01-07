@@ -81,16 +81,15 @@ export const RM_NAMES = [
 ] as const;
 
 export const MUTUAL_FUND_SERVICES = [
-  'Change of broker',
-  'Change of bank',
-  'Minor to major',
-  'Folio consolidation',
-  'Redemption',
-  'Change of phone number',
-  'Change of e-mail address',
-  'Transmission',
-  'KYC update',
-  'SIP cancellation',
+  'Change/Update Email Address',
+  'Change/Update Mobile Number',
+  'Consolidation of Folios',
+  'Update Nominee Details',
+  'Change of Bank Account Details',
+  'Add or Delete Multiple Bank Mandate',
+  'Update of Tax Status',
+  'Status Modification from Minor To Major',
+  'Change of FATCA',
 ] as const;
 
 export const AMC_NAMES = [
