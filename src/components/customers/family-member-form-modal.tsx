@@ -73,6 +73,37 @@ const AadhaarInput = ({ value, onChange, ...props }: { value: string, onChange: 
   return <Input {...props} value={formattedValue} onChange={handleInputChange} />;
 };
 
+const PanInput = (props: React.ComponentProps<typeof Input>) => {
+  const handlePanInput = (e: React.FormEvent<HTMLInputElement>) => {
+    let value = e.currentTarget.value.toUpperCase();
+    let sanitized = '';
+    for (let i = 0; i < value.length && i < 10; i++) {
+      const char = value[i];
+      if (i < 5) {
+        // First 5 must be letters
+        if (/[A-Z]/.test(char)) {
+          sanitized += char;
+        }
+      } else if (i < 9) {
+        // Next 4 must be digits
+        if (/[0-9]/.test(char)) {
+          sanitized += char;
+        }
+      } else {
+        // Last one must be a letter
+        if (/[A-Z]/.test(char)) {
+          sanitized += char;
+        }
+      }
+    }
+    e.currentTarget.value = sanitized;
+    // Let react-hook-form's onChange handle the state update
+    props.onChange?.(e as React.ChangeEvent<HTMLInputElement>);
+  };
+
+  return <Input {...props} onInput={handlePanInput} maxLength={10} />;
+};
+
 
 export function FamilyMemberFormModal({
   onClose,
@@ -237,12 +268,9 @@ export function FamilyMemberFormModal({
                   )}
                 />
             ) : (
-                <Input
+                <PanInput
                   id={id}
                   {...numberRegister}
-                  onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    e.target.value = e.target.value.toUpperCase();
-                  }}
                   disabled={isSaving}
                   defaultValue={numberValue}
                 />
