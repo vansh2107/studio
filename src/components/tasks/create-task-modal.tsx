@@ -797,7 +797,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                             <Input type="number" {...register('insurance.receivedAmount', { valueAsNumber: true })} />
                             {errors.insurance?.receivedAmount && <p className="text-sm text-destructive">{errors.insurance.receivedAmount.message}</p>}
                           </div>
-                          <div className="md:col-span-2">
+                          <div className="md:col-span-2 space-y-1">
                             <Label>Re-Investment Status</Label>
                             <Controller
                               name="insurance.reinvestmentStatus"
@@ -815,7 +815,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                             />
                             {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
                           </div>
-
+                          
                           {reinvestmentStatus === 'Pending' && (
                             <div className="space-y-1">
                               <Label>Approx Date</Label>
