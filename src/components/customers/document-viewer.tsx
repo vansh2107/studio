@@ -136,14 +136,25 @@ export function DocumentViewer({ person }: DocumentViewerProps) {
       }
   }
 
-  const handleDownload = (url?: string | null, filename?: string) => {
+  const handleDownload = async (url?: string | null, filename?: string) => {
     if (!url) return;
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename || "document";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok.');
+        const blob = await response.blob();
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename || "document";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    } catch (error) {
+        console.error("Download failed:", error);
+        // Fallback for browsers that might have issues with the blob method
+        // or for CORS errors that weren't handled server-side.
+        window.open(url, '_blank');
+    }
   };
 
   // Use a placeholder if the URL is not available for demonstration
