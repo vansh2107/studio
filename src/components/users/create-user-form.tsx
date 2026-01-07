@@ -109,7 +109,7 @@ export function CreateUserForm({ onUserCreated }: { onUserCreated: () => void })
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-1">
           <Label htmlFor="firstName">First Name</Label>
           <Input id="firstName" {...register('firstName')} />
@@ -130,97 +130,97 @@ export function CreateUserForm({ onUserCreated }: { onUserCreated: () => void })
           <Input id="phone" {...register('phone')} />
           {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
         </div>
+      
+        <div className="space-y-1">
+          <Label htmlFor="role">Role</Label>
+          <Controller
+            name="role"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CREATABLE_ROLES.map(role => (
+                    <SelectItem key={role} value={role}>{role}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
+        </div>
+
+        {selectedRole === 'ADMIN' && (
+          <div className="space-y-1">
+            <Label htmlFor="assignedSuperAdmin">Assign Super Admin</Label>
+            <Controller
+              name="assignedSuperAdmin"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Super Admin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {superAdminOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.assignedSuperAdmin && <p className="text-sm text-destructive">{errors.assignedSuperAdmin.message}</p>}
+          </div>
+        )}
+
+        {selectedRole === 'RM' && (
+          <div className="space-y-1">
+            <Label htmlFor="assignedAdmin">Assign Admin</Label>
+            <Controller
+              name="assignedAdmin"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Admin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {adminOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.assignedAdmin && <p className="text-sm text-destructive">{errors.assignedAdmin.message}</p>}
+          </div>
+        )}
+
+        {selectedRole === 'ASSOCIATE' && (
+          <div className="space-y-1">
+            <Label htmlFor="assignedRM">Assign RM</Label>
+            <Controller
+              name="assignedRM"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select RM" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {rmOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.assignedRM && <p className="text-sm text-destructive">{errors.assignedRM.message}</p>}
+          </div>
+        )}
       </div>
-
-      <div className="space-y-1">
-        <Label htmlFor="role">Role</Label>
-        <Controller
-          name="role"
-          control={control}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a role" />
-              </SelectTrigger>
-              <SelectContent>
-                {CREATABLE_ROLES.map(role => (
-                  <SelectItem key={role} value={role}>{role}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        />
-        {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
-      </div>
-
-      {selectedRole === 'ADMIN' && (
-        <div className="space-y-1">
-          <Label htmlFor="assignedSuperAdmin">Assign Super Admin</Label>
-          <Controller
-            name="assignedSuperAdmin"
-            control={control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Super Admin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {superAdminOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.assignedSuperAdmin && <p className="text-sm text-destructive">{errors.assignedSuperAdmin.message}</p>}
-        </div>
-      )}
-
-      {selectedRole === 'RM' && (
-        <div className="space-y-1">
-          <Label htmlFor="assignedAdmin">Assign Admin</Label>
-          <Controller
-            name="assignedAdmin"
-            control={control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Admin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {adminOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.assignedAdmin && <p className="text-sm text-destructive">{errors.assignedAdmin.message}</p>}
-        </div>
-      )}
-
-      {selectedRole === 'ASSOCIATE' && (
-        <div className="space-y-1">
-          <Label htmlFor="assignedRM">Assign RM</Label>
-          <Controller
-            name="assignedRM"
-            control={control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select RM" />
-                </SelectTrigger>
-                <SelectContent>
-                  {rmOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.assignedRM && <p className="text-sm text-destructive">{errors.assignedRM.message}</p>}
-        </div>
-      )}
 
       <div className="flex justify-end pt-4">
         <Button type="submit" disabled={isSaving}>
@@ -231,3 +231,5 @@ export function CreateUserForm({ onUserCreated }: { onUserCreated: () => void })
     </form>
   );
 }
+
+    

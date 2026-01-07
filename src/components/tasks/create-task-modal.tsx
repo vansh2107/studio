@@ -612,12 +612,12 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <Label>Associate</Label>
                 <Input {...register('insurance.associate')} readOnly value={associateName} />
               </div>
-              <div className="md:col-span-2">
+              <div className="space-y-1">
                 <Label>Policy No.</Label>
                 <Input {...register('insurance.policyNo')} />
                 {errors.insurance?.policyNo && <p className="text-sm text-destructive">{errors.insurance.policyNo.message}</p>}
               </div>
-              <div className="md:col-span-2">
+              <div className="space-y-1">
                 <Label>Company</Label>
                 <Controller
                   name="insurance.company"
@@ -786,60 +786,62 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                    {amountStatus === 'Credited' && (
                      <>
                         <div className="md:col-span-2"><Separator /></div>
-                        <div className="space-y-1">
-                          <Label>Received Date</Label>
-                          <Input type="date" {...register('insurance.receivedDate')} />
-                          {errors.insurance?.receivedDate && <p className="text-sm text-destructive">{errors.insurance.receivedDate.message}</p>}
-                        </div>
-                        <div className="space-y-1">
-                          <Label>Received Amount</Label>
-                          <Input type="number" {...register('insurance.receivedAmount', { valueAsNumber: true })} />
-                          {errors.insurance?.receivedAmount && <p className="text-sm text-destructive">{errors.insurance.receivedAmount.message}</p>}
-                        </div>
-                        <div className="md:col-span-2">
-                          <Label>Re-Investment Status</Label>
-                          <Controller
-                            name="insurance.reinvestmentStatus"
-                            control={control}
-                            render={({ field }) => (
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Pending">Pending</SelectItem>
-                                  <SelectItem value="No">No</SelectItem>
-                                  <SelectItem value="Yes">Yes</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
-                          />
-                          {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
-                        </div>
-
-                        {reinvestmentStatus === 'Pending' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <Label>Approx Date</Label>
-                            <Input type="date" {...register('insurance.reinvestmentApproxDate')} />
-                             {errors.insurance?.reinvestmentApproxDate && <p className="text-sm text-destructive">{errors.insurance.reinvestmentApproxDate.message}</p>}
+                            <Label>Received Date</Label>
+                            <Input type="date" {...register('insurance.receivedDate')} />
+                            {errors.insurance?.receivedDate && <p className="text-sm text-destructive">{errors.insurance.receivedDate.message}</p>}
                           </div>
-                        )}
-                        {reinvestmentStatus === 'No' && (
                           <div className="space-y-1">
-                            <Label>Reason</Label>
-                             <Controller
-                                name="insurance.reinvestmentReason"
-                                control={control}
-                                render={({ field }) => (
+                            <Label>Received Amount</Label>
+                            <Input type="number" {...register('insurance.receivedAmount', { valueAsNumber: true })} />
+                            {errors.insurance?.receivedAmount && <p className="text-sm text-destructive">{errors.insurance.receivedAmount.message}</p>}
+                          </div>
+                          <div className="md:col-span-2">
+                            <Label>Re-Investment Status</Label>
+                            <Controller
+                              name="insurance.reinvestmentStatus"
+                              control={control}
+                              render={({ field }) => (
                                 <Select onValueChange={field.onChange} value={field.value}>
-                                    <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
-                                    <SelectContent>
-                                    {REINVESTMENT_REASONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                                    </SelectContent>
+                                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Pending">Pending</SelectItem>
+                                    <SelectItem value="No">No</SelectItem>
+                                    <SelectItem value="Yes">Yes</SelectItem>
+                                  </SelectContent>
                                 </Select>
-                                )}
+                              )}
                             />
-                            {errors.insurance?.reinvestmentReason && <p className="text-sm text-destructive">{errors.insurance.reinvestmentReason.message}</p>}
+                            {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
                           </div>
-                        )}
+
+                          {reinvestmentStatus === 'Pending' && (
+                            <div className="space-y-1">
+                              <Label>Approx Date</Label>
+                              <Input type="date" {...register('insurance.reinvestmentApproxDate')} />
+                               {errors.insurance?.reinvestmentApproxDate && <p className="text-sm text-destructive">{errors.insurance.reinvestmentApproxDate.message}</p>}
+                            </div>
+                          )}
+                          {reinvestmentStatus === 'No' && (
+                            <div className="space-y-1">
+                              <Label>Reason</Label>
+                               <Controller
+                                  name="insurance.reinvestmentReason"
+                                  control={control}
+                                  render={({ field }) => (
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                      <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
+                                      <SelectContent>
+                                      {REINVESTMENT_REASONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                      </SelectContent>
+                                  </Select>
+                                  )}
+                              />
+                              {errors.insurance?.reinvestmentReason && <p className="text-sm text-destructive">{errors.insurance.reinvestmentReason.message}</p>}
+                            </div>
+                          )}
+                        </div>
                      </>
                    )}
                 </>
@@ -850,7 +852,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
         <div className="space-y-1">
           <Label>Description (Optional)</Label>
-          <Textarea {...register('description')} maxLength={300} />
+          <Textarea {...register('description')} maxLength={300} disabled={isTerminal}/>
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>{errors.description?.message}</span>
             <span>{descriptionValue.length} / 300</span>
@@ -874,3 +876,5 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
+
+    
