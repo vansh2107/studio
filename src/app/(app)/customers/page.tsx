@@ -53,7 +53,7 @@ export default function ClientsPage() {
 
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
   const [loading, setLoading] = useState(true);
-  const [showOnlyHeads, setShowOnlyHeads] = useState(false);
+  const [showOnlyHeads, setShowOnlyHeads] = useState(true);
   
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
