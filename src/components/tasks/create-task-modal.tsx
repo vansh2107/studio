@@ -181,10 +181,12 @@ const mutualFundServiceOptions = MUTUAL_FUND_SERVICES.map(service => ({
   label: toTitleCase(service), // The Title Case value for display
 }));
 
-const insuranceServiceOptions = INSURANCE_SERVICES.map(service => ({
-  value: service,
-  label: toTitleCase(service),
-}));
+const nonFinancialInsuranceServiceOptions = INSURANCE_SERVICES
+  .filter(service => !FINANCIAL_SERVICES.includes(service as any))
+  .map(service => ({
+    value: service,
+    label: toTitleCase(service),
+  }));
 
 
 export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps) {
@@ -672,7 +674,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                           <SelectContent>
-                            {insuranceServiceOptions.map(option => (
+                            {nonFinancialInsuranceServiceOptions.map(option => (
                               <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                             ))}
                           </SelectContent>
@@ -875,3 +877,5 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
+
+    
