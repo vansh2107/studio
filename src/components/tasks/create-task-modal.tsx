@@ -324,7 +324,18 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       });
 
     } else {
-      reset();
+      reset({
+      clientName: '',
+      category: '',
+      rmName: '',
+      serviceableRM: '',
+      dueDate: '',
+      description: '',
+      insurance: {
+        insuranceType: 'Non-Financial',
+        amountStatus: 'Pending',
+      }
+    });
     }
   }, [task, reset]);
 
@@ -347,7 +358,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       const selectedClient = clientOptions.find(c => c.value === data.clientName);
 
       const submissionData: Task = {
-        ...(task || { id: '', createDate: new Date().toISOString(), status: 'Pending' }),
+        ...(task || { id: `task-${Date.now()}`, createDate: new Date().toISOString(), status: 'Pending' }),
         ...data,
         clientId: selectedClient?.value || 'N/A',
         clientName: selectedClient?.label || data.clientName,
@@ -732,7 +743,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       </div>
                       <div className="space-y-1">
                         <Label>Maturity Amount</Label>
-                        <Input type="number" {...register('insurance.maturityAmount')} />
+                        <Input type="number" {...register('insurance.maturityAmount', { valueAsNumber: true })} />
                         {errors.insurance?.maturityAmount && <p className="text-sm text-destructive">{errors.insurance.maturityAmount.message}</p>}
                       </div>
                     </>
@@ -782,7 +793,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         </div>
                         <div className="space-y-1">
                           <Label>Received Amount</Label>
-                          <Input type="number" {...register('insurance.receivedAmount')} />
+                          <Input type="number" {...register('insurance.receivedAmount', { valueAsNumber: true })} />
                           {errors.insurance?.receivedAmount && <p className="text-sm text-destructive">{errors.insurance.receivedAmount.message}</p>}
                         </div>
                         <div className="md:col-span-2">
