@@ -266,129 +266,128 @@ export function AddAssetModal({
 
   return (
     <>
-        <div
+      <div
         className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
         onClick={onClose}
-        >
+      >
         <div
-            className={cn(
-                "bg-card rounded-xl shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-h-[90vh]",
-                selectedAssetType ? "max-w-[80vw]" : "max-w-xl"
-            )}
-            onClick={(e) => e.stopPropagation()}
+          className={cn(
+            "bg-card rounded-xl shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-w-[90vw] max-h-[90vh]",
+            selectedAssetType ? "max-w-4xl" : "max-w-xl"
+          )}
+          onClick={(e) => e.stopPropagation()}
         >
-            <div className="p-6 flex-shrink-0 relative">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onClose}
-                    className="absolute top-4 right-4 z-10 close-icon"
-                >
-                    <X className="h-4 w-4" />
-                </Button>
-                
-                <h2 className="text-lg font-semibold">Add New Asset</h2>
-                <p className="text-sm text-muted-foreground">Select a family and asset type to begin.</p>
-            </div>
+          <div className="p-6 flex-shrink-0 relative border-b">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="absolute top-4 right-4 z-10 close-icon"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            
+            <h2 className="text-lg font-semibold">Add New Asset</h2>
+            <p className="text-sm text-muted-foreground">Select a family and asset type to begin.</p>
+          </div>
 
-            <div className="flex-1 min-h-0">
-                <form onSubmit={handleSubmit(handleSave)} className="flex flex-col h-full">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 px-6 border-b mb-4 flex-shrink-0">
-                        <div>
-                            <Label>Family Head</Label>
-                            <Controller
-                                name="familyHead"
-                                control={control}
-                                render={({ field }) => (
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                    <SelectTrigger>
-                                    <SelectValue placeholder="Select Family Head" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                    {familyHeads.map((head) => (
-                                        <SelectItem key={head.id} value={head.id}>
-                                        {head.name}
-                                        </SelectItem>
-                                    ))}
-                                    </SelectContent>
-                                </Select>
-                                )}
-                            />
-                            {errors.familyHead && <p className="text-sm text-destructive">{errors.familyHead.message}</p>}
-                        </div>
-                        <div>
-                            <Label>Asset</Label>
-                            <Controller
-                                name="assetType"
-                                control={control}
-                                render={({ field }) => (
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                    <SelectTrigger>
-                                    <SelectValue placeholder="Select Asset Type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                    {ASSET_TYPES.map((asset) => (
-                                        <SelectItem key={asset} value={asset}>
-                                        {asset}
-                                        </SelectItem>
-                                    ))}
-                                    </SelectContent>
-                                </Select>
-                                )}
-                            />
-                            {errors.assetType && <p className="text-sm text-destructive">{errors.assetType.message}</p>}
-                        </div>
-                    </div>
-                
-                    <div className="flex-1 overflow-y-auto px-6 pb-6">
-                        {selectedAssetType === 'GENERAL INSURANCE' && (
-                        <GeneralInsuranceFields control={control} errors={errors} familyMembers={familyMembers} />
-                        )}
-                        {selectedAssetType === 'PHYSICAL TO DEMAT' && (
-                            <PhysicalToDematFields register={register} errors={errors} control={control} setValue={setValue} watch={watch} />
-                        )}
-                        {selectedAssetType === 'BONDS' && (
-                            <BondFields register={register} errors={errors} control={control} familyMembers={familyMembers} setValue={setValue} watch={watch} />
-                        )}
-                        {selectedAssetType === 'FIXED DEPOSITS' && (
-                            <FDFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
-                        )}
-                        {selectedAssetType === 'PPF' && (
-                            <PPFFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
-                        )}
-                        
-                        {selectedAssetType && (
-                            <div className="mt-6 border-t pt-4">
-                                <Button type="button" variant="outline" onClick={() => setIsUploadModalOpen(true)}>
-                                    <Upload className="mr-2 h-4 w-4" />
-                                    Upload Document
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                
-                    <div className="flex justify-end gap-2 p-6 flex-shrink-0 border-t">
-                        <Button type="submit" disabled={isSaving}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Asset'}
-                        </Button>
-                    </div>
-                </form>
+          <form onSubmit={handleSubmit(handleSave)} className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b mb-4">
+                  <div>
+                      <Label>Family Head</Label>
+                      <Controller
+                          name="familyHead"
+                          control={control}
+                          render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                              <SelectValue placeholder="Select Family Head" />
+                              </SelectTrigger>
+                              <SelectContent>
+                              {familyHeads.map((head) => (
+                                  <SelectItem key={head.id} value={head.id}>
+                                  {head.name}
+                                  </SelectItem>
+                              ))}
+                              </SelectContent>
+                          </Select>
+                          )}
+                      />
+                      {errors.familyHead && <p className="text-sm text-destructive">{errors.familyHead.message}</p>}
+                  </div>
+                  <div>
+                      <Label>Asset</Label>
+                      <Controller
+                          name="assetType"
+                          control={control}
+                          render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                              <SelectValue placeholder="Select Asset Type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                              {ASSET_TYPES.map((asset) => (
+                                  <SelectItem key={asset} value={asset}>
+                                  {asset}
+                                  </SelectItem>
+                              ))}
+                              </SelectContent>
+                          </Select>
+                          )}
+                      />
+                      {errors.assetType && <p className="text-sm text-destructive">{errors.assetType.message}</p>}
+                  </div>
+              </div>
+              
+              {selectedAssetType === 'GENERAL INSURANCE' && (
+              <GeneralInsuranceFields control={control} errors={errors} familyMembers={familyMembers} />
+              )}
+              {selectedAssetType === 'PHYSICAL TO DEMAT' && (
+                  <PhysicalToDematFields register={register} errors={errors} control={control} setValue={setValue} watch={watch} />
+              )}
+              {selectedAssetType === 'BONDS' && (
+                  <BondFields register={register} errors={errors} control={control} familyMembers={familyMembers} setValue={setValue} watch={watch} />
+              )}
+              {selectedAssetType === 'FIXED DEPOSITS' && (
+                  <FDFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
+              )}
+              {selectedAssetType === 'PPF' && (
+                  <PPFFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
+              )}
+              
+              {selectedAssetType && (
+                  <div className="mt-6 border-t pt-4">
+                      <Button type="button" variant="outline" onClick={() => setIsUploadModalOpen(true)}>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Document
+                      </Button>
+                  </div>
+              )}
             </div>
+            
+            <div className="flex justify-end gap-2 p-6 flex-shrink-0 border-t">
+              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+              <Button type="submit" disabled={isSaving}>
+              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Asset'}
+              </Button>
+            </div>
+          </form>
         </div>
-        </div>
+      </div>
 
-        {isUploadModalOpen && selectedFamilyHead && (
-            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60]">
-                <div className="bg-card rounded-xl p-6 w-full max-w-2xl shadow-lg border relative" onClick={(e) => e.stopPropagation()}>
-                    <UploadDocModal 
-                        member={familyMembers.find(m => m.id === selectedFamilyHead)!}
-                        onClose={() => setIsUploadModalOpen(false)}
-                        onSave={handleSaveUploads}
-                        initialCategory={selectedAssetType || 'General'}
-                    />
-                </div>
-            </div>
-        )}
+      {isUploadModalOpen && selectedFamilyHead && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60]">
+          <div className="bg-card rounded-xl p-6 w-full max-w-2xl shadow-lg border relative" onClick={(e) => e.stopPropagation()}>
+            <UploadDocModal 
+              member={familyMembers.find(m => m.id === selectedFamilyHead)!}
+              onClose={() => setIsUploadModalOpen(false)}
+              onSave={handleSaveUploads}
+              initialCategory={selectedAssetType || 'General'}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }
