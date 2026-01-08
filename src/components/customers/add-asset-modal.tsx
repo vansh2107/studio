@@ -141,9 +141,9 @@ export function AddAssetModal({
     >
       <div
         className={cn(
-            "bg-card rounded-xl p-6 w-full shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out",
+            "bg-card rounded-xl p-6 shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-w-[90vw] max-h-[90vh]",
             selectedAssetType
-              ? "max-w-[80vw] h-[90vh]"
+              ? "max-w-[80vw]"
               : "max-w-xl"
           )}
         onClick={(e) => e.stopPropagation()}
@@ -210,7 +210,7 @@ export function AddAssetModal({
                 </div>
           </div>
           
-          <div className="flex-grow overflow-y-auto pr-2 -mr-2">
+          <div className="flex-grow overflow-y-auto pr-4 -mr-4">
             {selectedAssetType === 'GENERAL INSURANCE' && (
               <GeneralInsuranceFields control={control} errors={errors} familyMembers={familyMembers} />
             )}
@@ -228,7 +228,7 @@ export function AddAssetModal({
             )}
           </div>
           
-          <div className="flex justify-end gap-2 pt-6 mt-auto flex-shrink-0">
+          <div className="flex justify-end gap-2 pt-6 mt-auto flex-shrink-0 border-t -mx-6 px-6">
             <Button type="submit" disabled={isSaving}>
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Asset'}
             </Button>
