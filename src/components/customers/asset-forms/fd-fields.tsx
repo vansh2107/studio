@@ -63,11 +63,11 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
         </div>
 
         {/* Row 3 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 items-start">
             <div className="space-y-2">
                 <Label>Period</Label>
-                <div className="flex gap-4">
-                    <div className="flex-1">
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
                         <Label htmlFor="fd_periodMonth" className="text-xs text-muted-foreground">Month</Label>
                         <Controller
                             name="fd_periodMonth"
@@ -84,7 +84,7 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
                             )}
                         />
                     </div>
-                    <div className="flex-1">
+                    <div className="space-y-1">
                         <Label htmlFor="fd_periodDays" className="text-xs text-muted-foreground">Days</Label>
                         <Controller
                             name="fd_periodDays"
@@ -104,19 +104,15 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
                 </div>
             </div>
             <div className="space-y-2">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="fd_interestRate">Interest Rate (%)</Label>
-                        <Input id="fd_interestRate" type="number" {...register('fd_interestRate')} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="fd_maturityAmount">Maturity Amount (₹)</Label>
-                        <Input id="fd_maturityAmount" type="number" {...register('fd_maturityAmount')} />
-                    </div>
-                </div>
+                <Label htmlFor="fd_interestRate">Interest Rate (%)</Label>
+                <Input id="fd_interestRate" type="number" {...register('fd_interestRate')} />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="fd_maturityAmount">Maturity Amount (₹)</Label>
+                <Input id="fd_maturityAmount" type="number" {...register('fd_maturityAmount')} />
             </div>
         </div>
-
+        
         {/* Row 4 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
              <div className="space-y-2">
