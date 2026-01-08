@@ -191,7 +191,7 @@ export function AddAssetModal({
         bankAccountNumber: '',
         mobileNumber: '',
         emailAddress: '',
-        nominees: [{ name: '', relationship: '', allocation: 100 }]
+        nominees: [{ name: '', relationship: '', allocation: 100, dateOfBirth: '' }]
       }
     },
   });
@@ -265,6 +265,19 @@ export function AddAssetModal({
             assetType: '',
             gi_familyMember: '',
             gi_category: '',
+            gi_issuer: '',
+            gi_planName: '',
+            gi_policyNumber: '',
+            gi_policyType: '',
+            gi_policyStartDate: '',
+            gi_policyIssueDate: '',
+            gi_policyEndDate: '',
+            gi_vehicleRegNumber: '',
+            gi_sumAssured: '',
+            gi_priceWithoutGST: '',
+            gi_priceWithGST: '',
+            gi_eligiblePremium: '',
+            gi_referenceAgent: '',
             stocks: {
                 holderName: '',
                 jointHolder1: '',
@@ -401,7 +414,7 @@ export function AddAssetModal({
         <fieldset
           disabled={isViewMode}
           className={cn(
-            "bg-card rounded-xl shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-h-[90vh]",
+            "bg-card rounded-xl shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-w-[90vw] max-h-[90vh]",
             selectedAssetType ? "max-w-4xl" : "max-w-xl"
           )}
           onClick={(e) => e.stopPropagation()}
@@ -485,7 +498,7 @@ export function AddAssetModal({
                   <PPFFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
               )}
               {selectedAssetType === 'STOCKS' && (
-                  <StocksFields control={control} errors={errors} register={register} />
+                  <StocksFields control={control} errors={errors} register={register} watch={watch} />
               )}
               
               

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
-export function StocksFields({ control, register, errors }: { control: any; register: any; errors: any }) {
+export function StocksFields({ control, register, errors, watch }: { control: any; register: any; errors: any; watch: any }) {
   const [jointHolderCount, setJointHolderCount] = useState(0);
 
   const { fields: nomineeFields, append: appendNominee, remove: removeNominee } = useFieldArray({
@@ -17,7 +17,8 @@ export function StocksFields({ control, register, errors }: { control: any; regi
     name: 'stocks.nominees',
   });
 
-  const totalAllocation = control.getValues('stocks.nominees')?.reduce((acc: number, nominee: any) => acc + (Number(nominee.allocation) || 0), 0) || 0;
+  const nominees = watch('stocks.nominees');
+  const totalAllocation = nominees?.reduce((acc: number, nominee: any) => acc + (Number(nominee.allocation) || 0), 0) || 0;
 
   return (
     <div className="space-y-6">
