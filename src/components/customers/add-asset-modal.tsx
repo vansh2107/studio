@@ -131,7 +131,25 @@ export function AddAssetModal({
     formState: { errors },
   } = useForm<AssetFormData>({
     resolver: zodResolver(assetFormSchema),
-    defaultValues: {},
+    defaultValues: {
+      familyHead: '',
+      assetType: '',
+      gi_familyMember: '',
+      gi_category: '',
+      gi_issuer: '',
+      gi_planName: '',
+      gi_policyNumber: '',
+      gi_policyType: '',
+      gi_policyStartDate: '',
+      gi_policyIssueDate: '',
+      gi_policyEndDate: '',
+      gi_vehicleRegNumber: '',
+      gi_sumAssured: '',
+      gi_priceWithoutGST: '',
+      gi_priceWithGST: '',
+      gi_eligiblePremium: '',
+      gi_referenceAgent: '',
+    },
   });
 
   const selectedFamilyHead = watch('familyHead');
