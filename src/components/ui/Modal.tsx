@@ -1,5 +1,6 @@
 
-export default function Modal({ open, onClose, children }: { open: boolean, onClose: () => void, children: React.ReactNode }) {
+
+export default function Modal({ open, onClose, children, className }: { open: boolean, onClose: () => void, children: React.ReactNode, className?: string }) {
   if (!open) return null
 
   return (
@@ -8,7 +9,7 @@ export default function Modal({ open, onClose, children }: { open: boolean, onCl
       // onClick={onClose} // Removed to prevent closing on backdrop click
     >
       <div
-        className="bg-card rounded-xl p-6 w-full max-w-2xl shadow-lg border relative" // Added relative for positioning close button
+        className={`bg-card rounded-xl p-6 w-full max-w-2xl shadow-lg border relative ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

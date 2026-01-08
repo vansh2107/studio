@@ -43,9 +43,10 @@ import {
 } from '@/components/ui/tooltip';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { AddAssetModal } from '@/components/customers/add-asset-modal';
 
 
-type ActiveModal = 'form' | 'view-family' | 'view-member' | 'member-form' | null;
+type ActiveModal = 'form' | 'view-family' | 'view-member' | 'member-form' | 'add-asset' | null;
 
 export default function ClientsPage() {
   const { effectiveUser, impersonate, hasPermission } = useCurrentUser();
@@ -320,12 +321,18 @@ export default function ClientsPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold font-headline">Client Management</h1>
-          {canCreate && (
-            <Button onClick={handleAddNew}>
+          <div className="flex items-center gap-2">
+            {canCreate && (
+              <Button onClick={handleAddNew}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                New Family Head
+              </Button>
+            )}
+            <Button onClick={() => setActiveModal('add-asset')}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              New Family Head
+              Add Asset
             </Button>
-          )}
+          </div>
         </div>
         
         <div className="flex justify-end items-center space-x-2 py-4">
@@ -468,7 +475,7 @@ export default function ClientsPage() {
           </CardContent>
         </Card>
 
-        <Modal open={!!activeModal} onClose={handleCloseModal}>
+        <Modal open={activeModal !== 'add-asset' && !!activeModal} onClose={handleCloseModal}>
           <>
             {activeModal === 'form' && (
               <FamilyFormModal
@@ -506,6 +513,14 @@ export default function ClientsPage() {
             )}
           </>
         </Modal>
+        
+         {activeModal === 'add-asset' && (
+            <AddAssetModal
+                isOpen={activeModal === 'add-asset'}
+                onClose={handleCloseModal}
+                familyHeads={allDisplayClients.filter(c => c.isFamilyHead) as Client[]}
+            />
+        )}
       </div>
     </TooltipProvider>
   );
