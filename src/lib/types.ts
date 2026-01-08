@@ -91,25 +91,6 @@ export interface FamilyMember {
   otherDocumentUrl?: string;
 }
 
-
-export interface Asset {
-  id: string;
-  name: string;
-  category: AssetCategory;
-  value: number;
-  ownerMemberId: string; // ID of FamilyMember who owns it
-  clientId: string; // ID of the client family head
-}
-
-export interface Document {
-  id: string;
-  name: string;
-  url: string;
-  category: string; // Keep as string, not AssetCategory for flexibility
-  memberId: string;
-  clientId: string;
-}
-
 // This type is now effectively merged into the Client type.
 // Kept for legacy compatibility if needed, but should be phased out.
 export interface Family {
@@ -191,4 +172,87 @@ export interface Task {
     amcSubmissionStatus?: "Done" | "Pending";
   };
   insurance?: InsuranceDetails;
+}
+
+
+// --- Asset Management Types ---
+
+export interface GeneralInsuranceDetails {
+  familyMember?: string;
+  category?: string;
+  issuer?: string;
+  planName?: string;
+  policyNumber?: string;
+  policyType?: string;
+  policyStartDate?: string;
+  policyIssueDate?: string;
+  policyEndDate?: string;
+  vehicleRegNumber?: string;
+  sumAssured?: string;
+  priceWithoutGST?: string;
+  priceWithGST?: string;
+  eligiblePremium?: string;
+  referenceAgent?: string;
+}
+
+export interface PhysicalToDematDetails {
+    folioNumber?: string;
+    nameOnShare?: string;
+    jointHolder1?: string;
+    jointHolder2?: string;
+    jointHolder3?: string;
+    companyName?: string;
+    rtaName?: string;
+    quantity?: number;
+    marketPrice?: number;
+    totalValue?: number;
+}
+
+export interface BondDetails {
+    isin?: string;
+    issuer?: string;
+    bondPrice?: number;
+    bondUnit?: number;
+    bondAmount?: number;
+    purchaseDate?: string;
+    maturityDate?: string;
+    nomineeName?: string;
+    nameOfFamilyMember?: string;
+}
+
+export interface FDDetails {
+    companyName?: string;
+    investorName?: string;
+    fdName?: string;
+    fdNumber?: string;
+    depositedAmount?: string;
+    periodMonth?: string;
+    periodDays?: string;
+    interestRate?: string;
+    maturityAmount?: string;
+    purchaseDate?: string;
+    maturityDate?: string;
+}
+
+export interface PPFDetails {
+    familyName?: string;
+    contributedAmount?: number;
+    balance?: number;
+    bankName?: string;
+    openingDate?: string;
+    matureDate?: string;
+}
+
+
+export interface Asset {
+  id: string;
+  familyHeadId: string;
+  familyHeadName: string;
+  assetType: 'GENERAL INSURANCE' | 'PHYSICAL TO DEMAT' | 'BONDS' | 'FIXED DEPOSITS' | 'PPF' | 'LIFE INSURANCE' | 'MUTUAL FUNDS' | 'STOCKS';
+  generalInsurance?: GeneralInsuranceDetails;
+  physicalToDemat?: PhysicalToDematDetails;
+  bonds?: BondDetails;
+  fixedDeposits?: FDDetails;
+  ppf?: PPFDetails;
+  // Future asset types can be added here
 }
