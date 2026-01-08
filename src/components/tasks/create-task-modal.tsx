@@ -21,12 +21,19 @@ import {
   INSURANCE_COMPANIES,
   FINANCIAL_SERVICES,
   REINVESTMENT_REASONS,
+  BOND_SUB_CATEGORIES,
+  BOND_TRANSACTION_TYPES,
+  FIXED_DEPOSIT_SUB_CATEGORIES,
+  PPF_SUB_CATEGORIES,
+  GENERAL_INSURANCE_SERVICES,
+  GENERAL_INSURANCE_TYPES
 } from '@/lib/constants';
 import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
 import { format, parse, parseISO } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { BondDetails, FixedDepositDetails, PpfDetails, GeneralInsuranceDetails } from '@/lib/types';
 
 /* ---------- VALIDATION ---------- */
 
@@ -58,10 +65,6 @@ const mutualFundSchema = z.object({
   signatureStatus: z.enum(["Done", "Pending"]),
   amcSubmissionStatus: z.enum(["Done", "Pending"]),
 });
-
-const toDate = z.preprocess((arg) => {
-  if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
-}, z.date());
 
 const insuranceSchema = z.object({
   familyHead: z.string(),
@@ -129,10 +132,68 @@ const insuranceSchema = z.object({
   }
 });
 
+const bondDetailsSchema = z.object({
+    subCategory: z.string().min(1, 'Sub-category is required'),
+    isin: z.string().min(1, 'ISIN is required'),
+    issuer: z.string().min(1, 'Issuer is required'),
+    bondPrice: z.number().positive('Bond Price must be positive'),
+    bondUnit: z.number().int().positive('Bond Unit must be a positive integer'),
+    bondAmount: z.number(),
+    purchaseDate: z.string().min(1, 'Purchase Date is required'),
+    maturityDate: z.string().min(1, 'Maturity Date is required'),
+    transactionType: z.string().min(1, 'Transaction Type is required'),
+    nomineeName: z.string().min(1, 'Nominee Name is required'),
+    familyMemberName: z.string().min(1, 'Family Member Name is required'),
+});
+
+const fixedDepositDetailsSchema = z.object({
+    subCategory: z.string().min(1, 'Sub-category is required'),
+    familyMemberName: z.string().min(1, 'Family Member Name is required'),
+    issuer: z.string().min(1, 'Issuer/Company is required'),
+    purchaseDate: z.string().min(1, 'Date of Purchase is required'),
+    maturityDate: z.string().min(1, 'Date of Maturity is required'),
+    interest: z.number().positive('Interest must be greater than 0'),
+    period: z.string().regex(/^\d{8}$/, 'Period must be in DDMMYYYY format'),
+}).refine(data => new Date(data.maturityDate) > new Date(data.purchaseDate), {
+    message: "Date of Maturity must be after Date of Purchase",
+    path: ["maturityDate"],
+});
+
+const ppfDetailsSchema = z.object({
+    subCategory: z.string().min(1, 'Sub-category is required'),
+    familyMemberName: z.string().min(1, 'Family Member Name is required'),
+    bankName: z.string().min(1, 'Bank Name is required'),
+    contributedAmount: z.number().positive('Contributed Amount must be positive'),
+    balance: z.number().positive('Balance must be positive'),
+    openingDate: z.string().min(1, 'Date of Opening is required'),
+    matureDate: z.string().min(1, 'Date of Mature is required'),
+});
+
+const generalInsuranceDetailsSchema = z.object({
+    serviceSubCategory: z.string().min(1, 'Service Sub-Category is required'),
+    insuranceType: z.string().min(1, 'Insurance Type is required'),
+    familyMemberName: z.string().min(1, 'Family Member Name is required'),
+    company: z.string().min(1, 'Company is required'),
+    premiumAmount: z.number().positive('Premium Amount must be positive').optional(),
+    description: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if (data.serviceSubCategory === 'RENEWAL' && !data.premiumAmount) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Premium Amount is required for renewals.',
+            path: ['premiumAmount'],
+        });
+    }
+});
+
 
 const taskSchema = baseTaskSchema.extend({
   mutualFund: mutualFundSchema.optional(),
   insurance: insuranceSchema.optional(),
+  bondDetails: bondDetailsSchema.optional(),
+  fixedDeposit: fixedDepositDetailsSchema.optional(),
+  ppf: ppfDetailsSchema.optional(),
+  generalInsurance: generalInsuranceDetailsSchema.optional(),
 }).superRefine((data, ctx) => {
   if (data.category === 'Mutual Funds' && !data.mutualFund) {
     ctx.addIssue({
@@ -141,13 +202,24 @@ const taskSchema = baseTaskSchema.extend({
       path: ["mutualFund"],
     });
   }
-
   if (data.category === 'Life Insurance' && !data.insurance) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "Insurance details are required.",
       path: ["insurance"],
     });
+  }
+  if (data.category === 'Bonds' && !data.bondDetails) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Bond details are required.", path: ["bondDetails"] });
+  }
+  if (data.category === 'Fixed Deposit' && !data.fixedDeposit) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Fixed Deposit details are required.", path: ["fixedDeposit"] });
+  }
+   if (data.category === 'PPF' && !data.ppf) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "PPF details are required.", path: ["ppf"] });
+  }
+   if (data.category === 'General Insurance' && !data.generalInsurance) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "General Insurance details are required.", path: ["generalInsurance"] });
   }
 });
 
@@ -226,10 +298,19 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const financialService = watch('insurance.financialService');
   const amountStatus = watch('insurance.amountStatus');
   const reinvestmentStatus = watch('insurance.reinvestmentStatus');
+  const bondPrice = watch('bondDetails.bondPrice');
+  const bondUnit = watch('bondDetails.bondUnit');
+  const generalInsuranceService = watch('generalInsurance.serviceSubCategory');
 
 
-  /* ---------- AUTO POPULATE ---------- */
+  /* ---------- AUTO-CALCULATION & POPULATION ---------- */
 
+  useEffect(() => {
+      if (typeof bondPrice === 'number' && typeof bondUnit === 'number') {
+          setValue('bondDetails.bondAmount', bondPrice * bondUnit, { shouldValidate: true });
+      }
+  }, [bondPrice, bondUnit, setValue]);
+  
   const { familyHead, assignedAssociate, assignedRM, assignedAdmin } = useMemo(() => {
     if (!clientNameValue) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
 
@@ -253,6 +334,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
   useEffect(() => {
     setValue('rmName', rmName, { shouldValidate: true });
+    
+    const memberName = clientOptions.find(c => c.value === clientNameValue)?.label || '';
 
     if (familyHeadName && selectedCategory === 'Mutual Funds')
       setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
@@ -262,109 +345,133 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
     if (associateName && selectedCategory === 'Life Insurance')
       setValue('insurance.associate', associateName, { shouldValidate: true });
+    
+    if (memberName && selectedCategory === 'Bonds')
+      setValue('bondDetails.familyMemberName', memberName, { shouldValidate: true });
 
-  }, [familyHeadName, associateName, rmName, selectedCategory, setValue]);
+    if (memberName && selectedCategory === 'Fixed Deposit')
+      setValue('fixedDeposit.familyMemberName', memberName, { shouldValidate: true });
+    
+    if (memberName && selectedCategory === 'PPF')
+      setValue('ppf.familyMemberName', memberName, { shouldValidate: true });
+    
+    if (memberName && selectedCategory === 'General Insurance')
+      setValue('generalInsurance.familyMemberName', memberName, { shouldValidate: true });
 
-  /* ---------- RESET NESTED WHEN SWITCH CATEGORY ---------- */
+  }, [familyHeadName, associateName, rmName, selectedCategory, setValue, clientNameValue, clientOptions]);
+
+  /* ---------- CATEGORY CHANGE HANDLING ---------- */
 
   useEffect(() => {
-    if (selectedCategory !== 'Mutual Funds') setValue('mutualFund', undefined);
-    if (selectedCategory !== 'Life Insurance') {
-      setValue('insurance', undefined);
-    } else {
-      if (!watch('insurance')) {
-        setValue('insurance', {
-          insuranceType: 'Non-Financial',
-          amountStatus: 'Pending',
-          familyHead: familyHeadName,
-          associate: associateName,
-          policyNo: '',
-          company: '',
-        });
-      }
+    // When category changes, we initialize the relevant sub-object if it doesn't exist
+    // but we don't clear other sub-objects to preserve data if user switches back.
+    if (selectedCategory === 'Life Insurance' && !watch('insurance')) {
+      setValue('insurance', {
+        insuranceType: 'Non-Financial',
+        amountStatus: 'Pending',
+        familyHead: familyHeadName,
+        associate: associateName,
+        policyNo: '',
+        company: '',
+      });
     }
   }, [selectedCategory, setValue, watch, familyHeadName, associateName]);
+
 
   /* ---------- LOAD EXISTING TASK ---------- */
 
   useEffect(() => {
     if (task) {
-      let formattedDueDate = '';
+      // Create a mutable copy of the task to format dates
+      const taskData: Partial<TaskFormData> = { ...task };
 
-      if (task.dueDate) {
+      const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date') => {
+        if (!dateString) return '';
         try {
-          if (task.dueDate.includes(' ')) {
-            const parsedDate = parse(task.dueDate, 'dd-MM-yyyy HH:mm', new Date());
-            if (!isNaN(parsedDate.getTime())) {
-              formattedDueDate = format(parsedDate, "yyyy-MM-dd'T'HH:mm");
-            }
-          } else {
-            formattedDueDate = format(parseISO(task.dueDate), "yyyy-MM-dd'T'HH:mm");
+          const date = parseISO(dateString);
+          if (isNaN(date.getTime())) { // Try another format for older data
+             const parsed = new Date(dateString.replace(/-/g, '/'));
+             if (isNaN(parsed.getTime())) return dateString; // give up
+             return type === 'datetime' ? format(parsed, "yyyy-MM-dd'T'HH:mm") : format(parsed, "yyyy-MM-dd");
           }
-        } catch {}
+          return type === 'datetime' ? format(date, "yyyy-MM-dd'T'HH:mm") : format(date, "yyyy-MM-dd");
+        } catch {
+          return dateString; // Return original if parsing fails
+        }
+      };
+
+      taskData.dueDate = formatDateForInput(task.dueDate, 'datetime');
+      if (taskData.insurance) {
+          taskData.insurance.nonFinancialDate = formatDateForInput(task.insurance.nonFinancialDate);
+          taskData.insurance.maturityDueDate = formatDateForInput(task.insurance.maturityDueDate);
+          taskData.insurance.deathClaimProcessDate = formatDateForInput(task.insurance.deathClaimProcessDate);
+          taskData.insurance.surrenderProcessDate = formatDateForInput(task.insurance.surrenderProcessDate);
+          taskData.insurance.receivedDate = formatDateForInput(task.insurance.receivedDate);
+          taskData.insurance.reinvestmentApproxDate = formatDateForInput(task.insurance.reinvestmentApproxDate);
       }
-
-      reset({
-        clientName: task.clientId || '',
-        category: task.category || '',
-        rmName: task.rmName || '',
-        serviceableRM: task.serviceableRM || '',
-        dueDate: formattedDueDate,
-        description: task.description || '',
-        mutualFund: task.mutualFund,
-        insurance: task.insurance
-      });
-
+      if (taskData.bondDetails) {
+          taskData.bondDetails.purchaseDate = formatDateForInput(task.bondDetails.purchaseDate);
+          taskData.bondDetails.maturityDate = formatDateForInput(task.bondDetails.maturityDate);
+      }
+       if (taskData.fixedDeposit) {
+          taskData.fixedDeposit.purchaseDate = formatDateForInput(task.fixedDeposit.purchaseDate);
+          taskData.fixedDeposit.maturityDate = formatDateForInput(task.fixedDeposit.maturityDate);
+      }
+      if (taskData.ppf) {
+          taskData.ppf.openingDate = formatDateForInput(task.ppf.openingDate);
+          taskData.ppf.matureDate = formatDateForInput(task.ppf.matureDate);
+      }
+      
+      reset(taskData as TaskFormData);
     } else {
       reset({
-      clientName: '',
-      category: '',
-      rmName: '',
-      serviceableRM: '',
-      dueDate: '',
-      description: '',
-      insurance: {
-        insuranceType: 'Non-Financial',
-        amountStatus: 'Pending',
-      }
-    });
+        clientName: '',
+        category: '',
+        rmName: '',
+        serviceableRM: '',
+        dueDate: '',
+        description: '',
+        mutualFund: undefined,
+        insurance: { insuranceType: 'Non-Financial', amountStatus: 'Pending' },
+        bondDetails: undefined,
+        fixedDeposit: undefined,
+        ppf: undefined,
+        generalInsurance: undefined,
+      });
     }
   }, [task, reset]);
 
   /* ---------- SAVE ---------- */
 
   const processSave = (data: TaskFormData) => {
-    const parsedDue = new Date(data.dueDate);
-    if (isNaN(parsedDue.getTime())) {
-      toast({
-        title: "Invalid date",
-        description: "Please select a valid due date.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSaving(true);
-
+    
+    // Use a short timeout to simulate async operation
     setTimeout(() => {
       const selectedClient = clientOptions.find(c => c.value === data.clientName);
 
       const submissionData: Task = {
-        ...(task || { id: `task-${Date.now()}`, createDate: new Date().toISOString(), status: 'Pending' }),
-        ...data,
+        ...(task || {}), // Start with existing task data if in edit mode
+        ...data, // Overwrite with new form data
+        id: task?.id || `task-${Date.now()}`,
+        createDate: task?.createDate || new Date().toISOString(),
+        status: task?.status || 'Pending',
         clientId: selectedClient?.value || 'N/A',
         clientName: selectedClient?.label || data.clientName,
         familyHeadId: familyHead?.id,
         associateId: assignedAssociate?.id,
         rmId: assignedRM?.id,
         adminId: assignedAdmin?.id,
-        dueDate: parsedDue.toISOString(),
-        mutualFund: data.mutualFund,
-        insurance: data.insurance
+        dueDate: new Date(data.dueDate).toISOString(), // Ensure ISO format
       };
 
+      // Clean up objects for other categories
       if (submissionData.category !== 'Mutual Funds') delete submissionData.mutualFund;
       if (submissionData.category !== 'Life Insurance') delete submissionData.insurance;
+      if (submissionData.category !== 'Bonds') delete submissionData.bondDetails;
+      if (submissionData.category !== 'Fixed Deposit') delete submissionData.fixedDeposit;
+      if (submissionData.category !== 'PPF') delete submissionData.ppf;
+      if (submissionData.category !== 'General Insurance') delete submissionData.generalInsurance;
 
       onSave(submissionData);
 
@@ -414,6 +521,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   placeholder="Select Client"
                   searchPlaceholder="Search clients..."
                   emptyText="No matching clients."
+                  disabled={isEditMode}
                 />
               )}
             />
@@ -426,7 +534,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               name="category"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal || isEditMode}>
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -815,6 +923,235 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               )}
             </div>
           </div>
+        )}
+
+        {selectedCategory === 'Bonds' && (
+            <div className="space-y-4 pt-4">
+                <Separator />
+                <h3 className="text-md font-semibold">Bond Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <Label>Sub-Category</Label>
+                        <Controller name="bondDetails.subCategory" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger><SelectValue placeholder="Select Sub-Category" /></SelectTrigger>
+                                <SelectContent>
+                                    {BOND_SUB_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )} />
+                        {errors.bondDetails?.subCategory && <p className="text-sm text-destructive">{errors.bondDetails.subCategory.message}</p>}
+                    </div>
+                     <div className="space-y-1">
+                        <Label>Name of Family Member</Label>
+                        <Input {...register('bondDetails.familyMemberName')} readOnly />
+                    </div>
+                    <div className="space-y-1">
+                        <Label>ISIN</Label>
+                        <Input {...register('bondDetails.isin')} />
+                        {errors.bondDetails?.isin && <p className="text-sm text-destructive">{errors.bondDetails.isin.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Issuer</Label>
+                        <Input {...register('bondDetails.issuer')} />
+                        {errors.bondDetails?.issuer && <p className="text-sm text-destructive">{errors.bondDetails.issuer.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Bond Price</Label>
+                        <Input type="number" step="0.01" {...register('bondDetails.bondPrice', { valueAsNumber: true })} />
+                        {errors.bondDetails?.bondPrice && <p className="text-sm text-destructive">{errors.bondDetails.bondPrice.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Bond Unit</Label>
+                        <Input type="number" {...register('bondDetails.bondUnit', { valueAsNumber: true })} />
+                        {errors.bondDetails?.bondUnit && <p className="text-sm text-destructive">{errors.bondDetails.bondUnit.message}</p>}
+                    </div>
+                     <div className="space-y-1">
+                        <Label>Bond Amount</Label>
+                        <Input {...register('bondDetails.bondAmount')} readOnly disabled />
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Purchase Date</Label>
+                        <Input type="date" {...register('bondDetails.purchaseDate')} />
+                        {errors.bondDetails?.purchaseDate && <p className="text-sm text-destructive">{errors.bondDetails.purchaseDate.message}</p>}
+                    </div>
+                     <div className="space-y-1">
+                        <Label>Maturity Date</Label>
+                        <Input type="date" {...register('bondDetails.maturityDate')} />
+                        {errors.bondDetails?.maturityDate && <p className="text-sm text-destructive">{errors.bondDetails.maturityDate.message}</p>}
+                    </div>
+                     <div className="space-y-1">
+                        <Label>Transaction Type</Label>
+                        <Controller name="bondDetails.transactionType" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger>
+                                <SelectContent>
+                                    {BOND_TRANSACTION_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )} />
+                        {errors.bondDetails?.transactionType && <p className="text-sm text-destructive">{errors.bondDetails.transactionType.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Nominee Name</Label>
+                        <Input {...register('bondDetails.nomineeName')} />
+                        {errors.bondDetails?.nomineeName && <p className="text-sm text-destructive">{errors.bondDetails.nomineeName.message}</p>}
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {selectedCategory === 'Fixed Deposit' && (
+            <div className="space-y-4 pt-4">
+                <Separator />
+                <h3 className="text-md font-semibold">Fixed Deposit Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <Label>Sub-Category</Label>
+                        <Controller name="fixedDeposit.subCategory" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger><SelectValue placeholder="Select Sub-Category" /></SelectTrigger>
+                                <SelectContent>
+                                    {FIXED_DEPOSIT_SUB_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )} />
+                        {errors.fixedDeposit?.subCategory && <p className="text-sm text-destructive">{errors.fixedDeposit.subCategory.message}</p>}
+                    </div>
+                     <div className="space-y-1">
+                        <Label>Family Member Name</Label>
+                        <Input {...register('fixedDeposit.familyMemberName')} readOnly />
+                    </div>
+                     <div className="space-y-1">
+                        <Label>Issuer (Company)</Label>
+                        <Input {...register('fixedDeposit.issuer')} />
+                        {errors.fixedDeposit?.issuer && <p className="text-sm text-destructive">{errors.fixedDeposit.issuer.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Date of Purchase</Label>
+                        <Input type="date" {...register('fixedDeposit.purchaseDate')} />
+                        {errors.fixedDeposit?.purchaseDate && <p className="text-sm text-destructive">{errors.fixedDeposit.purchaseDate.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Date of Maturity</Label>
+                        <Input type="date" {...register('fixedDeposit.maturityDate')} />
+                        {errors.fixedDeposit?.maturityDate && <p className="text-sm text-destructive">{errors.fixedDeposit.maturityDate.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Interest (%)</Label>
+                        <Input type="number" step="0.01" {...register('fixedDeposit.interest', { valueAsNumber: true })} />
+                        {errors.fixedDeposit?.interest && <p className="text-sm text-destructive">{errors.fixedDeposit.interest.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Period (DDMMYYYY)</Label>
+                        <Input {...register('fixedDeposit.period')} maxLength={8} />
+                        {errors.fixedDeposit?.period && <p className="text-sm text-destructive">{errors.fixedDeposit.period.message}</p>}
+                    </div>
+                </div>
+            </div>
+        )}
+        
+        {selectedCategory === 'PPF' && (
+            <div className="space-y-4 pt-4">
+                <Separator />
+                <h3 className="text-md font-semibold">PPF Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <Label>Sub-Category</Label>
+                        <Controller name="ppf.subCategory" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger><SelectValue placeholder="Select Sub-Category" /></SelectTrigger>
+                                <SelectContent>
+                                    {PPF_SUB_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )} />
+                        {errors.ppf?.subCategory && <p className="text-sm text-destructive">{errors.ppf.subCategory.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Family Member Name</Label>
+                        <Input {...register('ppf.familyMemberName')} readOnly />
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Bank Name</Label>
+                        <Input {...register('ppf.bankName')} />
+                        {errors.ppf?.bankName && <p className="text-sm text-destructive">{errors.ppf.bankName.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Contributed Amount</Label>
+                        <Input type="number" {...register('ppf.contributedAmount', { valueAsNumber: true })} />
+                        {errors.ppf?.contributedAmount && <p className="text-sm text-destructive">{errors.ppf.contributedAmount.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Balance</Label>
+                        <Input type="number" {...register('ppf.balance', { valueAsNumber: true })} />
+                        {errors.ppf?.balance && <p className="text-sm text-destructive">{errors.ppf.balance.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Date of Opening</Label>
+                        <Input type="date" {...register('ppf.openingDate')} />
+                        {errors.ppf?.openingDate && <p className="text-sm text-destructive">{errors.ppf.openingDate.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Date of Mature</Label>
+                        <Input type="date" {...register('ppf.matureDate')} />
+                        {errors.ppf?.matureDate && <p className="text-sm text-destructive">{errors.ppf.matureDate.message}</p>}
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {selectedCategory === 'General Insurance' && (
+            <div className="space-y-4 pt-4">
+                <Separator />
+                <h3 className="text-md font-semibold">General Insurance Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <Label>Service Sub-Category</Label>
+                        <Controller name="generalInsurance.serviceSubCategory" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger><SelectValue placeholder="Select Service" /></SelectTrigger>
+                                <SelectContent>
+                                    {GENERAL_INSURANCE_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )} />
+                        {errors.generalInsurance?.serviceSubCategory && <p className="text-sm text-destructive">{errors.generalInsurance.serviceSubCategory.message}</p>}
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Insurance Type</Label>
+                        <Controller name="generalInsurance.insuranceType" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger>
+                                <SelectContent>
+                                    {GENERAL_INSURANCE_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )} />
+                        {errors.generalInsurance?.insuranceType && <p className="text-sm text-destructive">{errors.generalInsurance.insuranceType.message}</p>}
+                    </div>
+                     <div className="space-y-1">
+                        <Label>Family Member Name</Label>
+                        <Input {...register('generalInsurance.familyMemberName')} readOnly />
+                    </div>
+                    <div className="space-y-1">
+                        <Label>Company</Label>
+                        <Input {...register('generalInsurance.company')} />
+                        {errors.generalInsurance?.company && <p className="text-sm text-destructive">{errors.generalInsurance.company.message}</p>}
+                    </div>
+                    {generalInsuranceService === 'RENEWAL' && (
+                       <div className="space-y-1">
+                            <Label>Premium Amount</Label>
+                            <Input type="number" {...register('generalInsurance.premiumAmount', { valueAsNumber: true })} />
+                            {errors.generalInsurance?.premiumAmount && <p className="text-sm text-destructive">{errors.generalInsurance.premiumAmount.message}</p>}
+                        </div>
+                    )}
+                    <div className="md:col-span-2 space-y-1">
+                        <Label>Description / Remark</Label>
+                        <Textarea {...register('generalInsurance.description')} />
+                    </div>
+                </div>
+            </div>
         )}
 
         <div className="space-y-1">
