@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -115,16 +114,11 @@ const stocksSchema = z.object({
     nominees: z.array(z.object({
         name: z.string().min(1, 'Nominee name is required'),
         relationship: z.string().min(1, 'Relationship is required'),
-        allocation: z.number().min(0.1, 'Allocation must be > 0').max(100, 'Allocation cannot exceed 100'),
+        allocation: z.number()
+          .min(0, 'Allocation must be positive')
+          .max(100, 'Allocation cannot exceed 100'),
         dateOfBirth: z.string().optional(),
     })).optional()
-}).refine(data => {
-    if (!data.nominees || data.nominees.length === 0) return true; // Validation passes if no nominees
-    const totalAllocation = data.nominees.reduce((acc, nominee) => acc + (nominee.allocation || 0), 0);
-    return totalAllocation === 100;
-}, {
-    message: 'Total allocation for nominees must be exactly 100%',
-    path: ['nominees'],
 });
 
 
@@ -442,7 +436,7 @@ export function AddAssetModal({
           </div>
 
           <form onSubmit={handleSubmit(handleSave)} className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b mb-4">
                   <div>
                       <Label>Family Head</Label>
@@ -506,7 +500,7 @@ export function AddAssetModal({
                   <PPFFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
               )}
               {selectedAssetType === 'STOCKS' && (
-                  <StocksFields control={control} errors={errors} register={register} watch={watch} />
+                  <StocksFields control={control} errors={errors} register={register} watch={watch} setValue={setValue} />
               )}
               
               
@@ -549,3 +543,5 @@ export function AddAssetModal({
     </>
   );
 }
+
+    
