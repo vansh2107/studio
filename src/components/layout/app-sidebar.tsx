@@ -18,6 +18,7 @@ import {
   Users,
   FolderOpen,
   ClipboardList,
+  Archive,
 } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'] },
   { href: '/customers', label: 'Clients', icon: Users, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE'] },
   { href: '/tasks', label: 'Tasks', icon: ClipboardList, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE'] },
+  { href: '/assets', label: 'Asset Management', icon: Archive, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE'] },
   { href: '/doc-vault', label: 'Doc Vault', icon: FolderOpen, roles: ['CUSTOMER'] },
 ];
 
