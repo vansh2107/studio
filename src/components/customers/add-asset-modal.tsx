@@ -136,34 +136,34 @@ export function AddAssetModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
         className={cn(
-            "bg-card rounded-xl p-6 shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-w-[90vw] max-h-[90vh]",
+            "bg-card rounded-xl shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-h-[90vh]",
             selectedAssetType
               ? "max-w-[80vw]"
               : "max-w-xl"
           )}
         onClick={(e) => e.stopPropagation()}
       >
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 close-icon"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-        
-        <div className="flex-shrink-0">
+        <div className="p-6 flex-shrink-0 relative">
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="absolute top-4 right-4 z-10 close-icon"
+            >
+                <X className="h-4 w-4" />
+            </Button>
+            
             <h2 className="text-lg font-semibold">Add New Asset</h2>
             <p className="text-sm text-muted-foreground">Select a family and asset type to begin.</p>
         </div>
 
-        <form onSubmit={handleSubmit(handleSave)} className="flex-grow flex flex-col overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-b mb-4 flex-shrink-0">
+        <form onSubmit={handleSubmit(handleSave)} className="flex-1 flex flex-col overflow-hidden min-h-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 px-6 border-b mb-4 flex-shrink-0">
                 <div>
                   <Label>Family Head</Label>
                   <Controller
@@ -210,7 +210,7 @@ export function AddAssetModal({
                 </div>
           </div>
           
-          <div className="flex-grow overflow-y-auto pr-4 -mr-4">
+          <div className="flex-1 overflow-y-auto px-6 pb-6">
             {selectedAssetType === 'GENERAL INSURANCE' && (
               <GeneralInsuranceFields control={control} errors={errors} familyMembers={familyMembers} />
             )}
@@ -228,7 +228,7 @@ export function AddAssetModal({
             )}
           </div>
           
-          <div className="flex justify-end gap-2 pt-6 mt-auto flex-shrink-0 border-t -mx-6 px-6">
+          <div className="flex justify-end gap-2 p-6 flex-shrink-0 border-t">
             <Button type="submit" disabled={isSaving}>
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Asset'}
             </Button>
