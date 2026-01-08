@@ -160,6 +160,7 @@ export function AddAssetModal({
     watch,
     setValue,
     reset,
+    unregister,
     formState: { errors },
   } = useForm<AssetFormData>({
     resolver: zodResolver(assetFormSchema),
@@ -278,6 +279,13 @@ export function AddAssetModal({
             gi_priceWithGST: '',
             gi_eligiblePremium: '',
             gi_referenceAgent: '',
+            p2d_folioNumber: '',
+            p2d_nameOnShare: '',
+            p2d_jointHolder1: '',
+            p2d_jointHolder2: '',
+            p2d_jointHolder3: '',
+            p2d_companyName: '',
+            p2d_rtaName: '',
             stocks: {
                 holderName: '',
                 jointHolder1: '',
@@ -414,7 +422,7 @@ export function AddAssetModal({
         <fieldset
           disabled={isViewMode}
           className={cn(
-            "bg-card rounded-xl shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-w-[90vw] max-h-[90vh]",
+            "bg-card rounded-xl shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-h-[90vh]",
             selectedAssetType ? "max-w-4xl" : "max-w-xl"
           )}
           onClick={(e) => e.stopPropagation()}
@@ -486,7 +494,7 @@ export function AddAssetModal({
                 <GeneralInsuranceFields control={control} errors={errors} familyMembers={familyMembers} />
               )}
               {selectedAssetType === 'PHYSICAL TO DEMAT' && (
-                  <PhysicalToDematFields register={register} errors={errors} control={control} setValue={setValue} watch={watch} />
+                  <PhysicalToDematFields register={register} errors={errors} control={control} setValue={setValue} watch={watch} unregister={unregister} />
               )}
               {selectedAssetType === 'BONDS' && (
                   <BondFields register={register} errors={errors} control={control} familyMembers={familyMembers} setValue={setValue} watch={watch} />
