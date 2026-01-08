@@ -7,18 +7,70 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { AddAssetModal } from '@/components/customers/add-asset-modal';
 import { PlusCircle, Eye, Edit, Trash2 } from 'lucide-react';
 import { getAllClients } from '@/lib/mock-data';
-import type { Client, Asset } from '@/lib/types';
+import type { Asset } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AssetsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [assets, setAssets] = useState<Asset[]>([]);
   const familyHeads = getAllClients();
+  const { toast } = useToast();
+
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [viewingAsset, setViewingAsset] = useState<Asset | null>(null);
+  const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
 
   const handleSaveAsset = (asset: Asset) => {
-    setAssets(prev => [...prev, asset]);
-    setIsModalOpen(false);
+    if (editingAsset) {
+      setAssets(prev => prev.map(a => (a.id === asset.id ? asset : a)));
+      toast({ title: 'Success', description: 'Asset has been updated.' });
+    } else {
+      setAssets(prev => [...prev, asset]);
+      toast({ title: 'Success', description: 'Asset has been created.' });
+    }
+    closeModal();
   };
+  
+  const handleEdit = (asset: Asset) => {
+    setEditingAsset(asset);
+    setIsModalOpen(true);
+  };
+  
+  const handleView = (asset: Asset) => {
+    setViewingAsset(asset);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (!deletingAsset) return;
+    setAssets(prev => prev.filter(a => a.id !== deletingAsset.id));
+    toast({ title: 'Success', description: 'Asset has been deleted.', variant: 'destructive' });
+    setDeletingAsset(null);
+  };
+
+  const openModal = () => {
+    setEditingAsset(null);
+    setViewingAsset(null);
+    setIsModalOpen(true);
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingAsset(null);
+    setViewingAsset(null);
+  }
+
 
   const getAssetName = (asset: Asset) => {
     switch (asset.assetType) {
@@ -60,7 +112,7 @@ export default function AssetsPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold font-headline">Asset Management</h1>
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={openModal}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Asset
           </Button>
@@ -91,9 +143,9 @@ export default function AssetsPage() {
                       <TableCell>{getAssetName(asset)}</TableCell>
                       <TableCell>{getAssetAmount(asset)}</TableCell>
                       <TableCell className="text-right">
-                         <Button variant="ghost" size="icon"><Eye className="h-4 w-4" /></Button>
-                         <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
-                         <Button variant="ghost" size="icon" className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                         <Button variant="ghost" size="icon" onClick={() => handleView(asset)}><Eye className="h-4 w-4" /></Button>
+                         <Button variant="ghost" size="icon" onClick={() => handleEdit(asset)}><Edit className="h-4 w-4" /></Button>
+                         <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeletingAsset(asset)}><Trash2 className="h-4 w-4" /></Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -112,11 +164,28 @@ export default function AssetsPage() {
       {isModalOpen && (
         <AddAssetModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={closeModal}
           familyHeads={familyHeads}
           onSave={handleSaveAsset}
+          assetToEdit={editingAsset || viewingAsset}
+          isViewMode={!!viewingAsset}
         />
       )}
+      
+      <AlertDialog open={!!deletingAsset} onOpenChange={(open) => !open && setDeletingAsset(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the asset. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

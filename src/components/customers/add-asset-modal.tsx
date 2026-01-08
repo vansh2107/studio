@@ -110,6 +110,8 @@ interface AddAssetModalProps {
   onClose: () => void;
   familyHeads: Client[];
   onSave: (asset: Asset) => void;
+  assetToEdit?: Asset | null;
+  isViewMode?: boolean;
 }
 
 export function AddAssetModal({
@@ -117,6 +119,8 @@ export function AddAssetModal({
   onClose,
   familyHeads,
   onSave,
+  assetToEdit,
+  isViewMode = false,
 }: AddAssetModalProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -128,6 +132,7 @@ export function AddAssetModal({
     control,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<AssetFormData>({
     resolver: zodResolver(assetFormSchema),
@@ -154,6 +159,67 @@ export function AddAssetModal({
 
   const selectedFamilyHead = watch('familyHead');
   const selectedAssetType = watch('assetType');
+
+  useEffect(() => {
+    if (assetToEdit) {
+      const defaultVals: AssetFormData = {
+          familyHead: assetToEdit.familyHeadId,
+          assetType: assetToEdit.assetType,
+          gi_familyMember: assetToEdit.generalInsurance?.familyMember,
+          gi_category: assetToEdit.generalInsurance?.category,
+          gi_issuer: assetToEdit.generalInsurance?.issuer,
+          gi_planName: assetToEdit.generalInsurance?.planName,
+          gi_policyNumber: assetToEdit.generalInsurance?.policyNumber,
+          gi_policyType: assetToEdit.generalInsurance?.policyType,
+          gi_policyStartDate: assetToEdit.generalInsurance?.policyStartDate,
+          gi_policyIssueDate: assetToEdit.generalInsurance?.policyIssueDate,
+          gi_policyEndDate: assetToEdit.generalInsurance?.policyEndDate,
+          gi_vehicleRegNumber: assetToEdit.generalInsurance?.vehicleRegNumber,
+          gi_sumAssured: assetToEdit.generalInsurance?.sumAssured,
+          gi_priceWithoutGST: assetToEdit.generalInsurance?.priceWithoutGST,
+          gi_priceWithGST: assetToEdit.generalInsurance?.priceWithGST,
+          gi_eligiblePremium: assetToEdit.generalInsurance?.eligiblePremium,
+          gi_referenceAgent: assetToEdit.generalInsurance?.referenceAgent,
+          p2d_folioNumber: assetToEdit.physicalToDemat?.folioNumber,
+          p2d_nameOnShare: assetToEdit.physicalToDemat?.nameOnShare,
+          p2d_jointHolder1: assetToEdit.physicalToDemat?.jointHolder1,
+          p2d_jointHolder2: assetToEdit.physicalToDemat?.jointHolder2,
+          p2d_jointHolder3: assetToEdit.physicalToDemat?.jointHolder3,
+          p2d_companyName: assetToEdit.physicalToDemat?.companyName,
+          p2d_rtaName: assetToEdit.physicalToDemat?.rtaName,
+          p2d_quantity: assetToEdit.physicalToDemat?.quantity,
+          p2d_marketPrice: assetToEdit.physicalToDemat?.marketPrice,
+          p2d_totalValue: assetToEdit.physicalToDemat?.totalValue,
+          b_isin: assetToEdit.bonds?.isin,
+          b_issuer: assetToEdit.bonds?.issuer,
+          b_bondPrice: assetToEdit.bonds?.bondPrice,
+          b_bondUnit: assetToEdit.bonds?.bondUnit,
+          b_bondAmount: assetToEdit.bonds?.bondAmount,
+          b_purchaseDate: assetToEdit.bonds?.purchaseDate,
+          b_maturityDate: assetToEdit.bonds?.maturityDate,
+          b_nomineeName: assetToEdit.bonds?.nomineeName,
+          b_nameOfFamilyMember: assetToEdit.bonds?.nameOfFamilyMember,
+          fd_companyName: assetToEdit.fixedDeposits?.companyName,
+          fd_investorName: assetToEdit.fixedDeposits?.investorName,
+          fd_fdName: assetToEdit.fixedDeposits?.fdName,
+          fd_fdNumber: assetToEdit.fixedDeposits?.fdNumber,
+          fd_depositedAmount: assetToEdit.fixedDeposits?.depositedAmount,
+          fd_periodMonth: assetToEdit.fixedDeposits?.periodMonth,
+          fd_periodDays: assetToEdit.fixedDeposits?.periodDays,
+          fd_interestRate: assetToEdit.fixedDeposits?.interestRate,
+          fd_maturityAmount: assetToEdit.fixedDeposits?.maturityAmount,
+          fd_purchaseDate: assetToEdit.fixedDeposits?.purchaseDate,
+          fd_maturityDate: assetToEdit.fixedDeposits?.maturityDate,
+          ppf_familyMemberName: assetToEdit.ppf?.familyName,
+          ppf_contributedAmount: assetToEdit.ppf?.contributedAmount,
+          ppf_balance: assetToEdit.ppf?.balance,
+          ppf_bankName: assetToEdit.ppf?.bankName,
+          ppf_openingDate: assetToEdit.ppf?.openingDate,
+          ppf_matureDate: assetToEdit.ppf?.matureDate,
+      };
+      reset(defaultVals);
+    }
+  }, [assetToEdit, reset]);
 
   const familyMembers = useMemo(() => {
     if (!selectedFamilyHead) return [];
@@ -182,9 +248,8 @@ export function AddAssetModal({
         return;
     }
     
-    // This is a prototype save. It creates a structured Asset object.
     const newAsset: Asset = {
-        id: `asset-${Date.now()}`,
+        id: assetToEdit?.id || `asset-${Date.now()}`,
         familyHeadId: familyHead.id,
         familyHeadName: `${familyHead.firstName} ${familyHead.lastName}`,
         assetType: data.assetType as Asset['assetType'],
@@ -253,16 +318,18 @@ export function AddAssetModal({
     
     setTimeout(() => {
       onSave(newAsset);
-      toast({ title: 'Success', description: 'Asset has been saved locally.'});
       setIsSaving(false);
     }, 1000);
   };
   
   const handleSaveUploads = (uploadedFiles: { category: string; file: File }[]) => {
-    // This is a prototype and does not persist the documents yet.
     toast({ title: 'Success', description: `${uploadedFiles.length} document(s) have been "uploaded".` });
     setIsUploadModalOpen(false);
   };
+
+  const formTitle = isViewMode ? "View Asset" : (assetToEdit ? "Edit Asset" : "Add New Asset");
+  const formDescription = isViewMode ? "Viewing asset details." : "Select a family and asset type to begin.";
+
 
   return (
     <>
@@ -270,9 +337,10 @@ export function AddAssetModal({
         className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
-        <div
+        <fieldset
+          disabled={isViewMode}
           className={cn(
-            "bg-card rounded-xl shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-w-[90vw] max-h-[90vh]",
+            "bg-card rounded-xl shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-h-[90vh]",
             selectedAssetType ? "max-w-4xl" : "max-w-xl"
           )}
           onClick={(e) => e.stopPropagation()}
@@ -287,8 +355,8 @@ export function AddAssetModal({
               <X className="h-4 w-4" />
             </Button>
             
-            <h2 className="text-lg font-semibold">Add New Asset</h2>
-            <p className="text-sm text-muted-foreground">Select a family and asset type to begin.</p>
+            <h2 className="text-lg font-semibold">{formTitle}</h2>
+            <p className="text-sm text-muted-foreground">{formDescription}</p>
           </div>
 
           <form onSubmit={handleSubmit(handleSave)} className="flex-1 flex flex-col min-h-0">
@@ -300,7 +368,7 @@ export function AddAssetModal({
                           name="familyHead"
                           control={control}
                           render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value} disabled={isViewMode || !!assetToEdit}>
                               <SelectTrigger>
                               <SelectValue placeholder="Select Family Head" />
                               </SelectTrigger>
@@ -322,7 +390,7 @@ export function AddAssetModal({
                           name="assetType"
                           control={control}
                           render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value} disabled={isViewMode || !!assetToEdit}>
                               <SelectTrigger>
                               <SelectValue placeholder="Select Asset Type" />
                               </SelectTrigger>
@@ -356,7 +424,7 @@ export function AddAssetModal({
                   <PPFFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
               )}
               
-              {selectedAssetType && (
+              {selectedAssetType && !isViewMode && (
                   <div className="mt-6 border-t pt-4">
                       <Button type="button" variant="outline" onClick={() => setIsUploadModalOpen(true)}>
                           <Upload className="mr-2 h-4 w-4" />
@@ -367,13 +435,17 @@ export function AddAssetModal({
             </div>
             
             <div className="flex justify-end gap-2 p-6 flex-shrink-0 border-t">
-              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-              <Button type="submit" disabled={isSaving}>
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Asset'}
+              <Button type="button" variant="outline" onClick={onClose}>
+                {isViewMode ? 'Close' : 'Cancel'}
               </Button>
+              {!isViewMode && (
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Asset'}
+                </Button>
+              )}
             </div>
           </form>
-        </div>
+        </fieldset>
       </div>
 
       {isUploadModalOpen && selectedFamilyHead && (
