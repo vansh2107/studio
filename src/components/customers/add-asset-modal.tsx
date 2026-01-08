@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, X, Upload } from 'lucide-react';
 import { Client, FamilyMember, Asset } from '@/lib/types';
 import { familyMembers as mockFamilyMembers } from '@/lib/mock-data';
-import { ASSET_TYPES } from '@/lib/constants';
+import { ASSET_TYPES } from '@/lib/asset-form-types';
 import { GeneralInsuranceFields } from './asset-forms/general-insurance-fields';
 import { PhysicalToDematFields } from './asset-forms/physical-to-demat-fields';
 import { BondFields } from './asset-forms/bond-fields';
