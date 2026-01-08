@@ -25,6 +25,7 @@ import { PhysicalToDematFields } from './asset-forms/physical-to-demat-fields';
 import { BondFields } from './asset-forms/bond-fields';
 import { FDFields } from './asset-forms/fd-fields';
 import { PPFFields } from './asset-forms/ppf-fields';
+import { cn } from '@/lib/utils';
 
 const assetFormSchema = z.object({
   familyHead: z.string().min(1, 'Family head is required'),
@@ -139,7 +140,12 @@ export function AddAssetModal({
       onClick={onClose}
     >
       <div
-        className="bg-card rounded-xl p-6 w-full max-w-[80vw] h-[90vh] shadow-lg border relative flex flex-col"
+        className={cn(
+            "bg-card rounded-xl p-6 w-full shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out",
+            selectedAssetType
+              ? "max-w-[80vw] h-[90vh]"
+              : "max-w-xl"
+          )}
         onClick={(e) => e.stopPropagation()}
       >
         <Button
