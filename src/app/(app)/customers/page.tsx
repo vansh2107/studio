@@ -43,10 +43,9 @@ import {
 } from '@/components/ui/tooltip';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { AddAssetModal } from '@/components/customers/add-asset-modal';
 
 
-type ActiveModal = 'form' | 'view-family' | 'view-member' | 'member-form' | 'add-asset' | null;
+type ActiveModal = 'form' | 'view-family' | 'view-member' | 'member-form' | null;
 
 export default function ClientsPage() {
   const { effectiveUser, impersonate, hasPermission } = useCurrentUser();
@@ -328,10 +327,6 @@ export default function ClientsPage() {
                 New Family Head
               </Button>
             )}
-            <Button onClick={() => setActiveModal('add-asset')}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Asset
-            </Button>
           </div>
         </div>
         
@@ -475,7 +470,7 @@ export default function ClientsPage() {
           </CardContent>
         </Card>
 
-        <Modal open={activeModal !== 'add-asset' && !!activeModal} onClose={handleCloseModal}>
+        <Modal open={!!activeModal} onClose={handleCloseModal}>
           <>
             {activeModal === 'form' && (
               <FamilyFormModal
@@ -514,13 +509,6 @@ export default function ClientsPage() {
           </>
         </Modal>
         
-         {activeModal === 'add-asset' && (
-            <AddAssetModal
-                isOpen={activeModal === 'add-asset'}
-                onClose={handleCloseModal}
-                familyHeads={allDisplayClients.filter(c => c.isFamilyHead) as Client[]}
-            />
-        )}
       </div>
     </TooltipProvider>
   );
