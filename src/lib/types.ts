@@ -243,6 +243,24 @@ export interface PPFDetails {
     matureDate?: string;
 }
 
+export interface StocksDetails {
+    holderName: string;
+    jointHolder1?: string;
+    jointHolder2?: string;
+    dpId: string;
+    dpName: string;
+    bankName: string;
+    bankAccountNumber: string;
+    mobileNumber: string;
+    emailAddress?: string;
+    nominees?: {
+        name: string;
+        relationship: string;
+        allocation: number;
+        dateOfBirth?: string;
+    }[];
+}
+
 
 export interface Asset {
   id: string;
@@ -254,5 +272,5 @@ export interface Asset {
   bonds?: BondDetails;
   fixedDeposits?: FDDetails;
   ppf?: PPFDetails;
-  // Future asset types can be added here
+  stocks?: StocksDetails;
 }

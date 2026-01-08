@@ -25,6 +25,7 @@ import { PhysicalToDematFields } from './asset-forms/physical-to-demat-fields';
 import { BondFields } from './asset-forms/bond-fields';
 import { FDFields } from './asset-forms/fd-fields';
 import { PPFFields } from './asset-forms/ppf-fields';
+import { StocksFields } from './asset-forms/stocks-fields';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { UploadDocModal } from '../doc-vault/upload-doc-modal';
@@ -34,7 +35,7 @@ const baseAssetSchema = z.object({
   assetType: z.string().min(1, 'Asset type is required'),
 });
 
-// Schemas for each asset type (simplified for brevity)
+// Schemas for each asset type
 const generalInsuranceSchema = z.object({
   gi_familyMember: z.string().optional(),
   gi_category: z.string().optional(),
@@ -101,8 +102,34 @@ const ppfSchema = z.object({
   ppf_matureDate: z.string().optional(),
 });
 
+const stocksSchema = z.object({
+    holderName: z.string().min(1, 'Holder name is required'),
+    jointHolder1: z.string().optional(),
+    jointHolder2: z.string().optional(),
+    dpId: z.string().min(1, 'DPID is required'),
+    dpName: z.string().min(1, 'DP Name is required'),
+    bankName: z.string().min(1, 'Bank Name is required'),
+    bankAccountNumber: z.string().min(1, 'Bank Account Number is required'),
+    mobileNumber: z.string().min(10, 'Mobile number must be at least 10 digits'),
+    emailAddress: z.string().email('Invalid email address').optional().or(z.literal('')),
+    nominees: z.array(z.object({
+        name: z.string().min(1, 'Nominee name is required'),
+        relationship: z.string().min(1, 'Relationship is required'),
+        allocation: z.number().min(0.1, 'Allocation must be > 0').max(100, 'Allocation cannot exceed 100'),
+        dateOfBirth: z.string().optional(),
+    })).optional()
+}).refine(data => {
+    if (!data.nominees || data.nominees.length === 0) return true; // Validation passes if no nominees
+    const totalAllocation = data.nominees.reduce((acc, nominee) => acc + (nominee.allocation || 0), 0);
+    return totalAllocation === 100;
+}, {
+    message: 'Total allocation for nominees must be exactly 100%',
+    path: ['nominees'],
+});
+
+
 // Combined schema
-const assetFormSchema = baseAssetSchema.merge(generalInsuranceSchema).merge(physicalToDematSchema).merge(bondSchema).merge(fdSchema).merge(ppfSchema);
+const assetFormSchema = baseAssetSchema.merge(generalInsuranceSchema).merge(physicalToDematSchema).merge(bondSchema).merge(fdSchema).merge(ppfSchema).merge(z.object({stocks: stocksSchema.optional()}));
 type AssetFormData = z.infer<typeof assetFormSchema>;
 
 interface AddAssetModalProps {
@@ -154,6 +181,18 @@ export function AddAssetModal({
       gi_priceWithGST: '',
       gi_eligiblePremium: '',
       gi_referenceAgent: '',
+      stocks: {
+        holderName: '',
+        jointHolder1: '',
+        jointHolder2: '',
+        dpId: '',
+        dpName: '',
+        bankName: '',
+        bankAccountNumber: '',
+        mobileNumber: '',
+        emailAddress: '',
+        nominees: [{ name: '', relationship: '', allocation: 100 }]
+      }
     },
   });
 
@@ -162,7 +201,7 @@ export function AddAssetModal({
 
   useEffect(() => {
     if (assetToEdit) {
-      const defaultVals: AssetFormData = {
+      const defaultVals: any = {
           familyHead: assetToEdit.familyHeadId,
           assetType: assetToEdit.assetType,
           gi_familyMember: assetToEdit.generalInsurance?.familyMember,
@@ -216,8 +255,29 @@ export function AddAssetModal({
           ppf_bankName: assetToEdit.ppf?.bankName,
           ppf_openingDate: assetToEdit.ppf?.openingDate,
           ppf_matureDate: assetToEdit.ppf?.matureDate,
+          stocks: assetToEdit.stocks
       };
       reset(defaultVals);
+    } else {
+        // Reset to default when creating a new asset
+         reset({
+            familyHead: '',
+            assetType: '',
+            gi_familyMember: '',
+            gi_category: '',
+            stocks: {
+                holderName: '',
+                jointHolder1: '',
+                jointHolder2: '',
+                dpId: '',
+                dpName: '',
+                bankName: '',
+                bankAccountNumber: '',
+                mobileNumber: '',
+                emailAddress: '',
+                nominees: [{ name: '', relationship: '', allocation: 100, dateOfBirth: '' }]
+            }
+        });
     }
   }, [assetToEdit, reset]);
 
@@ -314,6 +374,7 @@ export function AddAssetModal({
             openingDate: data.ppf_openingDate,
             matureDate: data.ppf_matureDate
         } : undefined,
+        stocks: data.assetType === 'STOCKS' ? data.stocks : undefined,
     };
     
     setTimeout(() => {
@@ -409,7 +470,7 @@ export function AddAssetModal({
               </div>
               
               {selectedAssetType === 'GENERAL INSURANCE' && (
-              <GeneralInsuranceFields control={control} errors={errors} familyMembers={familyMembers} />
+                <GeneralInsuranceFields control={control} errors={errors} familyMembers={familyMembers} />
               )}
               {selectedAssetType === 'PHYSICAL TO DEMAT' && (
                   <PhysicalToDematFields register={register} errors={errors} control={control} setValue={setValue} watch={watch} />
@@ -423,6 +484,10 @@ export function AddAssetModal({
               {selectedAssetType === 'PPF' && (
                   <PPFFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
               )}
+              {selectedAssetType === 'STOCKS' && (
+                  <StocksFields control={control} errors={errors} register={register} />
+              )}
+              
               
               {selectedAssetType && !isViewMode && (
                   <div className="mt-6 border-t pt-4">
