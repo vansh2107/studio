@@ -14,6 +14,7 @@ import { Client, FamilyMember } from '@/lib/types';
 import { Loader2, X, UploadCloud, File as FileIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, parse, isValid } from 'date-fns';
+import { RELATION_OPTIONS } from '@/lib/constants';
 
 const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 const aadhaarRegex = /^[0-9]{12}$/;
@@ -41,7 +42,6 @@ const memberSchema = z.object({
 
 type MemberFormData = z.infer<typeof memberSchema>;
 
-const RELATION_OPTIONS = ["Self", "Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister", "Other", "Daughter-in-law", "Son-in-law", "Grandson", "Granddaughter"];
 const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
 interface FamilyMemberFormModalProps {
@@ -282,7 +282,7 @@ export function FamilyMemberFormModal({
   );
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 -mr-4 relative">
+    <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
         <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 close-icon">
             <X className="h-4 w-4" />
         </Button>

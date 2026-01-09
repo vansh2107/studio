@@ -8,8 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FamilyMember } from '@/lib/types';
+import { RELATION_OPTIONS } from '@/lib/constants';
 
-export function StocksFields({ control, register, errors, watch, setValue }: { control: any; register: any; errors: any; watch: any, setValue: any }) {
+export function StocksFields({ control, register, errors, watch, setValue, familyMembers }: { control: any; register: any; errors: any; watch: any, setValue: any, familyMembers: FamilyMember[] }) {
   const [jointHolderCount, setJointHolderCount] = useState(0);
 
   const { fields: nomineeFields, append: appendNominee, remove: removeNominee } = useFieldArray({
@@ -31,12 +34,10 @@ export function StocksFields({ control, register, errors, watch, setValue }: { c
   }, [firstNomineeAllocation, nominees?.length, setValue]);
   
   const handleAddNominee = () => {
-    if(nominees.length === 1) {
+    if(nominees.length < 2) {
         const firstAllocation = parseFloat(firstNomineeAllocation) || 100;
         const secondAllocation = 100 - firstAllocation;
         appendNominee({ name: '', relationship: '', allocation: secondAllocation < 0 ? 0 : secondAllocation, dateOfBirth: '' });
-    } else {
-        appendNominee({ name: '', relationship: '', allocation: 100, dateOfBirth: '' });
     }
   }
 
@@ -49,7 +50,24 @@ export function StocksFields({ control, register, errors, watch, setValue }: { c
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Name of the Holder</Label>
-            <Input {...register('stocks.holderName')} />
+            <Controller
+              name="stocks.holderName"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Holder" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {familyMembers.map((member) => (
+                      <SelectItem key={member.id} value={member.name}>
+                        {member.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
             {errors.stocks?.holderName && <p className="text-sm text-destructive">{errors.stocks.holderName.message}</p>}
           </div>
           {jointHolderCount > 0 && (
@@ -117,11 +135,45 @@ export function StocksFields({ control, register, errors, watch, setValue }: { c
           <div key={item.id} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-2 items-end mb-2">
             <div>
               <Label>Nominee Name {index + 1}</Label>
-              <Input {...register(`stocks.nominees.${index}.name`)} />
+              <Controller
+                name={`stocks.nominees.${index}.name`}
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Nominee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {familyMembers.map((member) => (
+                        <SelectItem key={member.id} value={member.name}>
+                          {member.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div>
               <Label>Relationship</Label>
-              <Input {...register(`stocks.nominees.${index}.relationship`)} />
+              <Controller
+                name={`stocks.nominees.${index}.relationship`}
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Relationship" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RELATION_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div>
               <Label>
@@ -170,7 +222,3 @@ export function StocksFields({ control, register, errors, watch, setValue }: { c
     </div>
   );
 }
-
-    
-
-    

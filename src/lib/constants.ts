@@ -202,3 +202,5 @@ export const REINVESTMENT_REASONS = [
   "Real Estate Investment",
   "Other",
 ] as const;
+
+export const RELATION_OPTIONS = ["Self", "Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister", "Other", "Daughter-in-law", "Son-in-law", "Grandson", "Granddaughter"];

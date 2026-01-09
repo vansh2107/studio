@@ -110,12 +110,27 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
         <div className="grid grid-cols-1">
           <div>
             <Label>Nominee Name</Label>
-            <Input {...register('b_nomineeName')} />
+            <Controller
+              name="b_nomineeName"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Nominee" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {familyMembers.map((member) => (
+                      <SelectItem key={member.id} value={member.name}>
+                        {member.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-    

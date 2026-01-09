@@ -104,23 +104,23 @@ const ppfSchema = z.object({
 });
 
 const stocksSchema = z.object({
-    holderName: z.string().min(1, 'Holder name is required'),
-    jointHolder1: z.string().optional(),
-    jointHolder2: z.string().optional(),
-    dpId: z.string().min(1, 'DPID is required'),
-    dpName: z.string().min(1, 'DP Name is required'),
-    bankName: z.string().min(1, 'Bank Name is required'),
-    bankAccountNumber: z.string().min(1, 'Bank Account Number is required'),
-    mobileNumber: z.string().min(10, 'Mobile number must be at least 10 digits'),
-    emailAddress: z.string().email('Invalid email address').optional().or(z.literal('')),
-    nominees: z.array(z.object({
-        name: z.string().min(1, 'Nominee name is required'),
-        relationship: z.string().min(1, 'Relationship is required'),
-        allocation: z.number()
-          .min(0, 'Allocation cannot be negative')
-          .max(100, 'Allocation cannot exceed 100'),
-        dateOfBirth: z.string().optional(),
-    })).optional()
+  holderName: z.string().min(1, 'Holder name is required'),
+  jointHolder1: z.string().optional(),
+  jointHolder2: z.string().optional(),
+  dpId: z.string().min(1, 'DPID is required'),
+  dpName: z.string().min(1, 'DP Name is required'),
+  bankName: z.string().min(1, 'Bank Name is required'),
+  bankAccountNumber: z.string().min(1, 'Bank Account Number is required'),
+  mobileNumber: z.string().min(10, 'Mobile number must be at least 10 digits'),
+  emailAddress: z.string().email('Invalid email address').optional().or(z.literal('')),
+  nominees: z.array(z.object({
+      name: z.string().min(1, 'Nominee name is required'),
+      relationship: z.string().min(1, 'Relationship is required'),
+      allocation: z.number()
+        .min(0, 'Allocation must be between 0 and 100')
+        .max(100, 'Allocation must be between 0 and 100'),
+      dateOfBirth: z.string().optional(),
+  })).min(1),
 });
 
 
@@ -513,7 +513,7 @@ export function AddAssetModal({
                   <PPFFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
               )}
               {selectedAssetType === 'STOCKS' && (
-                  <StocksFields control={control} errors={errors} register={register} watch={watch} setValue={setValue} />
+                  <StocksFields control={control} errors={errors} register={register} watch={watch} setValue={setValue} familyMembers={familyMembers} />
               )}
               
               
@@ -556,7 +556,3 @@ export function AddAssetModal({
     </>
   );
 }
-
-    
-
-    
