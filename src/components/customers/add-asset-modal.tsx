@@ -398,7 +398,7 @@ export function AddAssetModal({
 
           <div className="p-6 border-t flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Close
             </Button>
             {!isViewMode && (
               <Button type="submit" disabled={isSaving}>
