@@ -11,7 +11,8 @@ import { JointHolderFields } from './joint-holder-fields';
 
 export function PhysicalToDematFields({ register, errors, control, familyMembers, watch, setValue }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[], watch: any, setValue: any }) {
   
-  const [quantity, marketPrice] = watch(['physicalToDemat.quantity', 'physicalToDemat.marketPrice']);
+  const quantity = watch('physicalToDemat.quantity');
+  const marketPrice = watch('physicalToDemat.marketPrice');
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -99,8 +100,10 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
           {errors?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.emailAddress.message}</p>}
         </div>
       </div>
+      
+      <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
         <div>
           <Label>Name on Share</Label>
           <Input {...register('physicalToDemat.nameOnShare')} />
@@ -140,7 +143,6 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         </div>
       </div>
       
-      <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
     </div>
   );
 }

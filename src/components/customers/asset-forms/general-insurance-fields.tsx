@@ -10,8 +10,9 @@ import { useWatch } from 'react-hook-form';
 import { INSURANCE_COMPANIES } from '@/lib/constants';
 import { Combobox } from '@/components/ui/combobox';
 import { JointHolderFields } from './joint-holder-fields';
+import { NomineeFields } from './nominee-fields';
 
-export function GeneralInsuranceFields({ control, errors, familyMembers, register, watch, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, setValue: any }) {
+export function GeneralInsuranceFields({ control, errors, familyMembers, register, watch, getValues, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any }) {
 
   const selectedCategory = useWatch({
     control,
@@ -177,6 +178,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
               </div>
             </div>
         </div>
+        <NomineeFields control={control} errors={errors?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
     </div>
   );
 }

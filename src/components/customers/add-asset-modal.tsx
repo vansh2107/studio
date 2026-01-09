@@ -26,6 +26,10 @@ import { useToast } from '@/hooks/use-toast';
 import { UploadDocModal } from '../doc-vault/upload-doc-modal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+const jointHolderSchema = z.object({
+  name: z.string().min(1, 'Joint holder name is required.'),
+});
+
 const nomineeSchema = z.object({
   name: z.string().min(1, 'Nominee name is required.'),
   allocation: z.preprocess(
@@ -71,11 +75,12 @@ const generalInsuranceSchema = z.object({
   referenceAgent: z.string().optional(),
   familyMember: z.string().min(1, "Family member is required."),
   nominees: nomineesArraySchema,
+  jointHolders: z.array(jointHolderSchema).max(3).optional(),
 });
 
 const physicalToDematSchema = z.object({
   clientName: z.string().min(1, "Client name is required."),
-  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]+$/, "Mobile number must contain only digits"),
+  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must be exactly 10 digits"),
   emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
   nameOnShare: z.string().optional(),
   folioNumber: z.string().optional(),
@@ -84,12 +89,12 @@ const physicalToDematSchema = z.object({
   quantity: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   marketPrice: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   totalValue: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-  jointHolders: z.array(z.object({ name: z.string() })).max(3).optional(),
+  jointHolders: z.array(jointHolderSchema).max(3).optional(),
 });
 
 const bondsSchema = z.object({
   familyMember: z.string().min(1, "Family member is required."),
-  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]+$/, "Mobile number must contain only digits"),
+  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must be exactly 10 digits"),
   emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
   issuer: z.string().min(1, "Issuer is required."),
   isin: z.string().optional(),
@@ -99,12 +104,13 @@ const bondsSchema = z.object({
   purchaseDate: z.string().optional(),
   maturityDate: z.string().optional(),
   nominees: nomineesArraySchema,
+  jointHolders: z.array(jointHolderSchema).max(3).optional(),
 });
 
 const fdSchema = z.object({
   investorName: z.string().min(1, "Investor name is required"),
   companyName: z.string().min(1, "Company/Bank Name is required."),
-  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]+$/, "Mobile number must contain only digits"),
+  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must contain only digits"),
   emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
   fdName: z.string().optional(),
   fdNumber: z.string().optional(),
@@ -116,6 +122,7 @@ const fdSchema = z.object({
   purchaseDate: z.string().optional(),
   maturityDate: z.string().optional(),
   nominees: nomineesArraySchema,
+  jointHolders: z.array(jointHolderSchema).max(3).optional(),
 });
 
 const ppfSchema = z.object({
@@ -126,11 +133,11 @@ const ppfSchema = z.object({
   openingDate: z.string().optional(),
   matureDate: z.string().optional(),
   nominees: nomineesArraySchema,
+  jointHolders: z.array(jointHolderSchema).max(3).optional(),
 });
 
 const stocksSchema = z.object({
   holderName: z.string().min(1, "Holder name is required."),
-  jointHolders: z.array(z.object({ name: z.string() })).max(3).optional(),
   dpId: z.string().min(1, "DPID is required."),
   dpName: z.string().min(1, "DP Name is required."),
   bankName: z.string().min(1, "Bank name is required."),
@@ -141,6 +148,7 @@ const stocksSchema = z.object({
     .regex(/^[0-9]{10}$/, { message: "Mobile number must contain only digits." }),
   emailAddress: z.string().email("Invalid email address.").optional().or(z.literal("")),
   nominees: nomineesArraySchema,
+  jointHolders: z.array(jointHolderSchema).max(3).optional(),
 });
 
 const assetFormSchema = z.discriminatedUnion("assetType", [
@@ -353,36 +361,12 @@ export function AddAssetModal({
                 />
               </div>
 
-              {currentAssetType === 'GENERAL INSURANCE' && (
-                <>
-                  <GeneralInsuranceFields control={control} errors={errors?.generalInsurance} familyMembers={familyMembers} />
-                  <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
-                </>
-              )}
+              {currentAssetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors?.generalInsurance} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               {currentAssetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields register={register} errors={errors?.physicalToDemat} control={control} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
-              {currentAssetType === 'BONDS' && (
-                <>
-                  <BondFields control={control} errors={errors?.bonds} familyMembers={familyMembers} watch={watch} />
-                  <NomineeFields control={control} errors={errors?.bonds?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
-                </>
-              )}
-              {currentAssetType === 'FIXED DEPOSITS' && (
-                 <>
-                  <FDFields control={control} register={register} errors={errors?.fixedDeposits} familyMembers={familyMembers} />
-                  <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
-                </>
-              )}
-              {currentAssetType === 'PPF' && (
-                <>
-                  <PPFFields control={control} errors={errors?.ppf} familyMembers={familyMembers} />
-                  <NomineeFields control={control} errors={errors?.ppf?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
-                </>
-              )}
-              {currentAssetType === 'STOCKS' && (
-                 <>
-                  <StocksFields control={control} register={register} errors={errors?.stocks} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
-                 </>
-              )}
+              {currentAssetType === 'BONDS' && <BondFields control={control} register={register} errors={errors?.bonds} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {currentAssetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors?.fixedDeposits} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {currentAssetType === 'PPF' && <PPFFields control={control} register={register} errors={errors?.ppf} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {currentAssetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors?.stocks} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               
               {currentAssetType && !isViewMode && (
                 <Button

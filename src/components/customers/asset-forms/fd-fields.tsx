@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Client, FamilyMember } from '@/lib/types';
 import { JointHolderFields } from './joint-holder-fields';
+import { NomineeFields } from './nominee-fields';
 
-export function FDFields({ control, errors, familyMembers, register, watch, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, setValue: any }) {
+export function FDFields({ control, errors, familyMembers, register, watch, getValues, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any }) {
     
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -128,6 +129,7 @@ export function FDFields({ control, errors, familyMembers, register, watch, setV
                 <Controller name="fixedDeposits.maturityDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
             </div>
         </div>
+        <NomineeFields control={control} errors={errors?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
     </div>
   );
 }

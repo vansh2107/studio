@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Client, FamilyMember } from '@/lib/types';
 import { JointHolderFields } from './joint-holder-fields';
+import { NomineeFields } from './nominee-fields';
 
-export function PPFFields({ control, errors, familyMembers, register, watch, setValue }: { control: any; errors: any; familyMembers: (Client | FamilyMember)[], register: any, watch: any, setValue: any; }) {
+export function PPFFields({ control, errors, familyMembers, register, watch, getValues, setValue }: { control: any; errors: any; familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any; }) {
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -33,7 +34,7 @@ export function PPFFields({ control, errors, familyMembers, register, watch, set
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">PPF Details</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         <div>
           <Label>Family Member Name</Label>
            <Controller
@@ -83,6 +84,8 @@ export function PPFFields({ control, errors, familyMembers, register, watch, set
           <Controller name="ppf.matureDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
         </div>
       </div>
+
+      <NomineeFields control={control} errors={errors?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
     </div>
   );
 }
