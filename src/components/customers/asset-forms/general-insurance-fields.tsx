@@ -4,7 +4,6 @@ import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { GENERAL_INSURANCE_CATEGORIES, GENERAL_INSURANCE_POLICY_TYPES } from '@/lib/asset-form-types';
 import { Client, FamilyMember } from '@/lib/types';
 import { useWatch } from 'react-hook-form';
@@ -83,11 +82,11 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
             </div>
              <div>
                 <Label>Plan Name</Label>
-                <Controller name="generalInsurance.planName" control={control} render={({ field }) => <Input {...field} />} />
+                <Controller name="generalInsurance.planName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Policy Number</Label>
-                <Controller name="generalInsurance.policyNumber" control={control} render={({ field }) => <Input {...field} />} />
+                <Controller name="generalInsurance.policyNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
             </div>
             <div>
               <Label>Policy Type</Label>
@@ -125,32 +124,30 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
             {(selectedCategory === 'FOUR WHEELER' || selectedCategory === 'TWO WHEELER') && (
                  <div>
                     <Label>Vehicle Registration Number</Label>
-                    <Controller name="generalInsurance.vehicleRegNumber" control={control} render={({ field }) => <Input {...field} />} />
+                    <Controller name="generalInsurance.vehicleRegNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
                 </div>
             )}
              <div>
                 <Label>Sum Assured</Label>
-                <Controller name="generalInsurance.sumAssured" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
+                <Controller name="generalInsurance.sumAssured" control={control} render={({ field }) => <Input type="number" min="0" {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Price Without GST</Label>
-                <Controller name="generalInsurance.priceWithoutGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
+                <Controller name="generalInsurance.priceWithoutGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Price With GST</Label>
-                <Controller name="generalInsurance.priceWithGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
+                <Controller name="generalInsurance.priceWithGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} value={field.value || ''} />} />
             </div>
              <div>
                 <Label>Eligible Premium</Label>
-                <Controller name="generalInsurance.eligiblePremium" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
+                <Controller name="generalInsurance.eligiblePremium" control={control} render={({ field }) => <Input type="number" min="0" {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Reference Agent</Label>
-                <Controller name="generalInsurance.referenceAgent" control={control} render={({ field }) => <Input {...field} />} />
+                <Controller name="generalInsurance.referenceAgent" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
             </div>
         </div>
     </div>
   );
 }
-
-    
