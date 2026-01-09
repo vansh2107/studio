@@ -1,4 +1,3 @@
-
 'use client';
 import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -7,31 +6,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Client, FamilyMember } from '@/lib/types';
 
 export function FDFields({ register, errors, control, familyMembers }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[] }) {
-  
+    
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const days = Array.from({ length: 31 }, (_, i) => i);
-  
-  return (
-    <div className="space-y-6">
-       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Fixed Deposit Details</h3>
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
-      <div className="space-y-6">
+  return (
+    <div className="space-y-4">
+        <h3 className="font-semibold text-lg border-b pb-2 mb-4">Fixed Deposit Details</h3>
         
         {/* Row 1 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="fd_companyName">Company Name</Label>
-                <Input id="fd_companyName" {...register('fd_companyName')} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <Label>Company/Bank Name</Label>
+                <Input {...register('fd_companyName')} />
             </div>
-            <div className="space-y-2">
-                <Label htmlFor="fd_investorName">Investor Name</Label>
-                <Controller
+            <div>
+                <Label>Investor Name</Label>
+                 <Controller
                     name="fd_investorName"
                     control={control}
                     render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger id="fd_investorName">
-                        <SelectValue placeholder="Select Investor" />
+                        <SelectTrigger>
+                        <SelectValue placeholder="Select Member" />
                         </SelectTrigger>
                         <SelectContent>
                         {familyMembers.map((member) => (
@@ -47,84 +44,94 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
         </div>
 
         {/* Row 2 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="fd_fdName">FD Name</Label>
-                <Input id="fd_fdName" {...register('fd_fdName')} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <Label>FD Name</Label>
+                <Input {...register('fd_fdName')} />
             </div>
-            <div className="space-y-2">
-                <Label htmlFor="fd_fdNumber">FD number</Label>
-                <Input id="fd_fdNumber" {...register('fd_fdNumber')} />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="fd_depositedAmount">Deposited Amount (₹)</Label>
-                <Input id="fd_depositedAmount" type="number" {...register('fd_depositedAmount')} />
+            <div>
+                <Label>FD Number</Label>
+                <Input {...register('fd_fdNumber')} />
             </div>
         </div>
 
-        {/* Row 3 */}
+        {/* Row 3 - Corrected Layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 items-start">
+            {/* Period */}
             <div className="space-y-2">
                 <Label>Period</Label>
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                        <Label htmlFor="fd_periodMonth" className="text-xs text-muted-foreground">Month</Label>
-                        <Controller
-                            name="fd_periodMonth"
-                            control={control}
-                            render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
-                                <SelectTrigger id="fd_periodMonth">
-                                    <SelectValue placeholder="Month" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {months.map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                            )}
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="fd_periodDays" className="text-xs text-muted-foreground">Days</Label>
-                        <Controller
-                            name="fd_periodDays"
-                            control={control}
-                            render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
-                                <SelectTrigger id="fd_periodDays">
-                                    <SelectValue placeholder="Days" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {days.map(d => <SelectItem key={d} value={String(d)}>{d}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                            )}
-                        />
-                    </div>
+                <Controller
+                    name="fd_periodMonth"
+                    control={control}
+                    render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger id="fd_periodMonth">
+                        <SelectValue placeholder="Month" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        {months.map(m => (
+                            <SelectItem key={m} value={String(m)}>
+                            {m}
+                            </SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                    )}
+                />
+                <Controller
+                    name="fd_periodDays"
+                    control={control}
+                    render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger id="fd_periodDays">
+                        <SelectValue placeholder="Days" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        {days.map(d => (
+                            <SelectItem key={d} value={String(d)}>
+                            {d}
+                            </SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                    )}
+                />
                 </div>
             </div>
+
+            {/* Interest Rate */}
             <div className="space-y-2">
                 <Label htmlFor="fd_interestRate">Interest Rate (%)</Label>
-                <Input id="fd_interestRate" type="number" {...register('fd_interestRate')} />
+                <Input
+                id="fd_interestRate"
+                type="number"
+                {...register('fd_interestRate')}
+                />
             </div>
+
+            {/* Maturity Amount */}
             <div className="space-y-2">
                 <Label htmlFor="fd_maturityAmount">Maturity Amount (₹)</Label>
-                <Input id="fd_maturityAmount" type="number" {...register('fd_maturityAmount')} />
+                <Input
+                id="fd_maturityAmount"
+                type="number"
+                {...register('fd_maturityAmount')}
+                />
             </div>
         </div>
-        
+
         {/* Row 4 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-             <div className="space-y-2">
-                <Label htmlFor="fd_purchaseDate">Purchase Date</Label>
-                <Input id="fd_purchaseDate" type="date" {...register('fd_purchaseDate')} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <Label>Date of Purchase</Label>
+                <Input type="date" {...register('fd_purchaseDate')} />
             </div>
-            <div className="space-y-2">
-                <Label htmlFor="fd_maturityDate">Maturity Date</Label>
-                <Input id="fd_maturityDate" type="date" {...register('fd_maturityDate')} />
+            <div>
+                <Label>Date of Maturity</Label>
+                <Input type="date" {...register('fd_maturityDate')} />
             </div>
         </div>
-      </div>
     </div>
   );
 }
