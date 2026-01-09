@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useEffect } from 'react';
 import { useFieldArray, Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 import { NomineeFields } from './nominee-fields';
 
-export function StocksFields({ control, register, errors, familyMembers }: { control: any; register: any; errors: any; familyMembers: FamilyMember[] }) {
+export function StocksFields({ control, register, errors, familyMembers, watch, getValues, setValue }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any; getValues: any; setValue: any; }) {
 
   const { fields: jointHolderFields, append: appendJointHolder, remove: removeJointHolder } = useFieldArray({
     control,
@@ -56,26 +55,32 @@ export function StocksFields({ control, register, errors, familyMembers }: { con
 
         <div className="space-y-2 pt-4">
             <Label>Joint Holders</Label>
-              <div className="space-y-2">
-                {jointHolderFields.map((field, index) => (
-                  <div key={field.id} className="flex items-center gap-2">
-                    <Input 
-                      {...register(`stocks.jointHolders.${index}.name`)} 
-                      placeholder={`Joint Holder ${index + 1}`}
-                      className="flex-grow"
-                    />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => removeJointHolder(index)}>
-                      <Trash2 className="h-4 w-4 text-destructive"/>
-                    </Button>
-                  </div>
+            <div className="grid grid-cols-3 gap-3 items-center">
+                {jointHolderFields.map((item, index) => (
+                    <div key={item.id} className="relative">
+                        <Input 
+                            {...register(`stocks.jointHolders.${index}.name`)} 
+                            placeholder={`Joint Holder ${index + 1}`}
+                            className="pr-8"
+                        />
+                        <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => removeJointHolder(index)}
+                            className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-destructive"
+                        >
+                            <Trash2 className="h-4 w-4"/>
+                        </Button>
+                    </div>
                 ))}
-              </div>
-              {jointHolderFields.length < 3 && (
-                <Button type="button" variant="link" size="sm" onClick={() => appendJointHolder({ name: "" })} className="p-0 h-auto">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Joint Holder
-                </Button>
-              )}
-            {errors?.jointHolders && <p className="text-sm text-destructive">{errors.jointHolders.message}</p>}
+                {jointHolderFields.length < 3 && (
+                  <Button type="button" variant="outline" size="sm" onClick={() => appendJointHolder({ name: "" })}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add
+                  </Button>
+                )}
+            </div>
+            {errors?.jointHolders && <p className="text-sm text-destructive mt-1">{errors.jointHolders.message}</p>}
         </div>
       </div>
 
@@ -111,17 +116,18 @@ export function StocksFields({ control, register, errors, familyMembers }: { con
             {...register('stocks.mobileNumber')}
             onKeyDown={handleMobileKeyDown}
           />
-           {errors?.mobileNumber && <p className="text-sm text-destructive">{errors.mobileNumber.message}</p>}
+           {errors?.stocks?.mobileNumber && <p className="text-sm text-destructive">{errors.stocks.mobileNumber.message}</p>}
         </div>
         <div>
           <Label>Email Address</Label>
           <Input type="email" {...register('stocks.emailAddress')} />
-           {errors?.emailAddress && <p className="text-sm text-destructive">{errors.emailAddress.message}</p>}
+           {errors?.stocks?.emailAddress && <p className="text-sm text-destructive">{errors.stocks.emailAddress.message}</p>}
         </div>
       </div>
 
       <Separator />
 
+      <NomineeFields control={control} errors={errors?.stocks?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
     </div>
   );
 }

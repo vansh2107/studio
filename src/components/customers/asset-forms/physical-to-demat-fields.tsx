@@ -1,6 +1,5 @@
 
 'use client';
-import { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 
 
-export function PhysicalToDematFields({ register, errors, control, familyMembers }: { register: any, errors: any, control: any, familyMembers: FamilyMember[] }) {
+export function PhysicalToDematFields({ register, errors, control, familyMembers, watch, setValue }: { register: any, errors: any, control: any, familyMembers: FamilyMember[], watch: any, setValue: any }) {
   
   const { fields, append, remove } = useFieldArray({
     control,
@@ -110,28 +109,34 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         </div>
       </div>
       
-      <div className="space-y-2 pt-4">
-          <Label>Joint Holders</Label>
-            <div className="flex flex-wrap gap-2 items-center">
-              {fields.map((item, index) => (
-                  <div key={item.id} className="flex items-center gap-2 flex-grow">
-                      <Input 
-                          {...register(`physicalToDemat.jointHolders.${index}.name`)} 
-                          placeholder={`Joint Holder ${index + 1}`}
-                          className="w-auto flex-grow"
-                      />
-                      <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                          <Trash2 className="h-4 w-4 text-destructive"/>
-                      </Button>
-                  </div>
-              ))}
-              {fields.length < 3 && (
-                <Button type="button" variant="link" size="sm" onClick={() => append({ name: "" })}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add
-                </Button>
-              )}
-            </div>
-             {errors?.jointHolders && <p className="text-sm text-destructive">{errors.jointHolders.message}</p>}
+       <div className="space-y-2 pt-4">
+        <Label>Joint Holders</Label>
+        <div className="grid grid-cols-3 gap-3 items-center">
+            {fields.map((item, index) => (
+                <div key={item.id} className="relative">
+                    <Input 
+                        {...register(`physicalToDemat.jointHolders.${index}.name`)} 
+                        placeholder={`Joint Holder ${index + 1}`}
+                        className="pr-8"
+                    />
+                    <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => remove(index)}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-destructive"
+                    >
+                        <Trash2 className="h-4 w-4"/>
+                    </Button>
+                </div>
+            ))}
+            {fields.length < 3 && (
+              <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "" })}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add
+              </Button>
+            )}
+        </div>
+        {errors?.jointHolders && <p className="text-sm text-destructive mt-1">{errors.jointHolders.message}</p>}
       </div>
 
     </div>
