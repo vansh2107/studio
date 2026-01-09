@@ -76,7 +76,7 @@ const physicalToDematFieldsSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
   folioNumber: z.string().optional(),
   nameOnShare: z.string().optional(),
-  jointHolders: z.array(z.object({ name: z.string() })).max(3).optional(),
+  jointHolders: z.array(z.object({ name: z.string().min(1, "Joint holder name cannot be empty") })).max(3).optional(),
   companyName: z.string().optional(),
   rtaName: z.string().optional(),
   quantity: numberField,
@@ -109,7 +109,7 @@ const ppfFieldsSchema = z.object({
 
 const stocksFieldsSchema = z.object({
   holderName: z.string().min(1, "Holder name is required."),
-  jointHolders: z.array(z.object({ name: z.string() })).max(3).optional(),
+  jointHolders: z.array(z.object({ name: z.string().min(1, "Joint holder name is required") })).max(3).optional(),
   dpId: z.string().min(1, "DPID is required."),
   dpName: z.string().min(1, "DP Name is required."),
   bankName: z.string().min(1, "Bank name is required."),
@@ -124,6 +124,7 @@ const stocksFieldsSchema = z.object({
   })).max(3).optional(),
 });
 
+
 const assetFormSchema = z.discriminatedUnion("assetType", [
   baseAssetSchema.extend({ assetType: z.literal("BONDS"), bonds: bondFieldsSchema }),
   baseAssetSchema.extend({ assetType: z.literal("GENERAL INSURANCE"), generalInsurance: generalInsuranceFieldsSchema }),
@@ -133,8 +134,8 @@ const assetFormSchema = z.discriminatedUnion("assetType", [
   baseAssetSchema.extend({ assetType: z.literal("STOCKS"), stocks: stocksFieldsSchema }),
   baseAssetSchema.extend({ assetType: z.literal("LIFE INSURANCE") }),
   baseAssetSchema.extend({ assetType: z.literal("MUTUAL FUNDS") }),
-  baseAssetSchema.extend({ assetType: z.literal(""), bonds: z.undefined(), generalInsurance: z.undefined(), physicalToDemat: z.undefined(), fixedDeposits: z.undefined(), ppf: z.undefined(), stocks: z.undefined() }),
-  baseAssetSchema.extend({ assetType: z.literal(undefined), bonds: z.undefined(), generalInsurance: z.undefined(), physicalToDemat: z.undefined(), fixedDeposits: z.undefined(), ppf: z.undefined(), stocks: z.undefined()  }),
+  baseAssetSchema.extend({ assetType: z.literal("") }),
+  baseAssetSchema.extend({ assetType: z.literal(undefined) }),
 ]);
 
 
@@ -346,7 +347,7 @@ export function AddAssetModal({
             {assetType === 'GENERAL INSURANCE' && (
               <GeneralInsuranceFields
                 control={control}
-                errors={errors.generalInsurance}
+                errors={(errors as any)?.generalInsurance}
                 familyMembers={familyMembers}
               />
             )}
@@ -354,16 +355,18 @@ export function AddAssetModal({
             {assetType === 'PHYSICAL TO DEMAT' && (
               <PhysicalToDematFields
                 register={register}
-                errors={errors.physicalToDemat}
+                errors={(errors as any)?.physicalToDemat}
                 control={control}
                 familyMembers={familyMembers}
+                watch={watch}
+                setValue={setValue}
               />
             )}
 
             {assetType === 'BONDS' && (
               <BondFields
                 register={register}
-                errors={errors.bonds}
+                errors={(errors as any)?.bonds}
                 control={control}
                 familyMembers={familyMembers}
                 setValue={setValue}
@@ -374,7 +377,7 @@ export function AddAssetModal({
             {assetType === 'FIXED DEPOSITS' && (
               <FDFields
                 register={register}
-                errors={errors.fixedDeposits}
+                errors={(errors as any)?.fixedDeposits}
                 control={control}
                 familyMembers={familyMembers}
               />
@@ -383,7 +386,7 @@ export function AddAssetModal({
             {assetType === 'PPF' && (
               <PPFFields
                 register={register}
-                errors={errors.ppf}
+                errors={(errors as any)?.ppf}
                 control={control}
                 familyMembers={familyMembers}
               />
@@ -393,8 +396,9 @@ export function AddAssetModal({
               <StocksFields
                 control={control}
                 register={register}
-                errors={errors.stocks}
+                errors={(errors as any)?.stocks}
                 familyMembers={familyMembers}
+                watch={watch}
               />
             )}
 
@@ -435,5 +439,3 @@ export function AddAssetModal({
     </div>
   );
 }
-
-    
