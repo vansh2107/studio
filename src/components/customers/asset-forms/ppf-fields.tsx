@@ -36,52 +36,56 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
       
       <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
-        <div>
-          <Label>Family Member Name</Label>
-           <Controller
-            name="ppf.familyMemberName"
-            control={control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Member" />
-                </SelectTrigger>
-                <SelectContent>
-                  {familyMembers.map((member) => (
-                    <SelectItem key={member.id} value={member.name}>
-                      {member.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
+      <div className="space-y-4 pt-4">
+        {/* ROW 1 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Label>Family Member Name</Label>
+            <Controller
+              name="ppf.familyMemberName"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {familyMembers.map((member) => (
+                      <SelectItem key={member.id} value={member.name}>
+                        {member.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+          <div>
+            <Label>Bank Name</Label>
+            <Controller name="ppf.bankName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
+          </div>
+          <div>
+            <Label>Contributed Amount</Label>
+            <Controller name="ppf.contributedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
+            {errors?.ppf?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf.contributedAmount.message}</p>}
+          </div>
         </div>
-        <div>
-          <Label>Bank Name</Label>
-          <Controller name="ppf.bankName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <Label>Contributed Amount</Label>
-          <Controller name="ppf.contributedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-          {errors?.ppf?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf.contributedAmount.message}</p>}
-        </div>
-        <div>
-          <Label>Balance</Label>
-          <Controller name="ppf.balance" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-          {errors?.ppf?.balance && <p className="text-sm text-destructive mt-1">{errors.ppf.balance.message}</p>}
-        </div>
-        <div>
-          <Label>Date of Opening</Label>
-          <Controller name="ppf.openingDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
-        </div>
-        <div>
-          <Label>Date of Mature</Label>
-          <Controller name="ppf.matureDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+        
+        {/* ROW 2 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Label>Balance</Label>
+            <Controller name="ppf.balance" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
+            {errors?.ppf?.balance && <p className="text-sm text-destructive mt-1">{errors.ppf.balance.message}</p>}
+          </div>
+          <div>
+            <Label>Date of Opening</Label>
+            <Controller name="ppf.openingDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+          </div>
+          <div>
+            <Label>Date of Mature</Label>
+            <Controller name="ppf.matureDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+          </div>
         </div>
       </div>
 
