@@ -54,6 +54,7 @@ const generalInsuranceSchema = z.object({
 });
 
 const physicalToDematSchema = z.object({
+  p2d_clientName: z.string().min(1, "Client Name is required"),
   p2d_folioNumber: z.string().optional(),
   p2d_nameOnShare: z.string().optional(),
   p2d_jointHolder1: z.string().optional(),
@@ -176,6 +177,7 @@ export function AddAssetModal({
       gi_priceWithGST: '',
       gi_eligiblePremium: '',
       gi_referenceAgent: '',
+      p2d_clientName: '',
       stocks: {
         holderName: '',
         jointHolder1: '',
@@ -214,6 +216,7 @@ export function AddAssetModal({
           gi_priceWithGST: assetToEdit.generalInsurance?.priceWithGST,
           gi_eligiblePremium: assetToEdit.generalInsurance?.eligiblePremium,
           gi_referenceAgent: assetToEdit.generalInsurance?.referenceAgent,
+          p2d_clientName: assetToEdit.physicalToDemat?.clientName,
           p2d_folioNumber: assetToEdit.physicalToDemat?.folioNumber,
           p2d_nameOnShare: assetToEdit.physicalToDemat?.nameOnShare,
           p2d_jointHolder1: assetToEdit.physicalToDemat?.jointHolder1,
@@ -273,6 +276,7 @@ export function AddAssetModal({
             gi_priceWithGST: '',
             gi_eligiblePremium: '',
             gi_referenceAgent: '',
+            p2d_clientName: '',
             p2d_folioNumber: '',
             p2d_nameOnShare: '',
             p2d_jointHolder1: '',
@@ -346,6 +350,7 @@ export function AddAssetModal({
             referenceAgent: data.gi_referenceAgent
         } : undefined,
         physicalToDemat: data.assetType === 'PHYSICAL TO DEMAT' ? {
+            clientName: data.p2d_clientName,
             folioNumber: data.p2d_folioNumber,
             nameOnShare: data.p2d_nameOnShare,
             jointHolder1: data.p2d_jointHolder1,
@@ -488,7 +493,7 @@ export function AddAssetModal({
                 <GeneralInsuranceFields control={control} errors={errors} familyMembers={familyMembers} />
               )}
               {selectedAssetType === 'PHYSICAL TO DEMAT' && (
-                  <PhysicalToDematFields register={register} errors={errors} control={control} setValue={setValue} watch={watch} unregister={unregister} />
+                  <PhysicalToDematFields register={register} errors={errors} control={control} setValue={setValue} watch={watch} unregister={unregister} familyMembers={familyMembers} />
               )}
               {selectedAssetType === 'BONDS' && (
                   <BondFields register={register} errors={errors} control={control} familyMembers={familyMembers} setValue={setValue} watch={watch} />

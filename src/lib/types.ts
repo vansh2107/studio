@@ -196,6 +196,7 @@ export interface GeneralInsuranceDetails {
 }
 
 export interface PhysicalToDematDetails {
+    clientName: string;
     folioNumber?: string;
     nameOnShare?: string;
     jointHolder1?: string;
