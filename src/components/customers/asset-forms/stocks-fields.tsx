@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 import { RELATION_OPTIONS } from '@/lib/constants';
 
-export function StocksFields({ control, register, errors, familyMembers, watch }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any }) {
+export function StocksFields({ control, register, errors, familyMembers, watch, setValue }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any, setValue: any }) {
 
   const { fields: jointHolderFields, append: appendJointHolder, remove: removeJointHolder } = useFieldArray({
     control,
@@ -31,10 +31,10 @@ export function StocksFields({ control, register, errors, familyMembers, watch }
       const firstAllocation = parseFloat(nominees[0].allocation) || 0;
       const secondAllocation = 100 - firstAllocation;
       if (secondAllocation >= 0) {
-        control.setValue('stocks.nominees.1.allocation', secondAllocation, { shouldValidate: true });
+        setValue('stocks.nominees.1.allocation', secondAllocation, { shouldValidate: true });
       }
     }
-  }, [nominees, control]);
+  }, [nominees, setValue]);
   
   const handleAddNominee = () => {
     if(nomineeFields.length < 3) {
