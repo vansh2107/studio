@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Controller, useFieldArray } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FamilyMember } from '@/lib/types';
+import type { Client, FamilyMember } from '@/lib/types';
+import { useEffect } from 'react';
 
 
-export function PhysicalToDematFields({ register, errors, control, familyMembers, watch, setValue }: { register: any, errors: any, control: any, familyMembers: FamilyMember[], watch: any, setValue: any }) {
+export function PhysicalToDematFields({ register, errors, control, familyMembers, watch, setValue }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[], watch: any, setValue: any }) {
   
   const { fields, append, remove } = useFieldArray({
     control,
@@ -21,6 +22,34 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
       e.preventDefault();
     }
   };
+
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const value = e.target.value;
+    if (value === '') {
+      field.onChange('');
+      return;
+    }
+    const numValue = Number(value);
+    if (numValue < 0) {
+      field.onChange('0');
+    } else {
+      field.onChange(value);
+    }
+  };
+
+  const quantity = watch('physicalToDemat.quantity');
+  const marketPrice = watch('physicalToDemat.marketPrice');
+
+  useEffect(() => {
+    const q = parseFloat(quantity);
+    const mp = parseFloat(marketPrice);
+    if (!isNaN(q) && !isNaN(mp)) {
+      setValue('physicalToDemat.totalValue', q * mp, { shouldValidate: true });
+    } else {
+        setValue('physicalToDemat.totalValue', undefined, { shouldValidate: true });
+    }
+  }, [quantity, marketPrice, setValue]);
+
 
   return (
     <div className="space-y-4">
@@ -54,7 +83,15 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
           <Controller
             name="physicalToDemat.mobileNumber"
             control={control}
-            render={({ field }) => <Input type="tel" maxLength={10} onKeyDown={handleNumericKeyDown} {...field} value={field.value || ''} />}
+            render={({ field }) => (
+              <Input
+                type="tel"
+                maxLength={10}
+                onKeyDown={handleNumericKeyDown}
+                {...field}
+                value={field.value || ''}
+              />
+            )}
           />
           {errors?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.mobileNumber.message}</p>}
         </div>
@@ -94,12 +131,12 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>Quantity</Label>
-          <Controller name="physicalToDemat.quantity" control={control} render={({ field }) => <Input type="number" min="0" onKeyDown={handleNumericKeyDown} {...field} value={field.value || ''} />} />
+          <Controller name="physicalToDemat.quantity" control={control} render={({ field }) => <Input type="number" min="0" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
           {errors?.quantity && <p className="text-sm text-destructive mt-1">{errors.quantity.message}</p>}
         </div>
         <div>
           <Label>Market Price</Label>
-          <Controller name="physicalToDemat.marketPrice" control={control} render={({ field }) => <Input type="number" min="0" step="any" onKeyDown={handleNumericKeyDown} {...field} value={field.value || ''} />} />
+          <Controller name="physicalToDemat.marketPrice" control={control} render={({ field }) => <Input type="number" min="0" step="any" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
           {errors?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.marketPrice.message}</p>}
         </div>
         <div>
@@ -109,7 +146,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         </div>
       </div>
       
-       <div className="space-y-2 pt-4">
+      <div className="space-y-2 pt-4">
         <Label>Joint Holders</Label>
         <div className="grid grid-cols-3 gap-3 items-center">
             {fields.map((item, index) => (

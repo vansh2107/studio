@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FamilyMember } from '@/lib/types';
+import type { Client, FamilyMember } from '@/lib/types';
 import { NomineeFields } from './nominee-fields';
 
-export function StocksFields({ control, register, errors, familyMembers, watch, getValues, setValue }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any; getValues: any; setValue: any; }) {
+export function StocksFields({ control, register, errors, familyMembers, watch, getValues, setValue }: { control: any; register: any; errors: any; familyMembers: (Client | FamilyMember)[], watch: any; getValues: any; setValue: any; }) {
 
   const { fields: jointHolderFields, append: appendJointHolder, remove: removeJointHolder } = useFieldArray({
     control,
@@ -109,12 +109,18 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
         </div>
         <div>
           <Label>Mobile Number</Label>
-          <Input
-            type="tel"
-            inputMode="numeric"
-            maxLength={10}
-            {...register('stocks.mobileNumber')}
-            onKeyDown={handleMobileKeyDown}
+          <Controller
+            name="stocks.mobileNumber"
+            control={control}
+            render={({ field }) => (
+                <Input
+                type="tel"
+                maxLength={10}
+                onKeyDown={handleMobileKeyDown}
+                {...field}
+                value={field.value || ''}
+              />
+            )}
           />
            {errors?.stocks?.mobileNumber && <p className="text-sm text-destructive">{errors.stocks.mobileNumber.message}</p>}
         </div>
