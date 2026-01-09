@@ -239,7 +239,8 @@ export let familyMembers: FamilyMember[] = [
     dateOfBirth: '1990-05-12', 
     address: 'Bangalore, Karnataka',
     panPhotoUrl: 'https://picsum.photos/seed/pan1/400/300',
-    aadhaarPhotoUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+    aadhaarPhotoUrl: 'https://cors-anywhere.herokuapp.com/http://www.africau.edu/images/default/sample.pdf',
+    aadhaarFileName: 'Aadhaar.pdf'
   },
   { id: 'fm-4-2', name: 'Ashish Hirpara', clientId: 'client-3', firstName: 'Ashish', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
   { id: 'fm-4-3', name: 'Sumita Hirpara', clientId: 'client-3', firstName: 'Sumita', lastName: 'Hirpara', relation: 'Daughter-in-law', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
@@ -396,3 +397,5 @@ export const getMappedAssociatesForAdmin = (adminId: string): (Associate)[] => {
 export const getMappedCustomersForAssociate = (associateId: string): Client[] => {
   return getClientsForAssociate(associateId);
 };
+
+    
