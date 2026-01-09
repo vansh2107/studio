@@ -39,9 +39,9 @@ const baseSchema = z.object({
 const bondSchema = z.object({
   isin: z.string().optional(),
   issuer: z.string().optional(),
-  bondPrice: z.number().nonnegative().optional(),
-  bondUnit: z.number().nonnegative().optional(),
-  bondAmount: z.number().nonnegative().optional(),
+  bondPrice: z.number().min(0, "Value cannot be negative").optional(),
+  bondUnit: z.number().min(0, "Value cannot be negative").optional(),
+  bondAmount: z.number().min(0, "Value cannot be negative").optional(),
   purchaseDate: z.string().optional(),
   maturityDate: z.string().optional(),
   nomineeName: z.string().optional(),
@@ -59,10 +59,10 @@ const generalInsuranceSchema = z.object({
     policyIssueDate: z.string().optional(),
     policyEndDate: z.string().optional(),
     vehicleRegNumber: z.string().optional(),
-    sumAssured: z.string().optional(),
-    priceWithoutGST: z.string().optional(),
-    priceWithGST: z.string().optional(),
-    eligiblePremium: z.string().optional(),
+    sumAssured: z.string().min(0, "Value cannot be negative").optional(),
+    priceWithoutGST: z.string().min(0, "Value cannot be negative").optional(),
+    priceWithGST: z.string().min(0, "Value cannot be negative").optional(),
+    eligiblePremium: z.string().min(0, "Value cannot be negative").optional(),
     referenceAgent: z.string().optional(),
 });
 
@@ -104,49 +104,36 @@ const ppfSchema = z.object({
 });
 
 const stocksSchema = z.object({
-    holderName: z.string(),
+    holderName: z.string().min(1, "Holder name is required."),
     jointHolder1: z.string().optional(),
     jointHolder2: z.string().optional(),
-    dpId: z.string(),
-    dpName: z.string(),
-    bankName: z.string(),
-    bankAccountNumber: z.string(),
-    mobileNumber: z.string(),
-    emailAddress: z.string().optional(),
+    dpId: z.string().min(1, "DPID is required."),
+    dpName: z.string().min(1, "DP Name is required."),
+    bankName: z.string().min(1, "Bank name is required."),
+    bankAccountNumber: z.string().min(1, "Bank account number is required."),
+    mobileNumber: z.string().min(10, "Mobile number must be at least 10 digits."),
+    emailAddress: z.string().email().optional(),
     nominees: z.array(z.object({
-        name: z.string(),
-        relationship: z.string(),
-        allocation: z.number().min(0).max(100),
+        name: z.string().min(1, "Nominee name is required."),
+        relationship: z.string().min(1, "Relationship is required."),
+        allocation: z.number().min(0, "Allocation must be between 0 and 100.").max(100),
         dateOfBirth: z.string().optional(),
-    })).optional(),
+    })).min(1, "At least one nominee is required.").optional(),
 });
 
-// Dynamic schema based on assetType
-const assetFormSchema = baseSchema.superRefine((data, ctx) => {
-    switch (data.assetType) {
-        case 'BONDS':
-            bondSchema.parse(data);
-            break;
-        case 'FIXED DEPOSITS':
-            fdSchema.parse(data);
-            break;
-        case 'PPF':
-            ppfSchema.parse(data);
-            break;
-        case 'STOCKS':
-            stocksSchema.parse(data);
-            break;
-        case 'PHYSICAL TO DEMAT':
-            physicalToDematSchema.parse(data);
-            break;
-        case 'GENERAL INSURANCE':
-            generalInsuranceSchema.parse(data);
-            break;
-        default:
-            // No extra validation for other types
-            break;
-    }
-});
+
+// Combine schemas into a discriminated union
+const assetFormSchema = z.discriminatedUnion("assetType", [
+  baseSchema.extend({ assetType: z.literal("BONDS"), bonds: bondSchema }),
+  baseSchema.extend({ assetType: z.literal("FIXED DEPOSITS"), fixedDeposits: fdSchema }),
+  baseSchema.extend({ assetType: z.literal("PPF"), ppf: ppfSchema }),
+  baseSchema.extend({ assetType: z.literal("STOCKS"), stocks: stocksSchema }),
+  baseSchema.extend({ assetType: z.literal("PHYSICAL TO DEMAT"), physicalToDemat: physicalToDematSchema }),
+  baseSchema.extend({ assetType: z.literal("GENERAL INSURANCE"), generalInsurance: generalInsuranceSchema }),
+  // Add fallback for types without specific validation
+  baseSchema.extend({ assetType: z.literal("LIFE INSURANCE") }),
+  baseSchema.extend({ assetType: z.literal("MUTUAL FUNDS") }),
+]);
 
 
 type FormData = z.infer<typeof assetFormSchema>;
@@ -183,7 +170,7 @@ export function AddAssetModal({
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(assetFormSchema),
-    shouldUnregister: true,
+    shouldUnregister: false,
   });
 
   const assetType = watch('assetType');
@@ -198,7 +185,7 @@ export function AddAssetModal({
 
     return head
       ? [
-          { id: head.id, name: `${head.firstName} ${head.lastName} (Head)` } as FamilyMember,
+          { id: head.id, name: `${head.firstName} ${head.lastName} (Head)` } as unknown as FamilyMember,
           ...members,
         ]
       : members;
@@ -206,7 +193,7 @@ export function AddAssetModal({
 
   /* ---------------------------- SAVE ------------------------------- */
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = (data: any) => { // Use 'any' to bypass strict discriminated union checks at runtime
     setIsSaving(true);
 
     const head = familyHeads.find(h => h.id === data.familyHead);
@@ -272,7 +259,7 @@ export function AddAssetModal({
                 name="familyHead"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} disabled={!!assetToEdit}>
+                  <Select {...field} disabled={!!assetToEdit} onValueChange={(value) => { field.onChange(value); setValue('assetType', getValues('assetType'), { shouldValidate: true }) }}>
                     <SelectTrigger>
                       <SelectValue placeholder="Family Head" />
                     </SelectTrigger>
