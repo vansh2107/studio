@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { GENERAL_INSURANCE_CATEGORIES, GENERAL_INSURANCE_POLICY_TYPES } from '@/lib/asset-form-types';
 import { Client, FamilyMember } from '@/lib/types';
 import { useWatch } from 'react-hook-form';
+import { INSURANCE_COMPANIES } from '@/lib/constants';
+import { Combobox } from '@/components/ui/combobox';
 
 export function GeneralInsuranceFields({ control, errors, familyMembers }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[] }) {
 
@@ -63,8 +65,20 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
               />
             </div>
             <div>
-                <Label>Issuer (Company)</Label>
-                <Controller name="gi_issuer" control={control} render={({ field }) => <Input {...field} />} />
+                <Label>Issuer</Label>
+                 <Controller
+                  name="gi_issuer"
+                  control={control}
+                  render={({ field }) => (
+                     <Combobox
+                      options={INSURANCE_COMPANIES.map(c => ({ label: c, value: c }))}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select Insurance Company"
+                      searchPlaceholder='Search company...'
+                    />
+                  )}
+                />
             </div>
              <div>
                 <Label>Plan Name</Label>
@@ -97,15 +111,15 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
             </div>
             <div>
                 <Label>Policy Start Date</Label>
-                <Controller name="gi_policyStartDate" control={control} render={({ field }) => <Input type="date" {...field} />} />
+                <Controller name="gi_policyStartDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Policy Issue Date</Label>
-                <Controller name="gi_policyIssueDate" control={control} render={({ field }) => <Input type="date" {...field} />} />
+                <Controller name="gi_policyIssueDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Policy End Date</Label>
-                <Controller name="gi_policyEndDate" control={control} render={({ field }) => <Input type="date" {...field} />} />
+                <Controller name="gi_policyEndDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
             </div>
             {(selectedCategory === 'FOUR WHEELER' || selectedCategory === 'TWO WHEELER') && (
                  <div>
