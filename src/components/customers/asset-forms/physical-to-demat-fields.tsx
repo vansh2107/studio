@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { JointHolderFields } from './joint-holder-fields';
 
 
-export function PhysicalToDematFields({ register, errors, control, familyMembers, watch }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[], watch: any }) {
+export function PhysicalToDematFields({ register, errors, control, familyMembers, watch, setValue }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[], watch: any, setValue: any }) {
   
   const [quantity, marketPrice] = watch(['physicalToDemat.quantity', 'physicalToDemat.marketPrice']);
 
@@ -38,11 +38,11 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     const q = parseFloat(quantity);
     const mp = parseFloat(marketPrice);
     if (!isNaN(q) && !isNaN(mp)) {
-      control.setValue('physicalToDemat.totalValue', q * mp, { shouldValidate: true });
+      setValue('physicalToDemat.totalValue', q * mp, { shouldValidate: true });
     } else {
-        control.setValue('physicalToDemat.totalValue', undefined, { shouldValidate: true });
+        setValue('physicalToDemat.totalValue', undefined, { shouldValidate: true });
     }
-  }, [quantity, marketPrice, control]);
+  }, [quantity, marketPrice, setValue]);
 
 
   return (

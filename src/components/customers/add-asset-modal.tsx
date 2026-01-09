@@ -109,9 +109,9 @@ const fdSchema = z.object({
   fdName: z.string().optional(),
   fdNumber: z.string().optional(),
   depositedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-  periodMonth: z.string().optional(),
-  periodDays: z.string().optional(),
-  interestRate: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+  periodMonth: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(999).optional()),
+  periodDays: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(365).optional()),
+  interestRate: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(100).optional()),
   maturityAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   purchaseDate: z.string().optional(),
   maturityDate: z.string().optional(),
@@ -359,7 +359,7 @@ export function AddAssetModal({
                   <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
-              {currentAssetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields register={register} errors={errors?.physicalToDemat} control={control} familyMembers={familyMembers} watch={watch} />}
+              {currentAssetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields register={register} errors={errors?.physicalToDemat} control={control} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
               {currentAssetType === 'BONDS' && (
                 <>
                   <BondFields control={control} errors={errors?.bonds} familyMembers={familyMembers} watch={watch} />
