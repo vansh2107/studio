@@ -93,11 +93,11 @@ const bondsSchema = z.object({
   emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
   issuer: z.string().min(1, "Issuer is required."),
   isin: z.string().optional(),
-  bondPrice: z.preprocess((a) => parseFloat(String(a)), z.number().min(0)),
-  bondUnit: z.preprocess((a) => parseInt(String(a), 10), z.number().int().min(1)),
-  bondAmount: z.number().min(0),
-  purchaseDate: z.string().min(1, "Purchase date is required"),
-  maturityDate: z.string().min(1, "Maturity date is required"),
+  bondPrice: z.preprocess((a) => (a === '' ? undefined : parseFloat(String(a))), z.number().min(0).optional()),
+  bondUnit: z.preprocess((a) => (a === '' ? undefined : parseInt(String(a), 10)), z.number().int().min(1).optional()),
+  bondAmount: z.number().min(0).optional(),
+  purchaseDate: z.string().optional(),
+  maturityDate: z.string().optional(),
   nominees: nomineesArraySchema,
 });
 
@@ -276,6 +276,8 @@ export function AddAssetModal({
 
   if (!isOpen) return null;
 
+  const currentAssetType = assetToEdit?.assetType || assetType;
+
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
@@ -351,38 +353,38 @@ export function AddAssetModal({
                 />
               </div>
 
-              {assetType === 'GENERAL INSURANCE' && (
+              {currentAssetType === 'GENERAL INSURANCE' && (
                 <>
                   <GeneralInsuranceFields control={control} register={register} errors={errors?.generalInsurance} familyMembers={familyMembers} />
                   <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
-              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors?.physicalToDemat} familyMembers={familyMembers} />}
-              {assetType === 'BONDS' && (
+              {currentAssetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields watch={watch} setValue={setValue} control={control} register={register} errors={errors?.physicalToDemat} familyMembers={familyMembers} />}
+              {currentAssetType === 'BONDS' && (
                 <>
                   <BondFields control={control} errors={errors?.bonds} familyMembers={familyMembers} />
                   <NomineeFields control={control} errors={errors?.bonds?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
-              {assetType === 'FIXED DEPOSITS' && (
+              {currentAssetType === 'FIXED DEPOSITS' && (
                  <>
                   <FDFields control={control} errors={errors?.fixedDeposits} familyMembers={familyMembers} />
                   <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
-              {assetType === 'PPF' && (
+              {currentAssetType === 'PPF' && (
                 <>
                   <PPFFields control={control} errors={errors?.ppf} familyMembers={familyMembers} />
                   <NomineeFields control={control} errors={errors?.ppf?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
-              {assetType === 'STOCKS' && (
+              {currentAssetType === 'STOCKS' && (
                  <>
-                  <StocksFields control={control} register={register} errors={errors?.stocks} familyMembers={familyMembers} />
+                  <StocksFields control={control} register={register} errors={errors?.stocks} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                  </>
               )}
               
-              {assetType && !isViewMode && (
+              {currentAssetType && !isViewMode && (
                 <Button
                   type="button"
                   variant="outline"
