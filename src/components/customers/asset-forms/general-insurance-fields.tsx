@@ -42,8 +42,10 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
   return (
     <div className="space-y-4">
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">General Insurance Details</h3>
+
+        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             <div>
               <Label>Family Member</Label>
               <Controller
@@ -103,11 +105,6 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
                 />
                 {errors?.generalInsurance?.issuer && <p className="text-sm text-destructive">{errors.generalInsurance.issuer.message}</p>}
             </div>
-        </div>
-
-        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
              <div>
                 <Label>Plan Name</Label>
                 <Controller name="generalInsurance.planName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />

@@ -34,7 +34,9 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">PPF Details</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+      <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
         <div>
           <Label>Family Member Name</Label>
            <Controller
@@ -62,9 +64,7 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
         </div>
       </div>
 
-       <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <Label>Contributed Amount</Label>
           <Controller name="ppf.contributedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />

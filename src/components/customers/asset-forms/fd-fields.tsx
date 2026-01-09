@@ -36,8 +36,10 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
     <div className="space-y-4">
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Fixed Deposit Details</h3>
         
+        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+
         {/* ROW 1 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
             <div>
                 <Label>Bank Name</Label>
                 <Controller name="fixedDeposits.companyName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
@@ -84,10 +86,8 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
             </div>
         </div>
 
-        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
-
         {/* ROW 3 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
              <div>
                 <Label>Period (Month)</Label>
                 <Controller

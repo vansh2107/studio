@@ -22,7 +22,10 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
     <div className="space-y-6">
       <div>
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Holder Details</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
           <div>
             <Label>Name of the Holder</Label>
             <Controller
@@ -47,7 +50,6 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
           </div>
         </div>
 
-        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
       </div>
 
       <Separator />

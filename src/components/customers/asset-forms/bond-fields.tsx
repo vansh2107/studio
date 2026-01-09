@@ -35,7 +35,10 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Bond Details</h3>
-      <div className="space-y-4">
+      
+      <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+
+      <div className="space-y-4 pt-4">
         {/* Row 1 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
@@ -87,9 +90,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
           </div>
         </div>
 
-        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <Label>Issuer</Label>
             <Controller name="bonds.issuer" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />

@@ -50,7 +50,9 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Physical to Demat Details</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
         <div>
           <Label>Client Name</Label>
            <Controller
@@ -101,9 +103,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         </div>
       </div>
       
-      <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label>Name on Share</Label>
           <Input {...register('physicalToDemat.nameOnShare')} />
@@ -112,9 +112,6 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
           <Label>Folio Number</Label>
           <Input {...register('physicalToDemat.folioNumber')} />
         </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
          <div>
           <Label>Company Name</Label>
           <Input {...register('physicalToDemat.companyName')} />
