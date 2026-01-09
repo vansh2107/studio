@@ -97,7 +97,6 @@ const bondsSchema = baseAssetSchema.extend({
   bondAmount: z.number().min(0),
   purchaseDate: z.string().min(1, "Purchase date is required"),
   maturityDate: z.string().min(1, "Maturity date is required"),
-  transactionType: z.string().min(1, "Transaction type is required"),
   nominees: nomineesArraySchema,
 });
 
@@ -319,26 +318,26 @@ export function AddAssetModal({
               {assetType === 'GENERAL INSURANCE' && (
                 <>
                   <GeneralInsuranceFields control={control} register={register} errors={(errors as any)} familyMembers={familyMembers} />
-                  <NomineeFields control={control} register={register} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+                  <NomineeFields control={control} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
               {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={(errors as any)} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
               {assetType === 'BONDS' && (
                 <>
-                  <BondFields control={control} register={register} errors={(errors as any)} familyMembers={familyMembers} watch={watch} setValue={setValue} />
-                  <NomineeFields control={control} register={register} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+                  <BondFields control={control} errors={(errors as any)} familyMembers={familyMembers} watch={watch} setValue={setValue} />
+                  <NomineeFields control={control} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
               {assetType === 'FIXED DEPOSITS' && (
                  <>
-                  <FDFields control={control} register={register} errors={(errors as any)} familyMembers={familyMembers} />
-                  <NomineeFields control={control} register={register} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+                  <FDFields control={control} errors={(errors as any)} familyMembers={familyMembers} />
+                  <NomineeFields control={control} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
               {assetType === 'PPF' && (
                 <>
-                  <PPFFields control={control} register={register} errors={(errors as any)} familyMembers={familyMembers} />
-                  <NomineeFields control={control} register={register} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+                  <PPFFields control={control} errors={(errors as any)} familyMembers={familyMembers} />
+                  <NomineeFields control={control} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
               {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={(errors as any)} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
