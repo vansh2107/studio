@@ -9,9 +9,9 @@ import { useEffect } from 'react';
 import { JointHolderFields } from './joint-holder-fields';
 
 
-export function PhysicalToDematFields({ register, errors, control, familyMembers }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[] }) {
+export function PhysicalToDematFields({ register, errors, control, familyMembers, watch }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[], watch: any }) {
   
-  const { quantity, marketPrice } = control.watch(['physicalToDemat.quantity', 'physicalToDemat.marketPrice']);
+  const [quantity, marketPrice] = watch(['physicalToDemat.quantity', 'physicalToDemat.marketPrice']);
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {

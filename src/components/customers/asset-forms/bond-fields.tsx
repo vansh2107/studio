@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Client, FamilyMember } from '@/lib/types';
 
 
-export function BondFields({ control, errors, familyMembers }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[] }) {
+export function BondFields({ control, errors, familyMembers, watch }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], watch: any }) {
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {

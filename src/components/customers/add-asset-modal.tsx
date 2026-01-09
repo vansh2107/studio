@@ -102,8 +102,8 @@ const bondsSchema = z.object({
 });
 
 const fdSchema = z.object({
-  companyName: z.string().min(1, "Company/Bank Name is required."),
   investorName: z.string().min(1, "Investor name is required"),
+  companyName: z.string().min(1, "Company/Bank Name is required."),
   mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]+$/, "Mobile number must contain only digits"),
   emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
   fdName: z.string().optional(),
@@ -355,14 +355,14 @@ export function AddAssetModal({
 
               {currentAssetType === 'GENERAL INSURANCE' && (
                 <>
-                  <GeneralInsuranceFields control={control} register={register} errors={errors?.generalInsurance} familyMembers={familyMembers} />
+                  <GeneralInsuranceFields control={control} errors={errors?.generalInsurance} familyMembers={familyMembers} />
                   <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
-              {currentAssetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields register={register} errors={errors?.physicalToDemat} control={control} familyMembers={familyMembers} />}
+              {currentAssetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields register={register} errors={errors?.physicalToDemat} control={control} familyMembers={familyMembers} watch={watch} />}
               {currentAssetType === 'BONDS' && (
                 <>
-                  <BondFields control={control} errors={errors?.bonds} familyMembers={familyMembers} />
+                  <BondFields control={control} errors={errors?.bonds} familyMembers={familyMembers} watch={watch} />
                   <NomineeFields control={control} errors={errors?.bonds?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
