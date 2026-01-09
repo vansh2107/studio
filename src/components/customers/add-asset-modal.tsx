@@ -32,26 +32,39 @@ import { UploadDocModal } from '../doc-vault/upload-doc-modal';
 
 // --- Zod Schemas for each asset type ---
 const nomineeSchema = z.object({
-  name: z.string().optional(),
-  relationship: z.string().optional(),
+  name: z.string().min(1, 'Nominee name is required.'),
   allocation: z.preprocess(
     (a) => (a === '' ? undefined : parseFloat(String(a))),
-    z.number().min(0).max(100).optional()
+    z.number().min(0, 'Must be positive').max(100, 'Cannot exceed 100').optional()
   ),
+  dateOfBirth: z.string().optional(),
 });
+
+const nomineesArraySchema = z.array(nomineeSchema).optional().superRefine((nominees, ctx) => {
+    if (nominees) {
+        const totalAllocation = nominees.reduce((acc, nominee) => acc + (nominee.allocation || 0), 0);
+        if (totalAllocation > 100) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Total allocation cannot exceed 100%.',
+                path: [], 
+            });
+        }
+    }
+});
+
 
 const bondsSchema = z.object({
   familyMember: z.string().min(1, "Family member is required."),
   issuer: z.string().min(1, "Issuer is required."),
   isin: z.string().optional(),
-  bondPrice: z.number().min(0),
-  bondUnit: z.number().int().min(1),
+  bondPrice: z.preprocess((a) => parseFloat(String(a)), z.number().min(0)),
+  bondUnit: z.preprocess((a) => parseInt(String(a), 10), z.number().int().min(1)),
   bondAmount: z.number().min(0),
   purchaseDate: z.string().min(1, "Purchase date is required"),
   maturityDate: z.string().min(1, "Maturity date is required"),
   transactionType: z.string().min(1, "Transaction type is required"),
-  nomineeName: z.string().optional(),
-  nominees: z.array(nomineeSchema).optional(),
+  nominees: nomineesArraySchema,
 });
 
 const fdSchema = z.object({
@@ -59,24 +72,24 @@ const fdSchema = z.object({
   investorName: z.string().min(1, "Investor name is required"),
   fdName: z.string().optional(),
   fdNumber: z.string().optional(),
-  depositedAmount: z.number().optional(),
+  depositedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   periodMonth: z.string().optional(),
   periodDays: z.string().optional(),
-  interestRate: z.number().optional(),
-  maturityAmount: z.number().optional(),
+  interestRate: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+  maturityAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   purchaseDate: z.string().optional(),
   maturityDate: z.string().optional(),
-  nominees: z.array(nomineeSchema).optional(),
+  nominees: nomineesArraySchema,
 });
 
 const ppfSchema = z.object({
   familyMemberName: z.string().min(1, "Family member is required."),
   bankName: z.string().min(1, "Bank name is required."),
-  contributedAmount: z.number().optional(),
-  balance: z.number().optional(),
+  contributedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+  balance: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   openingDate: z.string().optional(),
   matureDate: z.string().optional(),
-  nominees: z.array(nomineeSchema).optional(),
+  nominees: nomineesArraySchema,
 });
 
 const stocksSchema = z.object({
@@ -88,16 +101,9 @@ const stocksSchema = z.object({
   bankAccountNumber: z.string().min(1, "Bank Account Number is required."),
   mobileNumber: z.string().min(10, "Mobile number must be at least 10 digits."),
   emailAddress: z.string().email().optional(),
-  nominees: z.array(z.object({
-      name: z.string().optional(),
-      relationship: z.string().optional(),
-      allocation: z.preprocess(
-        (a) => (a === '' ? undefined : parseFloat(String(a))),
-        z.number().min(0).max(100).optional()
-      ),
-      dateOfBirth: z.string().optional(),
-    })).optional(),
+  nominees: nomineesArraySchema,
 });
+
 
 const physicalToDematSchema = z.object({
     clientName: z.string().min(1, "Client name is required."),
@@ -105,11 +111,11 @@ const physicalToDematSchema = z.object({
     folioNumber: z.string().optional(),
     companyName: z.string().optional(),
     rtaName: z.string().optional(),
-    quantity: z.number().optional(),
-    marketPrice: z.number().optional(),
-    totalValue: z.number().optional(),
+    quantity: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+    marketPrice: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+    totalValue: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
     jointHolders: z.array(z.object({ name: z.string().optional() })).optional(),
-    nominees: z.array(nomineeSchema).optional(),
+    nominees: nomineesArraySchema,
 });
 
 const generalInsuranceSchema = z.object({
@@ -128,7 +134,7 @@ const generalInsuranceSchema = z.object({
   priceWithGST: z.string().optional(),
   eligiblePremium: z.string().optional(),
   referenceAgent: z.string().optional(),
-  nominees: z.array(nomineeSchema).optional(),
+  nominees: nomineesArraySchema,
 });
 
 
@@ -197,7 +203,7 @@ export function AddAssetModal({
         physicalToDemat: assetToEdit.physicalToDemat,
         generalInsurance: assetToEdit.generalInsurance,
       };
-      reset(defaultData as any); // Use `as any` to bypass strict typing during reset
+      reset(defaultData as any);
     } else {
       reset({ familyHead: '', assetType: undefined });
     }
@@ -233,7 +239,6 @@ export function AddAssetModal({
     setTimeout(() => {
       onSave(asset);
       setIsSaving(false);
-      toast({ title: 'Saved', description: 'Asset saved (prototype)' });
       onClose();
     }, 500);
   };
@@ -294,10 +299,18 @@ export function AddAssetModal({
                   control={control}
                   render={({ field }) => (
                     <Select {...field} onValueChange={(value) => {
-                      field.onChange(value);
-                      // Reset other asset fields when changing type
                       const currentFamilyHead = watch('familyHead');
-                      reset({ familyHead: currentFamilyHead, assetType: value });
+                      const newValues = {
+                        assetType: value,
+                        familyHead: currentFamilyHead,
+                        bonds: undefined,
+                        fixedDeposits: undefined,
+                        ppf: undefined,
+                        stocks: undefined,
+                        physicalToDemat: undefined,
+                        generalInsurance: undefined,
+                      };
+                      reset(newValues);
                     }} disabled={!!assetToEdit}>
                       <SelectTrigger>
                         <SelectValue placeholder="Asset Type" />
@@ -319,7 +332,7 @@ export function AddAssetModal({
               {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors.ppf} familyMembers={familyMembers} />}
               {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors.stocks} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
               {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors.physicalToDemat} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
-              {assetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors.generalInsurance} familyMembers={familyMembers} />}
+              {assetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} errors={errors} familyMembers={familyMembers} />}
 
               {assetType && !['STOCKS'].includes(assetType) && (
                 <NomineeFields control={control} register={register} errors={errors} familyMembers={familyMembers} />

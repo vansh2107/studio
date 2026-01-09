@@ -1,6 +1,6 @@
 
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,6 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     name: "physicalToDemat.jointHolders",
   });
 
-  // Watch for changes in quantity and market price to calculate total value
   const quantity = watch('physicalToDemat.quantity');
   const marketPrice = watch('physicalToDemat.marketPrice');
 
@@ -38,7 +37,6 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Physical to Demat Details</h3>
       
-      {/* Row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>Client Name</Label>
@@ -60,7 +58,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
                 </Select>
                 )}
             />
-            {errors?.physicalToDemat?.clientName && <p className="text-sm text-destructive">{errors.physicalToDemat.clientName.message}</p>}
+            {errors?.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
         </div>
         <div>
           <Label>Name on Share</Label>
@@ -72,7 +70,6 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         </div>
       </div>
       
-      {/* Row 2 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
          <div>
           <Label>Company Name</Label>
@@ -84,26 +81,24 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         </div>
       </div>
 
-      {/* Row 3 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>Quantity</Label>
-          <Input type="number" min="0" {...register('physicalToDemat.quantity', { valueAsNumber: true })} />
-          {errors?.physicalToDemat?.quantity && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.quantity.message}</p>}
+          <Input type="number" min="0" {...register('physicalToDemat.quantity')} />
+          {errors?.quantity && <p className="text-sm text-destructive mt-1">{errors.quantity.message}</p>}
         </div>
         <div>
           <Label>Market Price</Label>
-          <Input type="number" min="0" {...register('physicalToDemat.marketPrice', { valueAsNumber: true })} />
-          {errors?.physicalToDemat?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.marketPrice.message}</p>}
+          <Input type="number" min="0" {...register('physicalToDemat.marketPrice')} />
+          {errors?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.marketPrice.message}</p>}
         </div>
         <div>
           <Label>Total Value</Label>
-          <Input readOnly {...register('physicalToDemat.totalValue', { valueAsNumber: true })} />
-          {errors?.physicalToDemat?.totalValue && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.totalValue.message}</p>}
+          <Input readOnly {...register('physicalToDemat.totalValue')} />
+          {errors?.totalValue && <p className="text-sm text-destructive mt-1">{errors.totalValue.message}</p>}
         </div>
       </div>
       
-      {/* Dynamic Joint Holders */}
       <div className="space-y-2 pt-4">
           <Label>Joint Holders</Label>
           {fields.map((item, index) => (

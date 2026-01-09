@@ -60,18 +60,18 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Bond Price</Label>
-            <Input type="number" min="0" {...register('bonds.bondPrice', { valueAsNumber: true })} />
-            {errors?.bonds?.bondPrice && <p className="text-sm text-destructive mt-1">{errors.bonds.bondPrice.message}</p>}
+            <Input type="number" min="0" {...register('bonds.bondPrice')} />
+            {errors?.bondPrice && <p className="text-sm text-destructive mt-1">{errors.bondPrice.message}</p>}
           </div>
           <div>
             <Label>Bond Unit</Label>
-            <Input type="number" min="0" step="1" {...register('bonds.bondUnit', { valueAsNumber: true })} />
-            {errors?.bonds?.bondUnit && <p className="text-sm text-destructive mt-1">{errors.bonds.bondUnit.message}</p>}
+            <Input type="number" min="0" step="1" {...register('bonds.bondUnit')} />
+            {errors?.bondUnit && <p className="text-sm text-destructive mt-1">{errors.bondUnit.message}</p>}
           </div>
           <div>
             <Label>Bond Amount</Label>
-            <Input readOnly {...register('bonds.bondAmount', { valueAsNumber: true })} />
-            {errors?.bonds?.bondAmount && <p className="text-sm text-destructive mt-1">{errors.bonds.bondAmount.message}</p>}
+            <Input readOnly {...register('bonds.bondAmount')} />
+            {errors?.bondAmount && <p className="text-sm text-destructive mt-1">{errors.bondAmount.message}</p>}
           </div>
         </div>
         {/* Row 3 */}
@@ -104,30 +104,6 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
                   </Select>
                   )}
               />
-          </div>
-        </div>
-        {/* Row 4 */}
-        <div className="grid grid-cols-1">
-          <div>
-            <Label>Nominee Name</Label>
-            <Controller
-              name="bonds.nomineeName"
-              control={control}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Nominee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {familyMembers.map((member) => (
-                      <SelectItem key={member.id} value={member.name}>
-                        {member.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
           </div>
         </div>
       </div>

@@ -10,7 +10,7 @@ import { PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FamilyMember } from '@/lib/types';
-import { RELATION_OPTIONS } from '@/lib/constants';
+import { NomineeFields } from './nominee-fields';
 
 export function StocksFields({ control, register, errors, familyMembers, watch, setValue }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any, setValue: any }) {
 
@@ -19,33 +19,8 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
     name: "stocks.jointHolders"
   });
 
-  const { fields: nomineeFields, append: appendNominee, remove: removeNominee } = useFieldArray({
-    control,
-    name: 'stocks.nominees',
-  });
-
-  const nominees = watch('stocks.nominees');
-
-  useEffect(() => {
-    if (nominees?.length === 2) {
-      const firstAllocation = parseFloat(nominees[0].allocation) || 0;
-      const secondAllocation = 100 - firstAllocation;
-      if (secondAllocation >= 0) {
-        setValue('stocks.nominees.1.allocation', secondAllocation, { shouldValidate: true });
-      }
-    }
-  }, [nominees, setValue]);
-  
-  const handleAddNominee = () => {
-    if(nomineeFields.length < 3) {
-        appendNominee({ name: '', relationship: '', allocation: 0, dateOfBirth: '' });
-    }
-  }
-
-
   return (
     <div className="space-y-6">
-      {/* Holder Details */}
       <div>
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Holder Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -93,7 +68,6 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
 
       <Separator />
 
-      {/* Demat, Bank, Contact Details */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>DPID</Label>
@@ -129,92 +103,12 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
 
       <Separator />
 
-      {/* Nominee Details */}
-      <div>
-        <h3 className="font-semibold text-lg border-b pb-2 mb-4">Nominee Details</h3>
-        {nomineeFields.map((item, index) => (
-          <div key={item.id} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-2 items-end mb-2">
-            <div>
-              <Label>Nominee Name {index + 1}</Label>
-              <Controller
-                name={`stocks.nominees.${index}.name`}
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Nominee" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {familyMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.name}>
-                          {member.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-            <div>
-              <Label>Relationship</Label>
-              <Controller
-                name={`stocks.nominees.${index}.relationship`}
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Relationship" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {RELATION_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-            <div>
-              <Label>Allocation %</Label>
-              <Controller
-                control={control}
-                name={`stocks.nominees.${index}.allocation`}
-                render={({ field }) => (
-                  <Input 
-                    type="number"
-                    min="0" 
-                    max="100"
-                    {...field} 
-                    onChange={e => field.onChange(parseFloat(e.target.value))}
-                  />
-                )}
-              />
-               {errors?.nominees?.[index]?.allocation && (
-                <p className="text-xs text-destructive mt-1">{errors.nominees?.[index]?.allocation?.message}</p>
-              )}
-            </div>
-             <div>
-              <Label>Date of Birth</Label>
-              <Input type="date" {...register(`stocks.nominees.${index}.dateOfBirth`)} />
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => removeNominee(index)}
-            >
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
-          </div>
-        ))}
-        {nomineeFields.length < 3 && (
-          <Button type="button" variant="outline" size="sm" onClick={handleAddNominee}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Nominee
-          </Button>
-        )}
-      </div>
+      <NomineeFields
+        control={control}
+        register={register}
+        errors={errors.stocks?.nominees}
+        familyMembers={familyMembers}
+      />
     </div>
   );
 }
