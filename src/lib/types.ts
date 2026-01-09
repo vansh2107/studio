@@ -1,7 +1,7 @@
 
 
-import { type Role, type Permission, type AssetCategory, type Permissions, type TaskStatus } from './constants';
-export type { Role, Permission, AssetCategory, Permissions, TaskStatus };
+import { type Role, type Permission, type AssetCategory, type Permissions, type TaskStatus, type TaskStatus2 } from './constants';
+export type { Role, Permission, AssetCategory, Permissions, TaskStatus, TaskStatus2 };
 
 // Base user type
 export interface BaseUser {
@@ -157,6 +157,7 @@ export interface Task {
   serviceableRM?: string;
   dueDate: string; // Should be in a format parsable by new Date()
   status: TaskStatus;
+  status2?: TaskStatus2;
   description?: string;
   createDate: string;
   startDate?: string | null;
@@ -172,6 +173,27 @@ export interface Task {
     amcSubmissionStatus?: "Done" | "Pending";
   };
   insurance?: InsuranceDetails;
+
+  // New category-specific fields
+  generalInsuranceTask?: {
+      serviceCategory?: string;
+      subCategory?: string;
+  };
+  fdTask?: {
+      serviceCategory?: string;
+      folioNumber?: string;
+  };
+  bondsTask?: {
+      serviceCategory?: string;
+      isinNumber?: string;
+  };
+  ppfTask?: {
+      serviceCategory?: string;
+  };
+  physicalToDematTask?: {
+      serviceCategory?: string;
+      folioNumber?: string;
+  };
 }
 
 
@@ -193,6 +215,8 @@ export interface GeneralInsuranceDetails {
   priceWithGST?: string;
   eligiblePremium?: string;
   referenceAgent?: string;
+  jointHolders?: { name: string }[];
+  nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
 }
 
 export interface PhysicalToDematDetails {
@@ -220,6 +244,7 @@ export interface BondDetails {
     bondAmount?: number;
     purchaseDate?: string;
     maturityDate?: string;
+    jointHolders?: { name: string }[];
     nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
 }
 
@@ -230,13 +255,14 @@ export interface FDDetails {
     emailAddress?: string;
     fdName?: string;
     fdNumber?: string;
-    depositedAmount?: string;
-    periodMonth?: string;
-    periodDays?: string;
-    interestRate?: string;
-    maturityAmount?: string;
+    depositedAmount?: number;
+    periodMonth?: number;
+    periodDays?: number;
+    interestRate?: number;
+    maturityAmount?: number;
     purchaseDate?: string;
     maturityDate?: string;
+    jointHolders?: { name: string }[];
     nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
 }
 
@@ -247,6 +273,7 @@ export interface PPFDetails {
     bankName?: string;
     openingDate?: string;
     matureDate?: string;
+    jointHolders?: { name: string }[];
     nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
 }
 

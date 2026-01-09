@@ -54,7 +54,7 @@ export const TASK_CATEGORIES = [
   'Life Insurance',
   'General Insurance',
   'Stocks',
-  'Physical Shares',
+  'Physical to Demat',
   'Bonds',
   'PPF',
   'FDs',
@@ -73,6 +73,17 @@ export const TASK_STATUSES = [
 ] as const;
 
 export type TaskStatus = typeof TASK_STATUSES[number];
+
+export const TASK_STATUS_2_OPTIONS = [
+    "Letter sent to company",
+    "Pending work",
+    "Objection Relodge",
+    "Objection pending",
+    "Sent for IEPF",
+    "Credited"
+] as const;
+export type TaskStatus2 = typeof TASK_STATUS_2_OPTIONS[number];
+
 
 export const RM_NAMES = [
   'Kashish Nathwani',
@@ -204,3 +215,20 @@ export const REINVESTMENT_REASONS = [
 ] as const;
 
 export const RELATION_OPTIONS = ["Self", "Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister", "Other", "Daughter-in-law", "Son-in-law", "Grandson", "Granddaughter"];
+
+
+// --- Task Category Specific Services ---
+
+export const GENERAL_INSURANCE_TASK_SERVICES = ['Renewal', 'Claim', 'Nominee change'] as const;
+export const GENERAL_INSURANCE_TASK_SUB_CATEGORIES = ['Car', 'Two wheeler', 'Health insurance', 'Personal accident'] as const;
+
+export const FD_TASK_SERVICES = ['Maturity', 'Transmission', 'Renew', 'Nominee change'] as const;
+
+export const BONDS_TASK_SERVICES = ['Duplicate', 'Maturity', 'Interest'] as const;
+
+export const PPF_TASK_SERVICES = ['Extension', 'Nominee update', 'Passbook print', 'Withdrawal'] as const;
+
+export const PHYSICAL_TO_DEMAT_SERVICES = [
+    'IEPF', 'Lost shares', 'Duplicate Share', 'Normal Convert to shares', 
+    'Transmission', 'KYC update', 'Name deletion', 'Succession', 'FIR', 'Gazett'
+] as const;
