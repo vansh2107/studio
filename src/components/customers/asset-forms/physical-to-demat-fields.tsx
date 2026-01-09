@@ -2,20 +2,16 @@
 'use client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { PlusCircle, Trash2 } from 'lucide-react';
-import { Controller, useFieldArray } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Client, FamilyMember } from '@/lib/types';
 import { useEffect } from 'react';
+import { JointHolderFields } from './joint-holder-fields';
 
 
-export function PhysicalToDematFields({ register, errors, control, familyMembers, watch, setValue }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[], watch: any, setValue: any }) {
+export function PhysicalToDematFields({ register, errors, control, familyMembers }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[] }) {
   
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "physicalToDemat.jointHolders",
-  });
+  const { quantity, marketPrice } = control.watch(['physicalToDemat.quantity', 'physicalToDemat.marketPrice']);
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -37,18 +33,16 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     }
   };
 
-  const quantity = watch('physicalToDemat.quantity');
-  const marketPrice = watch('physicalToDemat.marketPrice');
 
   useEffect(() => {
     const q = parseFloat(quantity);
     const mp = parseFloat(marketPrice);
     if (!isNaN(q) && !isNaN(mp)) {
-      setValue('physicalToDemat.totalValue', q * mp, { shouldValidate: true });
+      control.setValue('physicalToDemat.totalValue', q * mp, { shouldValidate: true });
     } else {
-        setValue('physicalToDemat.totalValue', undefined, { shouldValidate: true });
+        control.setValue('physicalToDemat.totalValue', undefined, { shouldValidate: true });
     }
-  }, [quantity, marketPrice, setValue]);
+  }, [quantity, marketPrice, control]);
 
 
   return (
@@ -146,36 +140,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         </div>
       </div>
       
-      <div className="space-y-2 pt-4">
-        <Label>Joint Holders</Label>
-        <div className="grid grid-cols-3 gap-3 items-center">
-            {fields.map((item, index) => (
-                <div key={item.id} className="relative">
-                    <Input 
-                        {...register(`physicalToDemat.jointHolders.${index}.name`)} 
-                        placeholder={`Joint Holder ${index + 1}`}
-                        className="pr-8"
-                    />
-                    <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={() => remove(index)}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-destructive"
-                    >
-                        <Trash2 className="h-4 w-4"/>
-                    </Button>
-                </div>
-            ))}
-            {fields.length < 3 && (
-              <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "" })}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add
-              </Button>
-            )}
-        </div>
-        {errors?.jointHolders && <p className="text-sm text-destructive mt-1">{errors.jointHolders.message}</p>}
-      </div>
-
+      <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
     </div>
   );
 }

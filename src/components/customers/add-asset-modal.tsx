@@ -359,7 +359,7 @@ export function AddAssetModal({
                   <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
-              {currentAssetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields watch={watch} setValue={setValue} control={control} register={register} errors={errors?.physicalToDemat} familyMembers={familyMembers} />}
+              {currentAssetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields register={register} errors={errors?.physicalToDemat} control={control} familyMembers={familyMembers} />}
               {currentAssetType === 'BONDS' && (
                 <>
                   <BondFields control={control} errors={errors?.bonds} familyMembers={familyMembers} />
@@ -368,7 +368,7 @@ export function AddAssetModal({
               )}
               {currentAssetType === 'FIXED DEPOSITS' && (
                  <>
-                  <FDFields control={control} errors={errors?.fixedDeposits} familyMembers={familyMembers} />
+                  <FDFields control={control} register={register} errors={errors?.fixedDeposits} familyMembers={familyMembers} />
                   <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}

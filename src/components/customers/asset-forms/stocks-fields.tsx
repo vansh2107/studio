@@ -1,22 +1,16 @@
 
 'use client';
 
-import { useFieldArray, Controller } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Client, FamilyMember } from '@/lib/types';
 import { NomineeFields } from './nominee-fields';
+import { JointHolderFields } from './joint-holder-fields';
 
 export function StocksFields({ control, register, errors, familyMembers, watch, getValues, setValue }: { control: any; register: any; errors: any; familyMembers: (Client | FamilyMember)[], watch: any; getValues: any; setValue: any; }) {
-
-  const { fields: jointHolderFields, append: appendJointHolder, remove: removeJointHolder } = useFieldArray({
-    control,
-    name: "stocks.jointHolders"
-  });
 
   const handleMobileKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['e', 'E', '+', '-'].includes(e.key)) {
@@ -53,35 +47,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
           </div>
         </div>
 
-        <div className="space-y-2 pt-4">
-            <Label>Joint Holders</Label>
-            <div className="grid grid-cols-3 gap-3 items-center">
-                {jointHolderFields.map((item, index) => (
-                    <div key={item.id} className="relative">
-                        <Input 
-                            {...register(`stocks.jointHolders.${index}.name`)} 
-                            placeholder={`Joint Holder ${index + 1}`}
-                            className="pr-8"
-                        />
-                        <Button 
-                            type="button" 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => removeJointHolder(index)}
-                            className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 text-destructive"
-                        >
-                            <Trash2 className="h-4 w-4"/>
-                        </Button>
-                    </div>
-                ))}
-                {jointHolderFields.length < 3 && (
-                  <Button type="button" variant="outline" size="sm" onClick={() => appendJointHolder({ name: "" })}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add
-                  </Button>
-                )}
-            </div>
-            {errors?.jointHolders && <p className="text-sm text-destructive mt-1">{errors.jointHolders.message}</p>}
-        </div>
+        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
       </div>
 
       <Separator />
