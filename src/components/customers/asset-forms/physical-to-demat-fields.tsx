@@ -14,13 +14,13 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
   
   const [jointHolderCount, setJointHolderCount] = useState(0);
 
-  const quantity = watch('p2d_quantity');
-  const marketPrice = watch('p2d_marketPrice');
+  const quantity = watch('physicalToDemat.quantity');
+  const marketPrice = watch('physicalToDemat.marketPrice');
 
   useEffect(() => {
     const q = parseFloat(quantity) || 0;
     const p = parseFloat(marketPrice) || 0;
-    setValue('p2d_totalValue', q * p);
+    setValue('physicalToDemat.totalValue', q * p);
   }, [quantity, marketPrice, setValue]);
   
   const addJointHolder = () => {
@@ -30,7 +30,7 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
   };
 
   const removeJointHolder = (index: number) => {
-    unregister(`p2d_jointHolder${index}`);
+    unregister(`physicalToDemat.jointHolder${index}`);
     // This is a simple hide, for a real app you'd shift values up.
     // To keep it simple, we just reduce the count. If a user removes #1 then adds, #2's old value will be gone.
     setJointHolderCount(jointHolderCount - 1);
@@ -46,7 +46,7 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
         <div>
           <Label>Client Name</Label>
            <Controller
-                name="p2d_clientName"
+                name="physicalToDemat.clientName"
                 control={control}
                 render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
@@ -63,15 +63,15 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
                 </Select>
                 )}
             />
-            {errors.p2d_clientName && <p className="text-sm text-destructive">{errors.p2d_clientName.message}</p>}
+            {errors.physicalToDemat?.clientName && <p className="text-sm text-destructive">{errors.physicalToDemat.clientName.message}</p>}
         </div>
         <div>
           <Label>Name on Share</Label>
-          <Input {...register('p2d_nameOnShare')} />
+          <Input {...register('physicalToDemat.nameOnShare')} />
         </div>
         <div>
           <Label>Folio Number</Label>
-          <Input {...register('p2d_folioNumber')} />
+          <Input {...register('physicalToDemat.folioNumber')} />
         </div>
       </div>
       
@@ -79,11 +79,11 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
          <div>
           <Label>Company Name</Label>
-          <Input {...register('p2d_companyName')} />
+          <Input {...register('physicalToDemat.companyName')} />
         </div>
         <div>
           <Label>RTA Name</Label>
-          <Input {...register('p2d_rtaName')} />
+          <Input {...register('physicalToDemat.rtaName')} />
         </div>
       </div>
 
@@ -91,18 +91,18 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>Quantity</Label>
-          <Input type="number" min="0" {...register('p2d_quantity', { valueAsNumber: true })} />
-          {errors.p2d_quantity && <p className="text-sm text-destructive mt-1">{errors.p2d_quantity.message}</p>}
+          <Input type="number" min="0" {...register('physicalToDemat.quantity', { valueAsNumber: true })} />
+          {errors.physicalToDemat?.quantity && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.quantity.message}</p>}
         </div>
         <div>
           <Label>Market Price</Label>
-          <Input type="number" min="0" {...register('p2d_marketPrice', { valueAsNumber: true })} />
-          {errors.p2d_marketPrice && <p className="text-sm text-destructive mt-1">{errors.p2d_marketPrice.message}</p>}
+          <Input type="number" min="0" {...register('physicalToDemat.marketPrice', { valueAsNumber: true })} />
+          {errors.physicalToDemat?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.marketPrice.message}</p>}
         </div>
         <div>
           <Label>Total Value</Label>
-          <Input readOnly {...register('p2d_totalValue', { valueAsNumber: true })} />
-          {errors.p2d_totalValue && <p className="text-sm text-destructive mt-1">{errors.p2d_totalValue.message}</p>}
+          <Input readOnly {...register('physicalToDemat.totalValue', { valueAsNumber: true })} />
+          {errors.physicalToDemat?.totalValue && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.totalValue.message}</p>}
         </div>
       </div>
       
@@ -112,7 +112,7 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
           {jointHolderCount > 0 && Array.from({ length: jointHolderCount }).map((_, index) => (
               <div key={index} className="flex items-center gap-2">
                   <Input 
-                      {...register(`p2d_jointHolder${index + 1}`)} 
+                      {...register(`physicalToDemat.jointHolder${index + 1}`)} 
                       placeholder={`Joint Holder ${index + 1}`}
                   />
                   {/* The remove logic is simple, just decrements count. More complex logic can be added to shift values. */}

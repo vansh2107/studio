@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { UploadDocModal } from '../doc-vault/upload-doc-modal';
 
+// Base schema for the top-level fields
 const baseAssetSchema = z.object({
   familyHead: z.string().min(1, 'Family head is required'),
   assetType: z.string().min(1, 'Asset type is required'),
@@ -39,7 +40,7 @@ const baseAssetSchema = z.object({
 const generalInsuranceSchema = z.object({
   gi_familyMember: z.string().optional(),
   gi_category: z.string().optional(),
-  gi_issuer: z.string().optional(),
+  gi_issuer: z.string().min(1, 'Issuer is required'),
   gi_planName: z.string().optional(),
   gi_policyNumber: z.string().optional(),
   gi_policyType: z.string().optional(),
@@ -47,10 +48,10 @@ const generalInsuranceSchema = z.object({
   gi_policyIssueDate: z.string().optional(),
   gi_policyEndDate: z.string().optional(),
   gi_vehicleRegNumber: z.string().optional(),
-  gi_sumAssured: z.string().optional(),
-  gi_priceWithoutGST: z.string().optional(),
-  gi_priceWithGST: z.string().optional(),
-  gi_eligiblePremium: z.string().optional(),
+  gi_sumAssured: z.string().min(0, "Value cannot be negative").optional(),
+  gi_priceWithoutGST: z.string().min(0, "Value cannot be negative").optional(),
+  gi_priceWithGST: z.string().min(0, "Value cannot be negative").optional(),
+  gi_eligiblePremium: z.string().min(0, "Value cannot be negative").optional(),
   gi_referenceAgent: z.string().optional(),
 });
 
@@ -123,9 +124,43 @@ const stocksSchema = z.object({
   })).min(1),
 });
 
+// Create a map of schemas for easy lookup
+const assetTypeSchemas = {
+  'GENERAL INSURANCE': generalInsuranceSchema,
+  'PHYSICAL TO DEMAT': physicalToDematSchema,
+  'BONDS': bondSchema,
+  'FIXED DEPOSITS': fdSchema,
+  'PPF': ppfSchema,
+  'STOCKS': stocksSchema,
+};
 
-// Combined schema
-const assetFormSchema = baseAssetSchema.merge(generalInsuranceSchema).merge(physicalToDematSchema).merge(bondSchema).merge(fdSchema).merge(ppfSchema).merge(z.object({stocks: stocksSchema.optional()}));
+// Dynamic schema that validates based on the selected asset type
+const assetFormSchema = z.intersection(
+  baseAssetSchema,
+  z.object({
+    generalInsurance: generalInsuranceSchema.optional(),
+    physicalToDemat: physicalToDematSchema.optional(),
+    bonds: bondSchema.optional(),
+    fixedDeposits: fdSchema.optional(),
+    ppf: ppfSchema.optional(),
+    stocks: stocksSchema.optional(),
+  })
+).superRefine((data, ctx) => {
+  const assetType = data.assetType as keyof typeof assetTypeSchemas;
+  if (assetType && assetTypeSchemas[assetType]) {
+    const schemaToValidate = assetTypeSchemas[assetType];
+    const result = schemaToValidate.safeParse(data);
+    if (!result.success) {
+      result.error.errors.forEach((error) => {
+        ctx.addIssue({
+          ...error,
+          path: error.path,
+        });
+      });
+    }
+  }
+});
+
 type AssetFormData = z.infer<typeof assetFormSchema>;
 
 interface AddAssetModalProps {
@@ -163,39 +198,7 @@ export function AddAssetModal({
     defaultValues: {
       familyHead: '',
       assetType: '',
-      gi_familyMember: '',
-      gi_category: '',
-      gi_issuer: '',
-      gi_planName: '',
-      gi_policyNumber: '',
-      gi_policyType: '',
-      gi_policyStartDate: '',
-      gi_policyIssueDate: '',
-      gi_policyEndDate: '',
-      gi_vehicleRegNumber: '',
-      gi_sumAssured: '',
-      gi_priceWithoutGST: '',
-      gi_priceWithGST: '',
-      gi_eligiblePremium: '',
-      gi_referenceAgent: '',
-      p2d_clientName: '',
-      p2d_folioNumber: '',
-      p2d_nameOnShare: '',
-      p2d_jointHolder1: '',
-      p2d_jointHolder2: '',
-      p2d_jointHolder3: '',
-      p2d_companyName: '',
-      p2d_rtaName: '',
       stocks: {
-        holderName: '',
-        jointHolder1: '',
-        jointHolder2: '',
-        dpId: '',
-        dpName: '',
-        bankName: '',
-        bankAccountNumber: '',
-        mobileNumber: '',
-        emailAddress: '',
         nominees: [{ name: '', relationship: '', allocation: 100, dateOfBirth: '' }]
       }
     },
@@ -209,59 +212,12 @@ export function AddAssetModal({
       const defaultVals: any = {
           familyHead: assetToEdit.familyHeadId,
           assetType: assetToEdit.assetType,
-          gi_familyMember: assetToEdit.generalInsurance?.familyMember,
-          gi_category: assetToEdit.generalInsurance?.category,
-          gi_issuer: assetToEdit.generalInsurance?.issuer,
-          gi_planName: assetToEdit.generalInsurance?.planName,
-          gi_policyNumber: assetToEdit.generalInsurance?.policyNumber,
-          gi_policyType: assetToEdit.generalInsurance?.policyType,
-          gi_policyStartDate: assetToEdit.generalInsurance?.policyStartDate,
-          gi_policyIssueDate: assetToEdit.generalInsurance?.policyIssueDate,
-          gi_policyEndDate: assetToEdit.generalInsurance?.policyEndDate,
-          gi_vehicleRegNumber: assetToEdit.generalInsurance?.vehicleRegNumber,
-          gi_sumAssured: assetToEdit.generalInsurance?.sumAssured,
-          gi_priceWithoutGST: assetToEdit.generalInsurance?.priceWithoutGST,
-          gi_priceWithGST: assetToEdit.generalInsurance?.priceWithGST,
-          gi_eligiblePremium: assetToEdit.generalInsurance?.eligiblePremium,
-          gi_referenceAgent: assetToEdit.generalInsurance?.referenceAgent,
-          p2d_clientName: assetToEdit.physicalToDemat?.clientName,
-          p2d_folioNumber: assetToEdit.physicalToDemat?.folioNumber,
-          p2d_nameOnShare: assetToEdit.physicalToDemat?.nameOnShare,
-          p2d_jointHolder1: assetToEdit.physicalToDemat?.jointHolder1,
-          p2d_jointHolder2: assetToEdit.physicalToDemat?.jointHolder2,
-          p2d_jointHolder3: assetToEdit.physicalToDemat?.jointHolder3,
-          p2d_companyName: assetToEdit.physicalToDemat?.companyName,
-          p2d_rtaName: assetToEdit.physicalToDemat?.rtaName,
-          p2d_quantity: assetToEdit.physicalToDemat?.quantity,
-          p2d_marketPrice: assetToEdit.physicalToDemat?.marketPrice,
-          p2d_totalValue: assetToEdit.physicalToDemat?.totalValue,
-          b_isin: assetToEdit.bonds?.isin,
-          b_issuer: assetToEdit.bonds?.issuer,
-          b_bondPrice: assetToEdit.bonds?.bondPrice,
-          b_bondUnit: assetToEdit.bonds?.bondUnit,
-          b_bondAmount: assetToEdit.bonds?.bondAmount,
-          b_purchaseDate: assetToEdit.bonds?.purchaseDate,
-          b_maturityDate: assetToEdit.bonds?.maturityDate,
-          b_nomineeName: assetToEdit.bonds?.nomineeName,
-          b_familyMember: assetToEdit.bonds?.familyMember,
-          fd_companyName: assetToEdit.fixedDeposits?.companyName,
-          fd_investorName: assetToEdit.fixedDeposits?.investorName,
-          fd_fdName: assetToEdit.fixedDeposits?.fdName,
-          fd_fdNumber: assetToEdit.fixedDeposits?.fdNumber,
-          fd_depositedAmount: assetToEdit.fixedDeposits?.depositedAmount,
-          fd_periodMonth: assetToEdit.fixedDeposits?.periodMonth,
-          fd_periodDays: assetToEdit.fixedDeposits?.periodDays,
-          fd_interestRate: assetToEdit.fixedDeposits?.interestRate,
-          fd_maturityAmount: assetToEdit.fixedDeposits?.maturityAmount,
-          fd_purchaseDate: assetToEdit.fixedDeposits?.purchaseDate,
-          fd_maturityDate: assetToEdit.fixedDeposits?.maturityDate,
-          ppf_familyMemberName: assetToEdit.ppf?.familyName,
-          ppf_contributedAmount: assetToEdit.ppf?.contributedAmount,
-          ppf_balance: assetToEdit.ppf?.balance,
-          ppf_bankName: assetToEdit.ppf?.bankName,
-          ppf_openingDate: assetToEdit.ppf?.openingDate,
-          ppf_matureDate: assetToEdit.ppf?.matureDate,
-          stocks: assetToEdit.stocks
+          ...assetToEdit.generalInsurance,
+          ...assetToEdit.physicalToDemat,
+          ...assetToEdit.bonds,
+          ...assetToEdit.fixedDeposits,
+          ...assetToEdit.ppf,
+          stocks: assetToEdit.stocks,
       };
       reset(defaultVals);
     } else {
@@ -269,29 +225,6 @@ export function AddAssetModal({
          reset({
             familyHead: '',
             assetType: '',
-            gi_familyMember: '',
-            gi_category: '',
-            gi_issuer: '',
-            gi_planName: '',
-            gi_policyNumber: '',
-            gi_policyType: '',
-            gi_policyStartDate: '',
-            gi_policyIssueDate: '',
-            gi_policyEndDate: '',
-            gi_vehicleRegNumber: '',
-            gi_sumAssured: '',
-            gi_priceWithoutGST: '',
-            gi_priceWithGST: '',
-            gi_eligiblePremium: '',
-            gi_referenceAgent: '',
-            p2d_clientName: '',
-            p2d_folioNumber: '',
-            p2d_nameOnShare: '',
-            p2d_jointHolder1: '',
-            p2d_jointHolder2: '',
-            p2d_jointHolder3: '',
-            p2d_companyName: '',
-            p2d_rtaName: '',
             stocks: {
                 holderName: '',
                 jointHolder1: '',
@@ -340,68 +273,11 @@ export function AddAssetModal({
         familyHeadId: familyHead.id,
         familyHeadName: `${familyHead.firstName} ${familyHead.lastName}`,
         assetType: data.assetType as Asset['assetType'],
-        generalInsurance: data.assetType === 'GENERAL INSURANCE' ? {
-            familyMember: data.gi_familyMember,
-            category: data.gi_category,
-            issuer: data.gi_issuer,
-            planName: data.gi_planName,
-            policyNumber: data.gi_policyNumber,
-            policyType: data.gi_policyType,
-            policyStartDate: data.gi_policyStartDate,
-            policyIssueDate: data.gi_policyIssueDate,
-            policyEndDate: data.gi_policyEndDate,
-            vehicleRegNumber: data.gi_vehicleRegNumber,
-            sumAssured: data.gi_sumAssured,
-            priceWithoutGST: data.gi_priceWithoutGST,
-            priceWithGST: data.gi_priceWithGST,
-            eligiblePremium: data.gi_eligiblePremium,
-            referenceAgent: data.gi_referenceAgent
-        } : undefined,
-        physicalToDemat: data.assetType === 'PHYSICAL TO DEMAT' ? {
-            clientName: data.p2d_clientName,
-            folioNumber: data.p2d_folioNumber,
-            nameOnShare: data.p2d_nameOnShare,
-            jointHolder1: data.p2d_jointHolder1,
-            jointHolder2: data.p2d_jointHolder2,
-            jointHolder3: data.p2d_jointHolder3,
-            companyName: data.p2d_companyName,
-            rtaName: data.p2d_rtaName,
-            quantity: data.p2d_quantity,
-            marketPrice: data.p2d_marketPrice,
-            totalValue: data.p2d_totalValue
-        } : undefined,
-        bonds: data.assetType === 'BONDS' ? {
-            isin: data.b_isin,
-            issuer: data.b_issuer,
-            bondPrice: data.b_bondPrice,
-            bondUnit: data.b_bondUnit,
-            bondAmount: data.b_bondAmount,
-            purchaseDate: data.b_purchaseDate,
-            maturityDate: data.b_maturityDate,
-            nomineeName: data.b_nomineeName,
-            familyMember: data.b_familyMember
-        } : undefined,
-        fixedDeposits: data.assetType === 'FIXED DEPOSITS' ? {
-            companyName: data.fd_companyName,
-            investorName: data.fd_investorName,
-            fdName: data.fd_fdName,
-            fdNumber: data.fd_fdNumber,
-            depositedAmount: data.fd_depositedAmount,
-            periodMonth: data.fd_periodMonth,
-            periodDays: data.fd_periodDays,
-            interestRate: data.fd_interestRate,
-            maturityAmount: data.fd_maturityAmount,
-            purchaseDate: data.fd_purchaseDate,
-            maturityDate: data.fd_maturityDate,
-        } : undefined,
-        ppf: data.assetType === 'PPF' ? {
-            familyName: data.ppf_familyMemberName,
-            contributedAmount: data.ppf_contributedAmount,
-            balance: data.ppf_balance,
-            bankName: data.ppf_bankName,
-            openingDate: data.ppf_openingDate,
-            matureDate: data.ppf_matureDate
-        } : undefined,
+        generalInsurance: data.assetType === 'GENERAL INSURANCE' ? data.generalInsurance : undefined,
+        physicalToDemat: data.assetType === 'PHYSICAL TO DEMAT' ? data.physicalToDemat : undefined,
+        bonds: data.assetType === 'BONDS' ? data.bonds : undefined,
+        fixedDeposits: data.assetType === 'FIXED DEPOSITS' ? data.fixedDeposits : undefined,
+        ppf: data.assetType === 'PPF' ? data.ppf : undefined,
         stocks: data.assetType === 'STOCKS' ? data.stocks : undefined,
     };
     
@@ -556,3 +432,5 @@ export function AddAssetModal({
     </>
   );
 }
+
+    

@@ -14,7 +14,7 @@ export function PPFFields({ register, errors, control, familyMembers }: { regist
         <div>
           <Label>Family Member Name</Label>
            <Controller
-            name="ppf_familyMemberName"
+            name="ppf.familyMemberName"
             control={control}
             render={({ field }) => (
               <Select onValueChange={field.onChange} value={field.value}>
@@ -34,25 +34,25 @@ export function PPFFields({ register, errors, control, familyMembers }: { regist
         </div>
         <div>
           <Label>Bank Name</Label>
-          <Input {...register('ppf_bankName')} />
+          <Input {...register('ppf.bankName')} />
         </div>
         <div>
           <Label>Contributed Amount</Label>
-          <Input type="number" min="0" {...register('ppf_contributedAmount', { valueAsNumber: true })} />
-          {errors.ppf_contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf_contributedAmount.message}</p>}
+          <Input type="number" min="0" {...register('ppf.contributedAmount', { valueAsNumber: true })} />
+          {errors.ppf?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf.contributedAmount.message}</p>}
         </div>
         <div>
           <Label>Balance</Label>
-          <Input type="number" min="0" {...register('ppf_balance', { valueAsNumber: true })} />
-          {errors.ppf_balance && <p className="text-sm text-destructive mt-1">{errors.ppf_balance.message}</p>}
+          <Input type="number" min="0" {...register('ppf.balance', { valueAsNumber: true })} />
+          {errors.ppf?.balance && <p className="text-sm text-destructive mt-1">{errors.ppf.balance.message}</p>}
         </div>
         <div>
           <Label>Date of Opening</Label>
-          <Input type="date" {...register('ppf_openingDate')} />
+          <Input type="date" {...register('ppf.openingDate')} />
         </div>
         <div>
           <Label>Date of Mature</Label>
-          <Input type="date" {...register('ppf_matureDate')} />
+          <Input type="date" {...register('ppf.matureDate')} />
         </div>
       </div>
     </div>

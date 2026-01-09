@@ -11,13 +11,13 @@ import { BOND_TRANSACTION_TYPES } from '@/lib/asset-form-types';
 
 export function BondFields({ register, errors, control, familyMembers, setValue, watch }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[], setValue: any, watch: any }) {
   
-  const bondPrice = watch('b_bondPrice');
-  const bondUnit = watch('b_bondUnit');
+  const bondPrice = watch('bonds.bondPrice');
+  const bondUnit = watch('bonds.bondUnit');
 
   useEffect(() => {
     const price = parseFloat(bondPrice) || 0;
     const unit = parseInt(bondUnit, 10) || 0;
-    setValue('b_bondAmount', price * unit);
+    setValue('bonds.bondAmount', price * unit);
   }, [bondPrice, bondUnit, setValue]);
 
   return (
@@ -29,7 +29,7 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
           <div>
               <Label>Family Member</Label>
               <Controller
-                  name="b_familyMember"
+                  name="bonds.familyMember"
                   control={control}
                   render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
@@ -49,45 +49,45 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
           </div>
           <div>
             <Label>Issuer</Label>
-            <Input {...register('b_issuer')} />
+            <Input {...register('bonds.issuer')} />
           </div>
           <div>
             <Label>ISIN Number</Label>
-            <Input {...register('b_isin')} />
+            <Input {...register('bonds.isin')} />
           </div>
         </div>
         {/* Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Bond Price</Label>
-            <Input type="number" min="0" {...register('b_bondPrice', { valueAsNumber: true })} />
-            {errors.b_bondPrice && <p className="text-sm text-destructive mt-1">{errors.b_bondPrice.message}</p>}
+            <Input type="number" min="0" {...register('bonds.bondPrice', { valueAsNumber: true })} />
+            {errors.bonds?.bondPrice && <p className="text-sm text-destructive mt-1">{errors.bonds.bondPrice.message}</p>}
           </div>
           <div>
             <Label>Bond Unit</Label>
-            <Input type="number" min="0" step="1" {...register('b_bondUnit', { valueAsNumber: true })} />
-            {errors.b_bondUnit && <p className="text-sm text-destructive mt-1">{errors.b_bondUnit.message}</p>}
+            <Input type="number" min="0" step="1" {...register('bonds.bondUnit', { valueAsNumber: true })} />
+            {errors.bonds?.bondUnit && <p className="text-sm text-destructive mt-1">{errors.bonds.bondUnit.message}</p>}
           </div>
           <div>
             <Label>Bond Amount</Label>
-            <Input readOnly {...register('b_bondAmount', { valueAsNumber: true })} />
-            {errors.b_bondAmount && <p className="text-sm text-destructive mt-1">{errors.b_bondAmount.message}</p>}
+            <Input readOnly {...register('bonds.bondAmount', { valueAsNumber: true })} />
+            {errors.bonds?.bondAmount && <p className="text-sm text-destructive mt-1">{errors.bonds.bondAmount.message}</p>}
           </div>
         </div>
         {/* Row 3 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Purchase Date</Label>
-            <Input type="date" {...register('b_purchaseDate')} />
+            <Input type="date" {...register('bonds.purchaseDate')} />
           </div>
           <div>
             <Label>Maturity Date</Label>
-            <Input type="date" {...register('b_maturityDate')} />
+            <Input type="date" {...register('bonds.maturityDate')} />
           </div>
           <div>
               <Label>Transaction Type</Label>
               <Controller
-                  name="b_transactionType"
+                  name="bonds.transactionType"
                   control={control}
                   render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
@@ -111,7 +111,7 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
           <div>
             <Label>Nominee Name</Label>
             <Controller
-              name="b_nomineeName"
+              name="bonds.nomineeName"
               control={control}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
@@ -134,3 +134,5 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
     </div>
   );
 }
+
+    

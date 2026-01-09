@@ -15,7 +15,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
 
   const selectedCategory = useWatch({
     control,
-    name: 'gi_category',
+    name: 'generalInsurance.category',
   });
   
   return (
@@ -25,7 +25,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
             <div>
               <Label>Family Member</Label>
               <Controller
-                name="gi_familyMember"
+                name="generalInsurance.familyMember"
                 control={control}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
@@ -46,7 +46,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
              <div>
               <Label>Category</Label>
               <Controller
-                name="gi_category"
+                name="generalInsurance.category"
                 control={control}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
@@ -67,7 +67,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
             <div>
                 <Label>Issuer</Label>
                  <Controller
-                  name="gi_issuer"
+                  name="generalInsurance.issuer"
                   control={control}
                   render={({ field }) => (
                      <Combobox
@@ -79,19 +79,20 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
                     />
                   )}
                 />
+                {errors.generalInsurance?.issuer && <p className="text-sm text-destructive">{errors.generalInsurance.issuer.message}</p>}
             </div>
              <div>
                 <Label>Plan Name</Label>
-                <Controller name="gi_planName" control={control} render={({ field }) => <Input {...field} />} />
+                <Controller name="generalInsurance.planName" control={control} render={({ field }) => <Input {...field} />} />
             </div>
             <div>
                 <Label>Policy Number</Label>
-                <Controller name="gi_policyNumber" control={control} render={({ field }) => <Input {...field} />} />
+                <Controller name="generalInsurance.policyNumber" control={control} render={({ field }) => <Input {...field} />} />
             </div>
             <div>
               <Label>Policy Type</Label>
               <Controller
-                name="gi_policyType"
+                name="generalInsurance.policyType"
                 control={control}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
@@ -111,41 +112,41 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
             </div>
             <div>
                 <Label>Policy Start Date</Label>
-                <Controller name="gi_policyStartDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+                <Controller name="generalInsurance.policyStartDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Policy Issue Date</Label>
-                <Controller name="gi_policyIssueDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+                <Controller name="generalInsurance.policyIssueDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Policy End Date</Label>
-                <Controller name="gi_policyEndDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+                <Controller name="generalInsurance.policyEndDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
             </div>
             {(selectedCategory === 'FOUR WHEELER' || selectedCategory === 'TWO WHEELER') && (
                  <div>
                     <Label>Vehicle Registration Number</Label>
-                    <Controller name="gi_vehicleRegNumber" control={control} render={({ field }) => <Input {...field} />} />
+                    <Controller name="generalInsurance.vehicleRegNumber" control={control} render={({ field }) => <Input {...field} />} />
                 </div>
             )}
              <div>
                 <Label>Sum Assured</Label>
-                <Controller name="gi_sumAssured" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
+                <Controller name="generalInsurance.sumAssured" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
             </div>
             <div>
                 <Label>Price Without GST</Label>
-                <Controller name="gi_priceWithoutGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
+                <Controller name="generalInsurance.priceWithoutGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
             </div>
             <div>
                 <Label>Price With GST</Label>
-                <Controller name="gi_priceWithGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
+                <Controller name="generalInsurance.priceWithGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
             </div>
              <div>
                 <Label>Eligible Premium</Label>
-                <Controller name="gi_eligiblePremium" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
+                <Controller name="generalInsurance.eligiblePremium" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
             </div>
             <div>
                 <Label>Reference Agent</Label>
-                <Controller name="gi_referenceAgent" control={control} render={({ field }) => <Input {...field} />} />
+                <Controller name="generalInsurance.referenceAgent" control={control} render={({ field }) => <Input {...field} />} />
             </div>
         </div>
     </div>

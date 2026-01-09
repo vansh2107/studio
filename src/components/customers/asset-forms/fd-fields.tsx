@@ -1,3 +1,4 @@
+
 'use client';
 import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -18,12 +19,12 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <Label>Company/Bank Name</Label>
-                <Input {...register('fd_companyName')} />
+                <Input {...register('fixedDeposits.companyName')} />
             </div>
             <div>
                 <Label>Investor Name</Label>
                  <Controller
-                    name="fd_investorName"
+                    name="fixedDeposits.investorName"
                     control={control}
                     render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
@@ -47,11 +48,11 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <Label>FD Name</Label>
-                <Input {...register('fd_fdName')} />
+                <Input {...register('fixedDeposits.fdName')} />
             </div>
             <div>
                 <Label>FD Number</Label>
-                <Input {...register('fd_fdNumber')} />
+                <Input {...register('fixedDeposits.fdNumber')} />
             </div>
         </div>
 
@@ -62,7 +63,7 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
                 <Label>Period</Label>
                 <div className="grid grid-cols-2 gap-4">
                 <Controller
-                    name="fd_periodMonth"
+                    name="fixedDeposits.periodMonth"
                     control={control}
                     render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
@@ -80,7 +81,7 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
                     )}
                 />
                 <Controller
-                    name="fd_periodDays"
+                    name="fixedDeposits.periodDays"
                     control={control}
                     render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
@@ -106,7 +107,8 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
                 <Input
                 id="fd_interestRate"
                 type="number"
-                {...register('fd_interestRate')}
+                min="0"
+                {...register('fixedDeposits.interestRate')}
                 />
             </div>
 
@@ -116,7 +118,8 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
                 <Input
                 id="fd_maturityAmount"
                 type="number"
-                {...register('fd_maturityAmount')}
+                min="0"
+                {...register('fixedDeposits.maturityAmount')}
                 />
             </div>
         </div>
@@ -125,13 +128,15 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <Label>Date of Purchase</Label>
-                <Input type="date" {...register('fd_purchaseDate')} />
+                <Input type="date" {...register('fixedDeposits.purchaseDate')} />
             </div>
             <div>
                 <Label>Date of Maturity</Label>
-                <Input type="date" {...register('fd_maturityDate')} />
+                <Input type="date" {...register('fixedDeposits.maturityDate')} />
             </div>
         </div>
     </div>
   );
 }
+
+    
