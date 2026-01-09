@@ -239,7 +239,7 @@ export let familyMembers: FamilyMember[] = [
     dateOfBirth: '1990-05-12', 
     address: 'Bangalore, Karnataka',
     panPhotoUrl: 'https://picsum.photos/seed/pan1/400/300',
-    aadhaarPhotoUrl: 'https://cors-anywhere.herokuapp.com/http://www.africau.edu/images/default/sample.pdf',
+    aadhaarPhotoUrl: '/documents/aadhaar-sample.pdf',
     aadhaarFileName: 'Aadhaar.pdf'
   },
   { id: 'fm-4-2', name: 'Ashish Hirpara', clientId: 'client-3', firstName: 'Ashish', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
