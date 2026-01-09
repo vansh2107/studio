@@ -195,7 +195,7 @@ export const addAssociate = (data: UserCreationData, rmId: string) => {
 
 // --- Other Mock Data (Family, Assets, etc.) ---
 
-export const familyMembers: FamilyMember[] = [
+export let familyMembers: FamilyMember[] = [
   // Bipin Hirpara's Family
   { id: 'fm-1-1', name: 'Sarlaben Hirpara', clientId: 'client-1', firstName: 'Sarlaben', lastName: 'Hirpara', relation: 'Spouse', phoneNumber: '9876543210', emailId: 'Salraben.hirpara@demo.app', dateOfBirth: '1990-05-12', address: 'Mumbai, India' },
   { id: 'fm-1-2', name: 'Hirenbhai Hirpara', clientId: 'client-1', firstName: 'Hirenbhai', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
@@ -239,7 +239,7 @@ export const familyMembers: FamilyMember[] = [
     dateOfBirth: '1990-05-12', 
     address: 'Bangalore, Karnataka',
     panPhotoUrl: 'https://picsum.photos/seed/pan1/400/300',
-    aadhaarPhotoUrl: '/Aadhaar.pdf'
+    aadhaarPhotoUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
   },
   { id: 'fm-4-2', name: 'Ashish Hirpara', clientId: 'client-3', firstName: 'Ashish', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
   { id: 'fm-4-3', name: 'Sumita Hirpara', clientId: 'client-3', firstName: 'Sumita', lastName: 'Hirpara', relation: 'Daughter-in-law', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
@@ -253,15 +253,14 @@ export const familyMembers: FamilyMember[] = [
 ];
 
 export const assets: Asset[] = [
-  { id: 'asset-1', clientId: 'client-1', ownerMemberId: 'fm-1-1', category: 'Stocks', name: 'Reliance Industries', value: 150000 },
-  { id: 'asset-2', clientId: 'client-1', ownerMemberId: 'fm-1-2', category: 'Mutual Funds', name: 'Axis Bluechip Fund', value: 75000 },
-  { id: 'asset-3', clientId: 'client-1', ownerMemberId: 'fm-1-1', category: 'Life Insurance', name: 'LIC Jeevan Anand', value: 500000 },
-  { id: 'asset-4', clientId: 'client-2', ownerMemberId: 'fm-2-1', category: 'Fixed Deposits', name: 'HDFC Bank FD', value: 200000 },
-  { id: 'asset-5', clientId: 'client-2', ownerMemberId: 'fm-2-2', category: 'Bonds', name: 'Govt. of India 2030', value: 120000 },
-  { id: 'asset-8', clientId: 'client-4', ownerMemberId: 'fm-4-1', category: 'Stocks', name: 'Tata Motors', value: 250000 },
-  { id: 'asset-9', clientId: 'client-4', ownerMemberId: 'fm-4-1', category: 'Mutual Funds', name: 'SBI Small Cap', value: 125000 },
-  { id: 'asset-6', clientId: 'client-3', ownerMemberId: 'fm-3-1', category: 'PPF', name: 'Public Provident Fund', value: 85000 },
-  { id: 'asset-7', clientId: 'client-3', ownerMemberId: 'fm-3-1', category: 'Term Insurance', name: 'HDFC Click 2 Protect', value: 1000000 },
+  { id: 'asset-1', familyHeadId: 'client-1', familyHeadName: 'Bipin Hirpara', assetType: 'STOCKS', },
+  { id: 'asset-2', familyHeadId: 'client-1', familyHeadName: 'Bipin Hirpara', assetType: 'MUTUAL FUNDS', },
+  { id: 'asset-3', familyHeadId: 'client-1', familyHeadName: 'Bipin Hirpara', assetType: 'LIFE INSURANCE', },
+  { id: 'asset-4', familyHeadId: 'client-2', familyHeadName: 'Jitendra Hirpara', assetType: 'FIXED DEPOSITS', },
+  { id: 'asset-5', familyHeadId: 'client-2', familyHeadName: 'Jitendra Hirpara', assetType: 'BONDS', },
+  { id: 'asset-8', familyHeadId: 'client-4', familyHeadName: 'Jivraj Hirpara', assetType: 'STOCKS', },
+  { id: 'asset-9', familyHeadId: 'client-4', familyHeadName: 'Jivraj Hirpara', assetType: 'MUTUAL FUNDS', },
+  { id: 'asset-6', familyHeadId: 'client-3', familyHeadName: 'Ramniklal Hirpara', assetType: 'PPF', },
 ];
 
 export const documents: Document[] = [
@@ -353,7 +352,7 @@ export const getFamilyMembersForClient = (clientId: string): FamilyMember[] => {
 };
 
 export const getAssetsForClient = (clientId: string): Asset[] => {
-  return assets.filter(a => a.clientId === clientId);
+  return assets.filter(a => a.familyHeadId === clientId);
 }
 
 export const getDocumentsForClient = (clientId: string): Document[] => {
