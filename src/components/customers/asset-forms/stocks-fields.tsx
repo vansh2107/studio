@@ -12,13 +12,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 import { NomineeFields } from './nominee-fields';
 
-export function StocksFields({ control, register, errors, familyMembers, watch, setValue }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any, setValue: any }) {
+export function StocksFields({ control, register, errors, familyMembers, watch, getValues, setValue }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any; getValues: any; setValue: any; }) {
 
   const { fields: jointHolderFields, append: appendJointHolder, remove: removeJointHolder } = useFieldArray({
     control,
-    name: "stocks.jointHolders"
+    name: "jointHolders"
   });
-
+  
   return (
     <div className="space-y-6">
       <div>
@@ -27,7 +27,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
           <div>
             <Label>Name of the Holder</Label>
             <Controller
-              name="stocks.holderName"
+              name="holderName"
               control={control}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
@@ -52,7 +52,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
           <div key={field.id} className="flex items-end gap-2 mt-2">
             <div className="flex-1">
               <Label>Joint Holder {index + 1}</Label>
-               <Input {...register(`stocks.jointHolders.${index}.name`)} />
+               <Input {...register(`jointHolders.${index}.name`)} />
             </div>
             <Button type="button" variant="ghost" size="icon" onClick={() => removeJointHolder(index)}>
                 <Trash2 className="h-4 w-4 text-destructive"/>
@@ -71,32 +71,32 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>DPID</Label>
-          <Input {...register('stocks.dpId')} />
+          <Input {...register('dpId')} />
            {errors?.dpId && <p className="text-sm text-destructive">{errors.dpId.message}</p>}
         </div>
         <div>
           <Label>DP Name</Label>
-          <Input {...register('stocks.dpName')} />
+          <Input {...register('dpName')} />
            {errors?.dpName && <p className="text-sm text-destructive">{errors.dpName.message}</p>}
         </div>
         <div>
           <Label>Bank Name</Label>
-          <Input {...register('stocks.bankName')} />
+          <Input {...register('bankName')} />
            {errors?.bankName && <p className="text-sm text-destructive">{errors.bankName.message}</p>}
         </div>
         <div>
           <Label>Bank Account Number</Label>
-          <Input {...register('stocks.bankAccountNumber')} />
+          <Input {...register('bankAccountNumber')} />
            {errors?.bankAccountNumber && <p className="text-sm text-destructive">{errors.bankAccountNumber.message}</p>}
         </div>
         <div>
           <Label>Mobile Number</Label>
-          <Input type="tel" {...register('stocks.mobileNumber')} />
+          <Input type="tel" {...register('mobileNumber')} />
            {errors?.mobileNumber && <p className="text-sm text-destructive">{errors.mobileNumber.message}</p>}
         </div>
         <div>
           <Label>Email Address</Label>
-          <Input type="email" {...register('stocks.emailAddress')} />
+          <Input type="email" {...register('emailAddress')} />
            {errors?.emailAddress && <p className="text-sm text-destructive">{errors.emailAddress.message}</p>}
         </div>
       </div>
@@ -106,8 +106,11 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
       <NomineeFields
         control={control}
         register={register}
-        errors={errors.stocks?.nominees}
+        errors={errors?.nominees}
         familyMembers={familyMembers}
+        watch={watch}
+        getValues={getValues}
+        setValue={setValue}
       />
     </div>
   );

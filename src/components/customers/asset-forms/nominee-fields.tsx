@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
-export function NomineeFields({ control, register, errors, familyMembers, watch, maxNominees = 3 }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any, maxNominees?: number }) {
+export function NomineeFields({ control, register, errors, familyMembers, watch, getValues, setValue, maxNominees = 3 }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any, getValues: any, setValue: any, maxNominees?: number }) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'nominees',
@@ -35,15 +35,15 @@ export function NomineeFields({ control, register, errors, familyMembers, watch,
     if (isNaN(value) || value < 0) value = 0;
     if (value > 100) value = 100;
     
-    const tempNominees = [...(control.getValues('nominees') || [])];
+    const tempNominees = [...(getValues('nominees') || [])];
     tempNominees[index] = { ...tempNominees[index], allocation: value };
     const tempTotal = tempNominees.reduce((acc, n) => acc + (n.allocation || 0), 0);
 
     if (tempTotal <= 100) {
-        control.setValue(`nominees.${index}.allocation`, value, { shouldValidate: true });
+        setValue(`nominees.${index}.allocation`, value, { shouldValidate: true });
     } else {
         const clampedValue = value - (tempTotal - 100);
-        control.setValue(`nominees.${index}.allocation`, clampedValue < 0 ? 0 : clampedValue, { shouldValidate: true });
+        setValue(`nominees.${index}.allocation`, clampedValue < 0 ? 0 : clampedValue, { shouldValidate: true });
     }
   };
   
@@ -109,8 +109,8 @@ export function NomineeFields({ control, register, errors, familyMembers, watch,
           </div>
         ))}
         
-        {errors && errors.root && (
-            <p className="text-sm text-destructive mt-1">{errors.root.message}</p>
+        {errors && (
+            <p className="text-sm text-destructive mt-1">{errors.message}</p>
         )}
       </div>
       {fields.length < maxNominees && (
