@@ -15,7 +15,7 @@ export function JointHolderFields({ control, register, errors }: { control: any,
   return (
     <div className="space-y-2 pt-4">
       <Label>Joint Holders (Optional)</Label>
-      <div className="grid grid-cols-3 gap-3 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
         {fields.map((item, index) => (
           <div key={item.id} className="relative">
             <Input

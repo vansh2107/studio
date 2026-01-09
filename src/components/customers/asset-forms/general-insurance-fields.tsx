@@ -9,8 +9,9 @@ import { Client, FamilyMember } from '@/lib/types';
 import { useWatch } from 'react-hook-form';
 import { INSURANCE_COMPANIES } from '@/lib/constants';
 import { Combobox } from '@/components/ui/combobox';
+import { JointHolderFields } from './joint-holder-fields';
 
-export function GeneralInsuranceFields({ control, errors, familyMembers }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[] }) {
+export function GeneralInsuranceFields({ control, errors, familyMembers, register, watch, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, setValue: any }) {
 
   const selectedCategory = useWatch({
     control,
@@ -40,6 +41,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
   return (
     <div className="space-y-4">
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">General Insurance Details</h3>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <Label>Family Member</Label>
@@ -100,6 +102,11 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
                 />
                 {errors?.generalInsurance?.issuer && <p className="text-sm text-destructive">{errors.generalInsurance.issuer.message}</p>}
             </div>
+        </div>
+
+        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
              <div>
                 <Label>Plan Name</Label>
                 <Controller name="generalInsurance.planName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
@@ -159,7 +166,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
                 <Label>Price With GST</Label>
                 <Controller name="generalInsurance.priceWithGST" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 col-span-1 md:col-span-2 lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2 lg:col-span-3">
               <div>
                 <Label>Eligible Premium</Label>
                 <Controller name="generalInsurance.eligiblePremium" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />

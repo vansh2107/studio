@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Client, FamilyMember } from '@/lib/types';
+import { JointHolderFields } from './joint-holder-fields';
 
 
-export function BondFields({ control, errors, familyMembers, watch }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], watch: any }) {
+export function BondFields({ control, errors, familyMembers, watch, register, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], watch: any, register: any, setValue: any }) {
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -85,7 +86,9 @@ export function BondFields({ control, errors, familyMembers, watch }: { control:
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
           <div>
             <Label>Issuer</Label>
             <Controller name="bonds.issuer" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />

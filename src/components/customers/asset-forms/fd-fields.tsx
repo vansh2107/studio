@@ -3,10 +3,10 @@
 import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Client, FamilyMember } from '@/lib/types';
+import { JointHolderFields } from './joint-holder-fields';
 
-export function FDFields({ control, errors, familyMembers }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[] }) {
+export function FDFields({ control, errors, familyMembers, register, watch, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, setValue: any }) {
     
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -52,7 +52,7 @@ export function FDFields({ control, errors, familyMembers }: { control: any, err
                 <Controller name="fixedDeposits.fdName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
             </div>
         </div>
-
+        
         {/* ROW 2 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
              <div>
@@ -83,8 +83,10 @@ export function FDFields({ control, errors, familyMembers }: { control: any, err
             </div>
         </div>
 
+        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+
         {/* ROW 3 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4">
              <div>
                 <Label>Period (Month)</Label>
                 <Controller
