@@ -238,7 +238,8 @@ export const familyMembers: FamilyMember[] = [
     emailId: 'pushpaben.hirpara@demo.app', 
     dateOfBirth: '1990-05-12', 
     address: 'Bangalore, Karnataka',
-    panPhotoUrl: 'https://picsum.photos/seed/pan1/400/300'
+    panPhotoUrl: 'https://picsum.photos/seed/pan1/400/300',
+    aadhaarPhotoUrl: '/Aadhaar.pdf'
   },
   { id: 'fm-4-2', name: 'Ashish Hirpara', clientId: 'client-3', firstName: 'Ashish', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
   { id: 'fm-4-3', name: 'Sumita Hirpara', clientId: 'client-3', firstName: 'Sumita', lastName: 'Hirpara', relation: 'Daughter-in-law', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },

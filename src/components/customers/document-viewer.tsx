@@ -2,11 +2,19 @@
 'use client';
 
 import { Client, FamilyMember } from '@/lib/types';
-import { Trash2, Eye, X, Download } from 'lucide-react';
+import { Trash2, Eye, X, Download, FileText } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+import { cn } from '@/lib/utils';
+import { Skeleton } from '../ui/skeleton';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
 
 const DetailItem = ({ label, value }: { label: string; value?: string }) => (
   <div>
@@ -14,6 +22,24 @@ const DetailItem = ({ label, value }: { label: string; value?: string }) => (
     <p className="text-base">{value || 'N/A'}</p>
   </div>
 );
+
+const PdfPreview = ({ file, onCanvasLoad }: { file: string, onCanvasLoad?: (canvas: HTMLCanvasElement | null) => void }) => {
+  const [numPages, setNumPages] = useState<number>();
+  const [pageNumber, setPageNumber] = useState(1);
+
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
+    setNumPages(numPages);
+  }
+
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+        <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
+            <Page pageNumber={pageNumber} renderTextLayer={false} renderAnnotationLayer={false} onRenderSuccess={onCanvasLoad} className="[&>canvas]:!w-full [&>canvas]:!h-auto"/>
+        </Document>
+    </div>
+  );
+};
+
 
 // New component to handle each document slot
 const DocumentSlot = ({
@@ -31,6 +57,17 @@ const DocumentSlot = ({
   onView: () => void;
   onDownload: () => void;
 }) => {
+  const isPdf = url?.toLowerCase().endsWith('.pdf') || filename?.toLowerCase().endsWith('.pdf');
+  const [isPdfLoading, setIsPdfLoading] = useState(isPdf);
+  const [pdfThumbnail, setPdfThumbnail] = useState<string | null>(null);
+
+  const handlePdfCanvas = (canvas: HTMLCanvasElement | null) => {
+    if (canvas) {
+        setPdfThumbnail(canvas.toDataURL());
+    }
+    setIsPdfLoading(false);
+  }
+
   if (!url) {
     return <DetailItem label={label} value="Not uploaded" />;
   }
@@ -40,14 +77,41 @@ const DocumentSlot = ({
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
       <div className="mt-2 flex items-center gap-2">
         <div className="relative group w-20 h-20 rounded-md overflow-hidden border">
-          <Image
-            src={url}
-            alt={filename || label}
-            fill
-            className="object-cover"
-            data-ai-hint="document scan"
-          />
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+           {isPdf ? (
+            <>
+                {isPdfLoading && <Skeleton className="w-full h-full" />}
+                {pdfThumbnail ? (
+                    <Image
+                        src={pdfThumbnail}
+                        alt={filename || label}
+                        fill
+                        className="object-cover"
+                        data-ai-hint="document scan"
+                    />
+                ): (
+                    <div className="hidden">
+                        <PdfPreview file={url} onCanvasLoad={handlePdfCanvas} />
+                    </div>
+                )}
+                 {!pdfThumbnail && !isPdfLoading && (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                        <FileText className="h-8 w-8 text-gray-400" />
+                    </div>
+                 )}
+            </>
+           ) : (
+            <Image
+                src={url}
+                alt={filename || label}
+                fill
+                className="object-cover"
+                data-ai-hint="document scan"
+            />
+           )}
+          <div className={cn(
+            "absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center",
+             isPdfLoading && "hidden"
+          )}>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-white" onClick={onView}>
               <Eye className="h-4 w-4" />
             </Button>
@@ -151,14 +215,23 @@ export function DocumentViewer({ person }: DocumentViewerProps) {
         URL.revokeObjectURL(link.href);
     } catch (error) {
         console.error("Download failed:", error);
-        // Fallback for browsers that might have issues with the blob method
-        // or for CORS errors that weren't handled server-side.
         window.open(url, '_blank');
     }
   };
 
+  const handleView = (url?: string | null, isPdf?: boolean) => {
+      if (!url) return;
+      if (isPdf) {
+          window.open(url, '_blank');
+      } else {
+          setViewingImage(url);
+      }
+  }
+
   // Use a placeholder if the URL is not available for demonstration
   const getUrl = (url?: string | null) => url || 'https://picsum.photos/seed/doc/400/300';
+  const isAadhaarPdf = documents.aadhaar.url?.toLowerCase().endsWith('.pdf') || documents.aadhaar.name?.toLowerCase().endsWith('.pdf');
+
 
   return (
     <>
@@ -171,15 +244,15 @@ export function DocumentViewer({ person }: DocumentViewerProps) {
             label="PAN Photo"
             url={documents.pan.url ? getUrl(documents.pan.url) : null}
             filename={documents.pan.name}
-            onView={() => documents.pan.url && setViewingImage(getUrl(documents.pan.url))}
+            onView={() => handleView(getUrl(documents.pan.url))}
             onDownload={() => handleDownload(documents.pan.url, documents.pan.name)}
             onDelete={() => handleDelete('pan')}
           />
           <DocumentSlot
-            label="Aadhaar Photo"
-            url={documents.aadhaar.url ? getUrl(documents.aadhaar.url) : null}
+            label="Aadhaar Card"
+            url={documents.aadhaar.url}
             filename={documents.aadhaar.name}
-            onView={() => documents.aadhaar.url && setViewingImage(getUrl(documents.aadhaar.url))}
+            onView={() => handleView(documents.aadhaar.url, isAadhaarPdf)}
             onDownload={() => handleDownload(documents.aadhaar.url, documents.aadhaar.name)}
             onDelete={() => handleDelete('aadhaar')}
           />
@@ -187,7 +260,7 @@ export function DocumentViewer({ person }: DocumentViewerProps) {
             label="Other Document"
             url={documents.other.url ? getUrl(documents.other.url) : null}
             filename={documents.other.name}
-            onView={() => documents.other.url && setViewingImage(getUrl(documents.other.url))}
+            onView={() => handleView(getUrl(documents.other.url))}
             onDownload={() => handleDownload(documents.other.url, documents.other.name)}
             onDelete={() => handleDelete('other')}
           />
