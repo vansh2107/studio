@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -131,7 +132,9 @@ export function StocksFields({ control, register, errors, watch, setValue }: { c
                 name={`stocks.nominees.${index}.allocation`}
                 render={({ field }) => (
                   <Input 
-                    type="number" 
+                    type="number"
+                    min="0" 
+                    max="100"
                     {...field} 
                     onChange={e => field.onChange(parseFloat(e.target.value))}
                     disabled={index === 1}
@@ -167,5 +170,7 @@ export function StocksFields({ control, register, errors, watch, setValue }: { c
     </div>
   );
 }
+
+    
 
     

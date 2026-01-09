@@ -115,19 +115,19 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
             )}
              <div>
                 <Label>Sum Assured</Label>
-                <Controller name="gi_sumAssured" control={control} render={({ field }) => <Input type="number" {...field} />} />
+                <Controller name="gi_sumAssured" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
             </div>
             <div>
                 <Label>Price Without GST</Label>
-                <Controller name="gi_priceWithoutGST" control={control} render={({ field }) => <Input type="number" {...field} />} />
+                <Controller name="gi_priceWithoutGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
             </div>
             <div>
                 <Label>Price With GST</Label>
-                <Controller name="gi_priceWithGST" control={control} render={({ field }) => <Input type="number" {...field} />} />
+                <Controller name="gi_priceWithGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
             </div>
              <div>
                 <Label>Eligible Premium</Label>
-                <Controller name="gi_eligiblePremium" control={control} render={({ field }) => <Input type="number" {...field} />} />
+                <Controller name="gi_eligiblePremium" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />
             </div>
             <div>
                 <Label>Reference Agent</Label>
@@ -137,3 +137,5 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
     </div>
   );
 }
+
+    

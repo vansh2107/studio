@@ -36,7 +36,7 @@ const numberField = z.preprocess(
     const parsed = parseFloat(String(a));
     return isNaN(parsed) ? undefined : parsed;
   },
-  z.number().positive("Amount must be positive").optional()
+  z.number().nonnegative("Value must be non-negative").optional()
 );
 
 const baseTaskSchema = z.object({
@@ -53,7 +53,7 @@ const mutualFundSchema = z.object({
   service: z.string().min(1, "Service is required"),
   folioNo: z.string().min(1, "Folio No. is required"),
   nameOfAMC: z.string().min(1, "Name of AMC is required"),
-  amount: z.number().positive("Amount must be positive"),
+  amount: z.number().nonnegative("Amount must be non-negative"),
   documentStatus: z.enum(["Received", "Pending"]),
   signatureStatus: z.enum(["Done", "Pending"]),
   amcSubmissionStatus: z.enum(["Done", "Pending"]),
@@ -523,7 +523,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
               <div className="space-y-1">
                 <Label>Amount</Label>
-                <Input type="number" {...register('mutualFund.amount', { valueAsNumber: true })} />
+                <Input type="number" min="0" {...register('mutualFund.amount', { valueAsNumber: true })} />
                 {errors.mutualFund?.amount && <p className="text-sm text-destructive">{errors.mutualFund.amount.message}</p>}
               </div>
 
@@ -704,7 +704,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       </div>
                       <div className="space-y-1">
                         <Label>Maturity Amount</Label>
-                        <Input type="number" {...register('insurance.maturityAmount', { valueAsNumber: true })} />
+                        <Input type="number" min="0" {...register('insurance.maturityAmount', { valueAsNumber: true })} />
                         {errors.insurance?.maturityAmount && <p className="text-sm text-destructive">{errors.insurance.maturityAmount.message}</p>}
                       </div>
                     </>
@@ -753,7 +753,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         </div>
                         <div className="space-y-1">
                           <Label>Received Amount</Label>
-                          <Input type="number" {...register('insurance.receivedAmount', { valueAsNumber: true })} />
+                          <Input type="number" min="0" {...register('insurance.receivedAmount', { valueAsNumber: true })} />
                           {errors.insurance?.receivedAmount && <p className="text-sm text-destructive">{errors.insurance.receivedAmount.message}</p>}
                         </div>
                         <div className="space-y-1 md:col-span-2">
@@ -834,3 +834,5 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
+
+    

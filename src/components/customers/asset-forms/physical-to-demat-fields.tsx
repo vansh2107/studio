@@ -91,15 +91,18 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>Quantity</Label>
-          <Input type="number" {...register('p2d_quantity', { valueAsNumber: true })} />
+          <Input type="number" min="0" {...register('p2d_quantity', { valueAsNumber: true })} />
+          {errors.p2d_quantity && <p className="text-sm text-destructive mt-1">{errors.p2d_quantity.message}</p>}
         </div>
         <div>
           <Label>Market Price</Label>
-          <Input type="number" {...register('p2d_marketPrice', { valueAsNumber: true })} />
+          <Input type="number" min="0" {...register('p2d_marketPrice', { valueAsNumber: true })} />
+          {errors.p2d_marketPrice && <p className="text-sm text-destructive mt-1">{errors.p2d_marketPrice.message}</p>}
         </div>
         <div>
           <Label>Total Value</Label>
           <Input readOnly {...register('p2d_totalValue', { valueAsNumber: true })} />
+          {errors.p2d_totalValue && <p className="text-sm text-destructive mt-1">{errors.p2d_totalValue.message}</p>}
         </div>
       </div>
       
@@ -128,3 +131,5 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
     </div>
   );
 }
+
+    

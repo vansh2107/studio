@@ -63,17 +63,17 @@ const physicalToDematSchema = z.object({
   p2d_jointHolder3: z.string().optional(),
   p2d_companyName: z.string().optional(),
   p2d_rtaName: z.string().optional(),
-  p2d_quantity: z.number().optional(),
-  p2d_marketPrice: z.number().optional(),
-  p2d_totalValue: z.number().optional(),
+  p2d_quantity: z.number().nonnegative("Quantity cannot be negative").optional(),
+  p2d_marketPrice: z.number().nonnegative("Market Price cannot be negative").optional(),
+  p2d_totalValue: z.number().nonnegative("Total Value cannot be negative").optional(),
 });
 
 const bondSchema = z.object({
   b_isin: z.string().optional(),
   b_issuer: z.string().optional(),
-  b_bondPrice: z.number().optional(),
-  b_bondUnit: z.number().optional(),
-  b_bondAmount: z.number().optional(),
+  b_bondPrice: z.number().nonnegative("Bond Price cannot be negative").optional(),
+  b_bondUnit: z.number().int().nonnegative("Bond Unit must be a non-negative integer").optional(),
+  b_bondAmount: z.number().nonnegative("Bond Amount cannot be negative").optional(),
   b_purchaseDate: z.string().optional(),
   b_maturityDate: z.string().optional(),
   b_nomineeName: z.string().optional(),
@@ -96,8 +96,8 @@ const fdSchema = z.object({
 
 const ppfSchema = z.object({
   ppf_familyMemberName: z.string().optional(),
-  ppf_contributedAmount: z.number().optional(),
-  ppf_balance: z.number().optional(),
+  ppf_contributedAmount: z.number().nonnegative("Contributed Amount cannot be negative").optional(),
+  ppf_balance: z.number().nonnegative("Balance cannot be negative").optional(),
   ppf_bankName: z.string().optional(),
   ppf_openingDate: z.string().optional(),
   ppf_matureDate: z.string().optional(),
@@ -117,7 +117,7 @@ const stocksSchema = z.object({
         name: z.string().min(1, 'Nominee name is required'),
         relationship: z.string().min(1, 'Relationship is required'),
         allocation: z.number()
-          .min(0, 'Allocation must be positive')
+          .min(0, 'Allocation cannot be negative')
           .max(100, 'Allocation cannot exceed 100'),
         dateOfBirth: z.string().optional(),
     })).optional()
@@ -556,5 +556,7 @@ export function AddAssetModal({
     </>
   );
 }
+
+    
 
     

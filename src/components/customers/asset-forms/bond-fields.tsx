@@ -60,15 +60,18 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Bond Price</Label>
-            <Input type="number" {...register('b_bondPrice', { valueAsNumber: true })} />
+            <Input type="number" min="0" {...register('b_bondPrice', { valueAsNumber: true })} />
+            {errors.b_bondPrice && <p className="text-sm text-destructive mt-1">{errors.b_bondPrice.message}</p>}
           </div>
           <div>
             <Label>Bond Unit</Label>
-            <Input type="number" {...register('b_bondUnit', { valueAsNumber: true })} />
+            <Input type="number" min="0" step="1" {...register('b_bondUnit', { valueAsNumber: true })} />
+            {errors.b_bondUnit && <p className="text-sm text-destructive mt-1">{errors.b_bondUnit.message}</p>}
           </div>
           <div>
             <Label>Bond Amount</Label>
             <Input readOnly {...register('b_bondAmount', { valueAsNumber: true })} />
+            {errors.b_bondAmount && <p className="text-sm text-destructive mt-1">{errors.b_bondAmount.message}</p>}
           </div>
         </div>
         {/* Row 3 */}
@@ -114,3 +117,5 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
     </div>
   );
 }
+
+    
