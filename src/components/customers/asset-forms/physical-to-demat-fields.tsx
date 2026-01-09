@@ -5,35 +5,32 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
-import { Controller } from 'react-hook-form';
+import { Controller, useFieldArray } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FamilyMember } from '@/lib/types';
 
 
-export function PhysicalToDematFields({ register, errors, control, setValue, watch, unregister, familyMembers }: { register: any, errors: any, control: any, setValue: any, watch: any, unregister: any, familyMembers: FamilyMember[] }) {
+export function PhysicalToDematFields({ register, errors, control, familyMembers }: { register: any, errors: any, control: any, familyMembers: FamilyMember[] }) {
   
-  const [jointHolderCount, setJointHolderCount] = useState(0);
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "physicalToDemat.jointHolders",
+  });
 
-  const quantity = watch('physicalToDemat.quantity');
-  const marketPrice = watch('physicalToDemat.marketPrice');
+  // Watch for changes in quantity and market price to calculate total value
+  const quantity = control.watch('physicalToDemat.quantity');
+  const marketPrice = control.watch('physicalToDemat.marketPrice');
 
   useEffect(() => {
     const q = parseFloat(quantity) || 0;
     const p = parseFloat(marketPrice) || 0;
-    setValue('physicalToDemat.totalValue', q * p);
-  }, [quantity, marketPrice, setValue]);
+    control.setValue('physicalToDemat.totalValue', q * p);
+  }, [quantity, marketPrice, control]);
   
   const addJointHolder = () => {
-    if (jointHolderCount < 3) {
-      setJointHolderCount(jointHolderCount + 1);
+    if (fields.length < 3) {
+      append({ name: "" });
     }
-  };
-
-  const removeJointHolder = (index: number) => {
-    unregister(`physicalToDemat.jointHolder${index}`);
-    // This is a simple hide, for a real app you'd shift values up.
-    // To keep it simple, we just reduce the count. If a user removes #1 then adds, #2's old value will be gone.
-    setJointHolderCount(jointHolderCount - 1);
   };
 
 
@@ -109,19 +106,18 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
       {/* Dynamic Joint Holders */}
       <div className="space-y-2 pt-4">
           <Label>Joint Holders</Label>
-          {jointHolderCount > 0 && Array.from({ length: jointHolderCount }).map((_, index) => (
-              <div key={index} className="flex items-center gap-2">
+          {fields.map((item, index) => (
+              <div key={item.id} className="flex items-center gap-2">
                   <Input 
-                      {...register(`physicalToDemat.jointHolder${index + 1}`)} 
+                      {...register(`physicalToDemat.jointHolders.${index}.name`)} 
                       placeholder={`Joint Holder ${index + 1}`}
                   />
-                  {/* The remove logic is simple, just decrements count. More complex logic can be added to shift values. */}
-                  <Button type="button" variant="ghost" size="icon" onClick={() => removeJointHolder(index + 1)}>
+                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                       <Trash2 className="h-4 w-4 text-destructive"/>
                   </Button>
               </div>
           ))}
-          {jointHolderCount < 3 && (
+          {fields.length < 3 && (
             <Button type="button" variant="link" size="sm" onClick={addJointHolder}>
               <PlusCircle className="mr-2 h-4 w-4" /> Add Joint Holder
             </Button>
@@ -131,5 +127,3 @@ export function PhysicalToDematFields({ register, errors, control, setValue, wat
     </div>
   );
 }
-
-    

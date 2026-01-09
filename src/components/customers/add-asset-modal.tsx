@@ -67,7 +67,7 @@ const generalInsuranceSchema = z.object({
 });
 
 const physicalToDematSchema = z.object({
-    clientName: z.string(),
+    clientName: z.string().optional(),
     folioNumber: z.string().optional(),
     nameOnShare: z.string().optional(),
     jointHolder1: z.string().optional(),
@@ -95,7 +95,7 @@ const fdSchema = z.object({
 });
 
 const ppfSchema = z.object({
-    familyName: z.string().optional(),
+    familyMemberName: z.string().optional(),
     contributedAmount: z.number().min(0, "Value cannot be negative").optional(),
     balance: z.number().min(0, "Value cannot be negative").optional(),
     bankName: z.string().optional(),
@@ -133,6 +133,9 @@ const assetFormSchema = z.discriminatedUnion("assetType", [
   // Add fallback for types without specific validation
   baseSchema.extend({ assetType: z.literal("LIFE INSURANCE") }),
   baseSchema.extend({ assetType: z.literal("MUTUAL FUNDS") }),
+  // Catch-all for when assetType is not yet selected
+  baseSchema.extend({ assetType: z.literal("") }),
+  baseSchema.extend({ assetType: z.literal(undefined) }),
 ]);
 
 
@@ -166,11 +169,20 @@ export function AddAssetModal({
     watch,
     setValue,
     reset,
-    unregister,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(assetFormSchema),
     shouldUnregister: false,
+    defaultValues: {
+      familyHead: assetToEdit?.familyHeadId || '',
+      assetType: assetToEdit?.assetType || '',
+      bonds: assetToEdit?.bonds || {},
+      fixedDeposits: assetToEdit?.fixedDeposits || {},
+      ppf: assetToEdit?.ppf || {},
+      stocks: assetToEdit?.stocks || {},
+      physicalToDemat: assetToEdit?.physicalToDemat || {},
+      generalInsurance: assetToEdit?.generalInsurance || {},
+    },
   });
 
   const assetType = watch('assetType');
@@ -190,6 +202,25 @@ export function AddAssetModal({
         ]
       : members;
   }, [familyHeadId, familyHeads]);
+  
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name === 'assetType') {
+        // Reset other asset fields to avoid carrying over data and validation errors
+        reset({
+          familyHead: value.familyHead,
+          assetType: value.assetType,
+          bonds: {},
+          fixedDeposits: {},
+          ppf: {},
+          stocks: {},
+          physicalToDemat: {},
+          generalInsurance: {},
+        });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, reset]);
 
   /* ---------------------------- SAVE ------------------------------- */
 
@@ -246,7 +277,7 @@ export function AddAssetModal({
             <X />
           </Button>
           <h2 className="font-semibold text-lg">
-            {assetToEdit ? 'Edit Asset' : 'Add Asset'}
+            {isViewMode ? 'View Asset' : assetToEdit ? 'Edit Asset' : 'Add Asset'}
           </h2>
         </div>
 
@@ -259,7 +290,7 @@ export function AddAssetModal({
                 name="familyHead"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} disabled={!!assetToEdit} onValueChange={(value) => { field.onChange(value); setValue('assetType', getValues('assetType'), { shouldValidate: true }) }}>
+                  <Select {...field} disabled={!!assetToEdit}>
                     <SelectTrigger>
                       <SelectValue placeholder="Family Head" />
                     </SelectTrigger>
@@ -305,42 +336,39 @@ export function AddAssetModal({
             
             {assetType === 'PHYSICAL TO DEMAT' && (
               <PhysicalToDematFields
-                control={control}
                 register={register}
-                watch={watch}
-                setValue={setValue}
-                familyMembers={familyMembers}
                 errors={errors}
-                unregister={unregister}
+                control={control}
+                familyMembers={familyMembers}
               />
             )}
 
             {assetType === 'BONDS' && (
               <BondFields
-                control={control}
                 register={register}
-                watch={watch}
-                setValue={setValue}
-                familyMembers={familyMembers}
                 errors={errors}
+                control={control}
+                familyMembers={familyMembers}
+                setValue={setValue}
+                watch={watch}
               />
             )}
 
             {assetType === 'FIXED DEPOSITS' && (
               <FDFields
-                control={control}
                 register={register}
-                familyMembers={familyMembers}
                 errors={errors}
+                control={control}
+                familyMembers={familyMembers}
               />
             )}
 
             {assetType === 'PPF' && (
               <PPFFields
-                control={control}
                 register={register}
-                familyMembers={familyMembers}
                 errors={errors}
+                control={control}
+                familyMembers={familyMembers}
               />
             )}
 
@@ -348,10 +376,8 @@ export function AddAssetModal({
               <StocksFields
                 control={control}
                 register={register}
-                watch={watch}
-                setValue={setValue}
-                familyMembers={familyMembers}
                 errors={errors}
+                familyMembers={familyMembers}
               />
             )}
 
@@ -381,7 +407,7 @@ export function AddAssetModal({
         </form>
       </fieldset>
 
-      {isUploadModalOpen && (
+      {isUploadModalOpen && familyMembers.length > 0 && (
         <UploadDocModal
           member={familyMembers[0]}
           onClose={() => setIsUploadModalOpen(false)}

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useFieldArray, Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,32 +12,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 import { RELATION_OPTIONS } from '@/lib/constants';
 
-export function StocksFields({ control, register, errors, watch, setValue, familyMembers }: { control: any; register: any; errors: any; watch: any, setValue: any, familyMembers: FamilyMember[] }) {
-  const [jointHolderCount, setJointHolderCount] = useState(0);
+export function StocksFields({ control, register, errors, familyMembers }: { control: any; register: any; errors: any; familyMembers: FamilyMember[] }) {
+
+  const { fields: jointHolderFields, append: appendJointHolder, remove: removeJointHolder } = useFieldArray({
+    control,
+    name: "stocks.jointHolders"
+  });
 
   const { fields: nomineeFields, append: appendNominee, remove: removeNominee } = useFieldArray({
     control,
     name: 'stocks.nominees',
   });
 
-  const nominees = watch('stocks.nominees');
-  const firstNomineeAllocation = watch('stocks.nominees.0.allocation');
+  const nominees = control.watch('stocks.nominees');
 
   useEffect(() => {
     if (nominees?.length === 2) {
-      const firstAllocation = parseFloat(firstNomineeAllocation) || 0;
+      const firstAllocation = parseFloat(nominees[0].allocation) || 0;
       const secondAllocation = 100 - firstAllocation;
       if (secondAllocation >= 0) {
-        setValue('stocks.nominees.1.allocation', secondAllocation, { shouldValidate: true });
+        control.setValue('stocks.nominees.1.allocation', secondAllocation, { shouldValidate: true });
       }
     }
-  }, [firstNomineeAllocation, nominees?.length, setValue]);
+  }, [nominees, control]);
   
   const handleAddNominee = () => {
-    if(nominees.length < 2) {
-        const firstAllocation = parseFloat(firstNomineeAllocation) || 100;
-        const secondAllocation = 100 - firstAllocation;
-        appendNominee({ name: '', relationship: '', allocation: secondAllocation < 0 ? 0 : secondAllocation, dateOfBirth: '' });
+    if(nomineeFields.length < 3) {
+        appendNominee({ name: '', relationship: '', allocation: 0, dateOfBirth: '' });
     }
   }
 
@@ -70,24 +71,24 @@ export function StocksFields({ control, register, errors, watch, setValue, famil
             />
             {errors.stocks?.holderName && <p className="text-sm text-destructive">{errors.stocks.holderName.message}</p>}
           </div>
-          {jointHolderCount > 0 && (
-            <div>
-              <Label>Joint Holder 1</Label>
-              <Input {...register('stocks.jointHolder1')} />
-            </div>
-          )}
-          {jointHolderCount > 1 && (
-            <div>
-              <Label>Joint Holder 2</Label>
-              <Input {...register('stocks.jointHolder2')} />
-            </div>
-          )}
         </div>
-        {jointHolderCount < 2 && (
-          <Button type="button" variant="link" size="sm" onClick={() => setJointHolderCount(prev => prev + 1)}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Joint Holder
-          </Button>
-        )}
+
+        {jointHolderFields.map((field, index) => (
+          <div key={field.id} className="flex items-end gap-2 mt-2">
+            <div className="flex-1">
+              <Label>Joint Holder {index + 1}</Label>
+               <Input {...register(`stocks.jointHolders.${index}.name`)} />
+            </div>
+            <Button type="button" variant="ghost" size="icon" onClick={() => removeJointHolder(index)}>
+                <Trash2 className="h-4 w-4 text-destructive"/>
+            </Button>
+          </div>
+        ))}
+         {jointHolderFields.length < 2 && (
+            <Button type="button" variant="link" size="sm" onClick={() => appendJointHolder({ name: "" })}>
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Joint Holder
+            </Button>
+          )}
       </div>
 
       <Separator />
@@ -176,9 +177,7 @@ export function StocksFields({ control, register, errors, watch, setValue, famil
               />
             </div>
             <div>
-              <Label>
-                {index === 1 ? "Allocation % (Auto)" : "Allocation %"}
-              </Label>
+              <Label>Allocation %</Label>
               <Controller
                 control={control}
                 name={`stocks.nominees.${index}.allocation`}
@@ -189,14 +188,12 @@ export function StocksFields({ control, register, errors, watch, setValue, famil
                     max="100"
                     {...field} 
                     onChange={e => field.onChange(parseFloat(e.target.value))}
-                    disabled={index === 1}
                   />
                 )}
               />
                {errors.stocks?.nominees?.[index]?.allocation && (
                 <p className="text-xs text-destructive mt-1">{errors.stocks?.nominees?.[index]?.allocation?.message}</p>
               )}
-               {index === 1 && <p className="text-xs text-muted-foreground mt-1">Auto-calculated.</p>}
             </div>
              <div>
               <Label>Date of Birth</Label>
@@ -207,13 +204,12 @@ export function StocksFields({ control, register, errors, watch, setValue, famil
               variant="ghost"
               size="icon"
               onClick={() => removeNominee(index)}
-              disabled={nomineeFields.length === 1}
             >
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
           </div>
         ))}
-        {nomineeFields.length < 2 && (
+        {nomineeFields.length < 3 && (
           <Button type="button" variant="outline" size="sm" onClick={handleAddNominee}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Nominee
           </Button>
