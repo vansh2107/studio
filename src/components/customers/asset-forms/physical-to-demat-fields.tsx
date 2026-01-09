@@ -10,45 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 
 
-export function PhysicalToDematFields({ register, errors, control, familyMembers, watch, setValue }: { register: any, errors: any, control: any, familyMembers: FamilyMember[], watch: any, setValue: any }) {
+export function PhysicalToDematFields({ register, errors, control, familyMembers }: { register: any, errors: any, control: any, familyMembers: FamilyMember[] }) {
   
   const { fields, append, remove } = useFieldArray({
     control,
     name: "physicalToDemat.jointHolders",
   });
 
-  const quantity = watch('physicalToDemat.quantity');
-  const marketPrice = watch('physicalToDemat.marketPrice');
-
-  useEffect(() => {
-    const q = parseFloat(quantity) || 0;
-    const p = parseFloat(marketPrice) || 0;
-    setValue('physicalToDemat.totalValue', q * p, { shouldValidate: true });
-  }, [quantity, marketPrice, setValue]);
-  
-  const addJointHolder = () => {
-    if (fields.length < 3) {
-      append({ name: "" });
-    }
-  };
-
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
       e.preventDefault();
-    }
-  };
-
-  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
-    const { value } = e.target;
-    if (value === '') {
-      setValue(fieldName, '', { shouldValidate: true });
-      return;
-    }
-    const numValue = Number(value);
-    if (numValue < 0) {
-      setValue(fieldName, '0', { shouldValidate: true });
-    } else {
-      setValue(fieldName, value, { shouldValidate: true });
     }
   };
 
@@ -80,6 +51,27 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
             {errors?.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
         </div>
         <div>
+          <Label>Mobile Number</Label>
+          <Controller
+            name="physicalToDemat.mobileNumber"
+            control={control}
+            render={({ field }) => <Input type="tel" maxLength={10} onKeyDown={handleNumericKeyDown} {...field} value={field.value || ''} />}
+          />
+          {errors?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.mobileNumber.message}</p>}
+        </div>
+        <div>
+          <Label>Email Address</Label>
+          <Controller
+            name="physicalToDemat.emailAddress"
+            control={control}
+            render={({ field }) => <Input type="email" {...field} value={field.value || ''} />}
+          />
+          {errors?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.emailAddress.message}</p>}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
           <Label>Name on Share</Label>
           <Input {...register('physicalToDemat.nameOnShare')} />
         </div>
@@ -103,12 +95,12 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>Quantity</Label>
-          <Input type="number" min="0" {...register('physicalToDemat.quantity')} onKeyDown={handleNumericKeyDown} onChange={(e) => handleNumericChange(e, 'physicalToDemat.quantity')} />
+          <Controller name="physicalToDemat.quantity" control={control} render={({ field }) => <Input type="number" min="0" onKeyDown={handleNumericKeyDown} {...field} value={field.value || ''} />} />
           {errors?.quantity && <p className="text-sm text-destructive mt-1">{errors.quantity.message}</p>}
         </div>
         <div>
           <Label>Market Price</Label>
-          <Input type="number" min="0" step="any" {...register('physicalToDemat.marketPrice')} onKeyDown={handleNumericKeyDown} onChange={(e) => handleNumericChange(e, 'physicalToDemat.marketPrice')} />
+          <Controller name="physicalToDemat.marketPrice" control={control} render={({ field }) => <Input type="number" min="0" step="any" onKeyDown={handleNumericKeyDown} {...field} value={field.value || ''} />} />
           {errors?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.marketPrice.message}</p>}
         </div>
         <div>
@@ -134,7 +126,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
                   </div>
               ))}
               {fields.length < 3 && (
-                <Button type="button" variant="link" size="sm" onClick={addJointHolder}>
+                <Button type="button" variant="link" size="sm" onClick={() => append({ name: "" })}>
                   <PlusCircle className="mr-2 h-4 w-4" /> Add
                 </Button>
               )}

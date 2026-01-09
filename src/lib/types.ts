@@ -197,11 +197,11 @@ export interface GeneralInsuranceDetails {
 
 export interface PhysicalToDematDetails {
     clientName: string;
+    mobileNumber: string;
+    emailAddress?: string;
     folioNumber?: string;
     nameOnShare?: string;
-    jointHolder1?: string;
-    jointHolder2?: string;
-    jointHolder3?: string;
+    jointHolders?: { name: string }[];
     companyName?: string;
     rtaName?: string;
     quantity?: number;
@@ -210,6 +210,9 @@ export interface PhysicalToDematDetails {
 }
 
 export interface BondDetails {
+    familyMember?: string;
+    mobileNumber: string;
+    emailAddress?: string;
     isin?: string;
     issuer?: string;
     bondPrice?: number;
@@ -217,13 +220,14 @@ export interface BondDetails {
     bondAmount?: number;
     purchaseDate?: string;
     maturityDate?: string;
-    nomineeName?: string;
-    familyMember?: string;
+    nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
 }
 
 export interface FDDetails {
     companyName?: string;
     investorName?: string;
+    mobileNumber: string;
+    emailAddress?: string;
     fdName?: string;
     fdNumber?: string;
     depositedAmount?: string;
@@ -233,33 +237,29 @@ export interface FDDetails {
     maturityAmount?: string;
     purchaseDate?: string;
     maturityDate?: string;
+    nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
 }
 
 export interface PPFDetails {
-    familyName?: string;
+    familyMemberName?: string;
     contributedAmount?: number;
     balance?: number;
     bankName?: string;
     openingDate?: string;
     matureDate?: string;
+    nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
 }
 
 export interface StocksDetails {
     holderName: string;
-    jointHolder1?: string;
-    jointHolder2?: string;
+    jointHolders?: { name: string }[];
     dpId: string;
     dpName: string;
     bankName: string;
     bankAccountNumber: string;
     mobileNumber: string;
     emailAddress?: string;
-    nominees?: {
-        name: string;
-        relationship: string;
-        allocation: number;
-        dateOfBirth?: string;
-    }[];
+    nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
 }
 
 

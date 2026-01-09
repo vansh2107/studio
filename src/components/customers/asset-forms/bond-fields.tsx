@@ -8,16 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Client, FamilyMember } from '@/lib/types';
 
 
-export function BondFields({ control, errors, familyMembers, setValue, watch }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], setValue: any, watch: any }) {
-  
-  const bondPrice = watch('bondPrice');
-  const bondUnit = watch('bondUnit');
-
-  useEffect(() => {
-    const price = parseFloat(bondPrice) || 0;
-    const unit = parseInt(bondUnit, 10) || 0;
-    setValue('bondAmount', price * unit, { shouldValidate: true });
-  }, [bondPrice, bondUnit, setValue]);
+export function BondFields({ control, errors, familyMembers }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[] }) {
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -48,7 +39,7 @@ export function BondFields({ control, errors, familyMembers, setValue, watch }: 
           <div>
               <Label>Family Member</Label>
               <Controller
-                  name="familyMember"
+                  name="bonds.familyMember"
                   control={control}
                   render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
@@ -67,29 +58,58 @@ export function BondFields({ control, errors, familyMembers, setValue, watch }: 
               />
           </div>
           <div>
+            <Label>Mobile Number</Label>
+            <Controller
+              name="bonds.mobileNumber"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  type="tel"
+                  maxLength={10}
+                  onKeyDown={handleNumericKeyDown}
+                  {...field}
+                  value={field.value || ''}
+                />
+              )}
+            />
+            {errors?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.mobileNumber.message}</p>}
+          </div>
+          <div>
+            <Label>Email Address</Label>
+            <Controller
+              name="bonds.emailAddress"
+              control={control}
+              render={({ field }) => <Input type="email" {...field} value={field.value || ''} />}
+            />
+            {errors?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.emailAddress.message}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
             <Label>Issuer</Label>
-            <Controller name="issuer" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
+            <Controller name="bonds.issuer" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
           </div>
           <div>
             <Label>ISIN Number</Label>
-            <Controller name="isin" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
+            <Controller name="bonds.isin" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
           </div>
         </div>
         {/* Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Bond Price</Label>
-            <Controller name="bondPrice" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
+            <Controller name="bonds.bondPrice" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             {errors?.bondPrice && <p className="text-sm text-destructive mt-1">{errors.bondPrice.message}</p>}
           </div>
           <div>
             <Label>Bond Unit</Label>
-            <Controller name="bondUnit" control={control} render={({ field }) => <Input type="number" min="0" step="1" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
+            <Controller name="bonds.bondUnit" control={control} render={({ field }) => <Input type="number" min="0" step="1" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             {errors?.bondUnit && <p className="text-sm text-destructive mt-1">{errors.bondUnit.message}</p>}
           </div>
           <div>
             <Label>Bond Amount</Label>
-            <Controller name="bondAmount" control={control} render={({ field }) => <Input readOnly {...field} value={field.value || ''} />} />
+            <Controller name="bonds.bondAmount" control={control} render={({ field }) => <Input readOnly {...field} value={field.value || ''} />} />
             {errors?.bondAmount && <p className="text-sm text-destructive mt-1">{errors.bondAmount.message}</p>}
           </div>
         </div>
@@ -97,11 +117,11 @@ export function BondFields({ control, errors, familyMembers, setValue, watch }: 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Purchase Date</Label>
-            <Controller name="purchaseDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+            <Controller name="bonds.purchaseDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
           </div>
           <div>
             <Label>Maturity Date</Label>
-            <Controller name="maturityDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+            <Controller name="bonds.maturityDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
           </div>
         </div>
       </div>

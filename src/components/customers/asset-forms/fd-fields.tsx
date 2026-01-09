@@ -63,6 +63,31 @@ export function FDFields({ control, errors, familyMembers }: { control: any, err
                 />
             </div>
         </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <Label>Mobile Number</Label>
+                <Controller
+                    name="fixedDeposits.mobileNumber"
+                    control={control}
+                    render={({ field }) => (
+                        <Input type="tel" maxLength={10} onKeyDown={handleNumericKeyDown} {...field} value={field.value || ''} />
+                    )}
+                />
+                 {errors?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.mobileNumber.message}</p>}
+            </div>
+            <div>
+                <Label>Email Address</Label>
+                <Controller
+                    name="fixedDeposits.emailAddress"
+                    control={control}
+                    render={({ field }) => (
+                        <Input type="email" {...field} value={field.value || ''} />
+                    )}
+                />
+                 {errors?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.emailAddress.message}</p>}
+            </div>
+        </div>
 
         {/* Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

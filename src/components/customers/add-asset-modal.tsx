@@ -75,6 +75,8 @@ const generalInsuranceSchema = z.object({
 
 const physicalToDematSchema = z.object({
   clientName: z.string().min(1, "Client name is required."),
+  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]+$/, "Mobile number must contain only digits"),
+  emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
   nameOnShare: z.string().optional(),
   folioNumber: z.string().optional(),
   companyName: z.string().optional(),
@@ -87,6 +89,8 @@ const physicalToDematSchema = z.object({
 
 const bondsSchema = z.object({
   familyMember: z.string().min(1, "Family member is required."),
+  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]+$/, "Mobile number must contain only digits"),
+  emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
   issuer: z.string().min(1, "Issuer is required."),
   isin: z.string().optional(),
   bondPrice: z.preprocess((a) => parseFloat(String(a)), z.number().min(0)),
@@ -100,6 +104,8 @@ const bondsSchema = z.object({
 const fdSchema = z.object({
   companyName: z.string().min(1, "Company/Bank Name is required."),
   investorName: z.string().min(1, "Investor name is required"),
+  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]+$/, "Mobile number must contain only digits"),
+  emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
   fdName: z.string().optional(),
   fdNumber: z.string().optional(),
   depositedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
@@ -270,18 +276,6 @@ export function AddAssetModal({
 
   if (!isOpen) return null;
 
-  const getNomineePath = (type: AssetType | undefined) => {
-    if (!type) return 'nominees';
-    switch (type) {
-      case 'GENERAL INSURANCE': return 'generalInsurance.nominees';
-      case 'BONDS': return 'bonds.nominees';
-      case 'FIXED DEPOSITS': return 'fixedDeposits.nominees';
-      case 'PPF': return 'ppf.nominees';
-      case 'STOCKS': return 'stocks.nominees';
-      default: return 'nominees';
-    }
-  };
-
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
@@ -360,32 +354,31 @@ export function AddAssetModal({
               {assetType === 'GENERAL INSURANCE' && (
                 <>
                   <GeneralInsuranceFields control={control} register={register} errors={errors?.generalInsurance} familyMembers={familyMembers} />
-                  <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldArrayName={getNomineePath(assetType)} />
+                  <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
-              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors?.physicalToDemat} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
+              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors?.physicalToDemat} familyMembers={familyMembers} />}
               {assetType === 'BONDS' && (
                 <>
-                  <BondFields control={control} errors={errors?.bonds} familyMembers={familyMembers} watch={watch} setValue={setValue} />
-                  <NomineeFields control={control} errors={errors?.bonds?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldArrayName={getNomineePath(assetType)} />
+                  <BondFields control={control} errors={errors?.bonds} familyMembers={familyMembers} />
+                  <NomineeFields control={control} errors={errors?.bonds?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
               {assetType === 'FIXED DEPOSITS' && (
                  <>
                   <FDFields control={control} errors={errors?.fixedDeposits} familyMembers={familyMembers} />
-                  <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldArrayName={getNomineePath(assetType)} />
+                  <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
               {assetType === 'PPF' && (
                 <>
                   <PPFFields control={control} errors={errors?.ppf} familyMembers={familyMembers} />
-                  <NomineeFields control={control} errors={errors?.ppf?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldArrayName={getNomineePath(assetType)} />
+                  <NomineeFields control={control} errors={errors?.ppf?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
               {assetType === 'STOCKS' && (
                  <>
                   <StocksFields control={control} register={register} errors={errors?.stocks} familyMembers={familyMembers} />
-                  <NomineeFields control={control} errors={errors?.stocks?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldArrayName={getNomineePath(assetType)} />
                  </>
               )}
               
