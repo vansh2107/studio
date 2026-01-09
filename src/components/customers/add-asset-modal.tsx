@@ -36,7 +36,6 @@ const numberField = z.preprocess(
     z.number().min(0, "Value cannot be negative").optional()
 );
 
-// Individual schemas for each asset type
 const baseAssetSchema = z.object({
   familyHead: z.string().min(1, 'Family Head is required'),
   assetType: z.string().min(1, 'Asset Type is required'),
@@ -347,7 +346,7 @@ export function AddAssetModal({
             {assetType === 'GENERAL INSURANCE' && (
               <GeneralInsuranceFields
                 control={control}
-                errors={(errors as any)?.generalInsurance}
+                errors={errors}
                 familyMembers={familyMembers}
               />
             )}

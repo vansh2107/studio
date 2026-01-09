@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 
 
-export function PhysicalToDematFields({ register, errors, control, familyMembers }: { register: any, errors: any, control: any, familyMembers: FamilyMember[] }) {
+export function PhysicalToDematFields({ register, errors, control, familyMembers, watch, setValue }: { register: any, errors: any, control: any, familyMembers: FamilyMember[], watch: any, setValue: any }) {
   
   const { fields, append, remove } = useFieldArray({
     control,
@@ -18,14 +18,14 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
   });
 
   // Watch for changes in quantity and market price to calculate total value
-  const quantity = control.watch('physicalToDemat.quantity');
-  const marketPrice = control.watch('physicalToDemat.marketPrice');
+  const quantity = watch('physicalToDemat.quantity');
+  const marketPrice = watch('physicalToDemat.marketPrice');
 
   useEffect(() => {
     const q = parseFloat(quantity) || 0;
     const p = parseFloat(marketPrice) || 0;
-    control.setValue('physicalToDemat.totalValue', q * p);
-  }, [quantity, marketPrice, control]);
+    setValue('physicalToDemat.totalValue', q * p);
+  }, [quantity, marketPrice, setValue]);
   
   const addJointHolder = () => {
     if (fields.length < 3) {
