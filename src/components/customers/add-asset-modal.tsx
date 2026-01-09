@@ -15,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Loader2, X, Upload } from 'lucide-react';
 import { Client, FamilyMember, Asset } from '@/lib/types';
 import { familyMembers as mockFamilyMembers } from '@/lib/mock-data';
@@ -30,147 +29,129 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { UploadDocModal } from '../doc-vault/upload-doc-modal';
 
-// Base schema for the top-level fields
-const baseAssetSchema = z.object({
-  familyHead: z.string().min(1, 'Family head is required'),
-  assetType: z.string().min(1, 'Asset type is required'),
-});
+/* ----------------------------- SCHEMAS ----------------------------- */
 
-// Schemas for each asset type
-const generalInsuranceSchema = z.object({
-  gi_familyMember: z.string().optional(),
-  gi_category: z.string().optional(),
-  gi_issuer: z.string().min(1, 'Issuer is required'),
-  gi_planName: z.string().optional(),
-  gi_policyNumber: z.string().optional(),
-  gi_policyType: z.string().optional(),
-  gi_policyStartDate: z.string().optional(),
-  gi_policyIssueDate: z.string().optional(),
-  gi_policyEndDate: z.string().optional(),
-  gi_vehicleRegNumber: z.string().optional(),
-  gi_sumAssured: z.string().min(0, "Value cannot be negative").optional(),
-  gi_priceWithoutGST: z.string().min(0, "Value cannot be negative").optional(),
-  gi_priceWithGST: z.string().min(0, "Value cannot be negative").optional(),
-  gi_eligiblePremium: z.string().min(0, "Value cannot be negative").optional(),
-  gi_referenceAgent: z.string().optional(),
-});
-
-const physicalToDematSchema = z.object({
-  p2d_clientName: z.string().min(1, "Client Name is required"),
-  p2d_folioNumber: z.string().optional(),
-  p2d_nameOnShare: z.string().optional(),
-  p2d_jointHolder1: z.string().optional(),
-  p2d_jointHolder2: z.string().optional(),
-  p2d_jointHolder3: z.string().optional(),
-  p2d_companyName: z.string().optional(),
-  p2d_rtaName: z.string().optional(),
-  p2d_quantity: z.number().nonnegative("Quantity cannot be negative").optional(),
-  p2d_marketPrice: z.number().nonnegative("Market Price cannot be negative").optional(),
-  p2d_totalValue: z.number().nonnegative("Total Value cannot be negative").optional(),
+const baseSchema = z.object({
+  familyHead: z.string().min(1),
+  assetType: z.string().min(1),
 });
 
 const bondSchema = z.object({
-  b_isin: z.string().optional(),
-  b_issuer: z.string().optional(),
-  b_bondPrice: z.number().nonnegative("Bond Price cannot be negative").optional(),
-  b_bondUnit: z.number().int().nonnegative("Bond Unit must be a non-negative integer").optional(),
-  b_bondAmount: z.number().nonnegative("Bond Amount cannot be negative").optional(),
-  b_purchaseDate: z.string().optional(),
-  b_maturityDate: z.string().optional(),
-  b_nomineeName: z.string().optional(),
-  b_familyMember: z.string().optional(),
+  isin: z.string().optional(),
+  issuer: z.string().optional(),
+  bondPrice: z.number().nonnegative().optional(),
+  bondUnit: z.number().nonnegative().optional(),
+  bondAmount: z.number().nonnegative().optional(),
+  purchaseDate: z.string().optional(),
+  maturityDate: z.string().optional(),
+  nomineeName: z.string().optional(),
+  familyMember: z.string().optional(),
+});
+
+const generalInsuranceSchema = z.object({
+    familyMember: z.string().optional(),
+    category: z.string().optional(),
+    issuer: z.string().min(1, "Issuer is required."),
+    planName: z.string().optional(),
+    policyNumber: z.string().optional(),
+    policyType: z.string().optional(),
+    policyStartDate: z.string().optional(),
+    policyIssueDate: z.string().optional(),
+    policyEndDate: z.string().optional(),
+    vehicleRegNumber: z.string().optional(),
+    sumAssured: z.string().optional(),
+    priceWithoutGST: z.string().optional(),
+    priceWithGST: z.string().optional(),
+    eligiblePremium: z.string().optional(),
+    referenceAgent: z.string().optional(),
+});
+
+const physicalToDematSchema = z.object({
+    clientName: z.string(),
+    folioNumber: z.string().optional(),
+    nameOnShare: z.string().optional(),
+    jointHolder1: z.string().optional(),
+    jointHolder2: z.string().optional(),
+    jointHolder3: z.string().optional(),
+    companyName: z.string().optional(),
+    rtaName: z.string().optional(),
+    quantity: z.number().min(0, "Value cannot be negative").optional(),
+    marketPrice: z.number().min(0, "Value cannot be negative").optional(),
+    totalValue: z.number().min(0, "Value cannot be negative").optional(),
 });
 
 const fdSchema = z.object({
-  fd_companyName: z.string().optional(),
-  fd_investorName: z.string().optional(),
-  fd_fdName: z.string().optional(),
-  fd_fdNumber: z.string().optional(),
-  fd_depositedAmount: z.string().optional(),
-  fd_periodMonth: z.string().optional(),
-  fd_periodDays: z.string().optional(),
-  fd_interestRate: z.string().optional(),
-  fd_maturityAmount: z.string().optional(),
-  fd_purchaseDate: z.string().optional(),
-  fd_maturityDate: z.string().optional(),
+    companyName: z.string().optional(),
+    investorName: z.string().optional(),
+    fdName: z.string().optional(),
+    fdNumber: z.string().optional(),
+    depositedAmount: z.string().optional(),
+    periodMonth: z.string().optional(),
+    periodDays: z.string().optional(),
+    interestRate: z.string().optional(),
+    maturityAmount: z.string().optional(),
+    purchaseDate: z.string().optional(),
+    maturityDate: z.string().optional(),
 });
 
 const ppfSchema = z.object({
-  ppf_familyMemberName: z.string().optional(),
-  ppf_contributedAmount: z.number().nonnegative("Contributed Amount cannot be negative").optional(),
-  ppf_balance: z.number().nonnegative("Balance cannot be negative").optional(),
-  ppf_bankName: z.string().optional(),
-  ppf_openingDate: z.string().optional(),
-  ppf_matureDate: z.string().optional(),
+    familyName: z.string().optional(),
+    contributedAmount: z.number().min(0, "Value cannot be negative").optional(),
+    balance: z.number().min(0, "Value cannot be negative").optional(),
+    bankName: z.string().optional(),
+    openingDate: z.string().optional(),
+    matureDate: z.string().optional(),
 });
 
 const stocksSchema = z.object({
-  holderName: z.string().min(1, 'Holder name is required'),
-  jointHolder1: z.string().optional(),
-  jointHolder2: z.string().optional(),
-  dpId: z.string().min(1, 'DPID is required'),
-  dpName: z.string().min(1, 'DP Name is required'),
-  bankName: z.string().min(1, 'Bank Name is required'),
-  bankAccountNumber: z.string().min(1, 'Bank Account Number is required'),
-  mobileNumber: z.string().min(10, 'Mobile number must be at least 10 digits'),
-  emailAddress: z.string().email('Invalid email address').optional().or(z.literal('')),
-  nominees: z.array(z.object({
-      name: z.string().min(1, 'Nominee name is required'),
-      relationship: z.string().min(1, 'Relationship is required'),
-      allocation: z.number()
-        .min(0, 'Allocation must be between 0 and 100')
-        .max(100, 'Allocation must be between 0 and 100'),
-      dateOfBirth: z.string().optional(),
-  })).min(1),
+    holderName: z.string(),
+    jointHolder1: z.string().optional(),
+    jointHolder2: z.string().optional(),
+    dpId: z.string(),
+    dpName: z.string(),
+    bankName: z.string(),
+    bankAccountNumber: z.string(),
+    mobileNumber: z.string(),
+    emailAddress: z.string().optional(),
+    nominees: z.array(z.object({
+        name: z.string(),
+        relationship: z.string(),
+        allocation: z.number().min(0).max(100),
+        dateOfBirth: z.string().optional(),
+    })).optional(),
 });
 
-// Create a map of schemas for easy lookup
-const assetTypeSchemas = {
-  'GENERAL INSURANCE': generalInsuranceSchema,
-  'PHYSICAL TO DEMAT': physicalToDematSchema,
-  'BONDS': bondSchema,
-  'FIXED DEPOSITS': fdSchema,
-  'PPF': ppfSchema,
-  'STOCKS': stocksSchema,
-};
-
-// Dynamic schema that validates based on the selected asset type
-const assetFormSchema = z.intersection(
-  baseAssetSchema,
-  z.object({
-    generalInsurance: generalInsuranceSchema.optional(),
-    physicalToDemat: physicalToDematSchema.optional(),
-    bonds: bondSchema.optional(),
-    fixedDeposits: fdSchema.optional(),
-    ppf: ppfSchema.optional(),
-    stocks: stocksSchema.optional(),
-  })
-).superRefine((data, ctx) => {
-  const assetType = data.assetType as keyof typeof assetTypeSchemas;
-  if (assetType && assetTypeSchemas[assetType]) {
-    const schemaToValidate = assetTypeSchemas[assetType];
-    const result = schemaToValidate.safeParse(data);
-    if (!result.success) {
-      result.error.errors.forEach((error) => {
-        ctx.addIssue({
-          ...error,
-          path: error.path,
-        });
-      });
+// Dynamic schema based on assetType
+const assetFormSchema = baseSchema.superRefine((data, ctx) => {
+    switch (data.assetType) {
+        case 'BONDS':
+            bondSchema.parse(data);
+            break;
+        case 'FIXED DEPOSITS':
+            fdSchema.parse(data);
+            break;
+        case 'PPF':
+            ppfSchema.parse(data);
+            break;
+        case 'STOCKS':
+            stocksSchema.parse(data);
+            break;
+        case 'PHYSICAL TO DEMAT':
+            physicalToDematSchema.parse(data);
+            break;
+        case 'GENERAL INSURANCE':
+            generalInsuranceSchema.parse(data);
+            break;
+        default:
+            // No extra validation for other types
+            break;
     }
-  }
 });
 
-type AssetFormData = z.infer<typeof assetFormSchema>;
 
-interface AddAssetModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  familyHeads: Client[];
-  onSave: (asset: Asset) => void;
-  assetToEdit?: Asset | null;
-  isViewMode?: boolean;
-}
+type FormData = z.infer<typeof assetFormSchema>;
+
+/* --------------------------- COMPONENT ----------------------------- */
 
 export function AddAssetModal({
   isOpen,
@@ -179,258 +160,248 @@ export function AddAssetModal({
   onSave,
   assetToEdit,
   isViewMode = false,
-}: AddAssetModalProps) {
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  familyHeads: Client[];
+  onSave: (asset: Asset) => void;
+  assetToEdit?: Asset | null;
+  isViewMode?: boolean;
+}) {
+  const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const { toast } = useToast();
 
   const {
+    control,
     register,
     handleSubmit,
-    control,
     watch,
     setValue,
     reset,
     unregister,
     formState: { errors },
-  } = useForm<AssetFormData>({
+  } = useForm<FormData>({
     resolver: zodResolver(assetFormSchema),
-    defaultValues: {
-      familyHead: '',
-      assetType: '',
-      stocks: {
-        nominees: [{ name: '', relationship: '', allocation: 100, dateOfBirth: '' }]
-      }
-    },
+    shouldUnregister: true,
   });
 
-  const selectedFamilyHead = watch('familyHead');
-  const selectedAssetType = watch('assetType');
+  const assetType = watch('assetType');
+  const familyHeadId = watch('familyHead');
 
-  useEffect(() => {
-    if (assetToEdit) {
-      const defaultVals: any = {
-          familyHead: assetToEdit.familyHeadId,
-          assetType: assetToEdit.assetType,
-          ...assetToEdit.generalInsurance,
-          ...assetToEdit.physicalToDemat,
-          ...assetToEdit.bonds,
-          ...assetToEdit.fixedDeposits,
-          ...assetToEdit.ppf,
-          stocks: assetToEdit.stocks,
-      };
-      reset(defaultVals);
-    } else {
-        // Reset to default when creating a new asset
-         reset({
-            familyHead: '',
-            assetType: '',
-            stocks: {
-                holderName: '',
-                jointHolder1: '',
-                jointHolder2: '',
-                dpId: '',
-                dpName: '',
-                bankName: '',
-                bankAccountNumber: '',
-                mobileNumber: '',
-                emailAddress: '',
-                nominees: [{ name: '', relationship: '', allocation: 100, dateOfBirth: '' }]
-            }
-        });
-    }
-  }, [assetToEdit, reset]);
+  /* ------------------------- FAMILY MEMBERS ------------------------ */
 
   const familyMembers = useMemo(() => {
-    if (!selectedFamilyHead) return [];
-    const head = familyHeads.find(fh => fh.id === selectedFamilyHead);
-    const members = mockFamilyMembers.filter(
-      (fm) => fm.clientId === selectedFamilyHead
-    );
-    // Combine head and members for dropdowns
-    const allMembers = head ? [
-        { id: head.id, name: `${head.firstName} ${head.lastName} (Head)` } as unknown as FamilyMember, 
-        ...members.map(m => ({ ...m, name: `${m.firstName} ${m.lastName} (${m.relation})` }))
-    ] : members;
+    if (!familyHeadId) return [];
+    const head = familyHeads.find(h => h.id === familyHeadId);
+    const members = mockFamilyMembers.filter(m => m.clientId === familyHeadId);
 
-    return allMembers;
-  }, [selectedFamilyHead, familyHeads]);
-  
-  if (!isOpen) return null;
+    return head
+      ? [
+          { id: head.id, name: `${head.firstName} ${head.lastName} (Head)` } as FamilyMember,
+          ...members,
+        ]
+      : members;
+  }, [familyHeadId, familyHeads]);
 
-  const handleSave = (data: AssetFormData) => {
+  /* ---------------------------- SAVE ------------------------------- */
+
+  const onSubmit = (data: FormData) => {
     setIsSaving(true);
 
-    const familyHead = familyHeads.find(h => h.id === data.familyHead);
-    if (!familyHead) {
-        toast({ title: "Error", description: "Selected family head not found.", variant: 'destructive'});
-        setIsSaving(false);
-        return;
-    }
-    
-    const newAsset: Asset = {
-        id: assetToEdit?.id || `asset-${Date.now()}`,
-        familyHeadId: familyHead.id,
-        familyHeadName: `${familyHead.firstName} ${familyHead.lastName}`,
-        assetType: data.assetType as Asset['assetType'],
-        generalInsurance: data.assetType === 'GENERAL INSURANCE' ? data.generalInsurance : undefined,
-        physicalToDemat: data.assetType === 'PHYSICAL TO DEMAT' ? data.physicalToDemat : undefined,
-        bonds: data.assetType === 'BONDS' ? data.bonds : undefined,
-        fixedDeposits: data.assetType === 'FIXED DEPOSITS' ? data.fixedDeposits : undefined,
-        ppf: data.assetType === 'PPF' ? data.ppf : undefined,
-        stocks: data.assetType === 'STOCKS' ? data.stocks : undefined,
+    const head = familyHeads.find(h => h.id === data.familyHead);
+    if (!head) return;
+
+    const asset: Asset = {
+      id: assetToEdit?.id ?? `asset-${Date.now()}`,
+      familyHeadId: head.id,
+      familyHeadName: head.name,
+      assetType: data.assetType as Asset['assetType'],
+      bonds: data.assetType === 'BONDS' ? data.bonds : undefined,
+      fixedDeposits: data.assetType === 'FIXED DEPOSITS' ? data.fixedDeposits : undefined,
+      ppf: data.assetType === 'PPF' ? data.ppf : undefined,
+      stocks: data.assetType === 'STOCKS' ? data.stocks : undefined,
+      physicalToDemat:
+        data.assetType === 'PHYSICAL TO DEMAT' ? data.physicalToDemat : undefined,
+      generalInsurance:
+        data.assetType === 'GENERAL INSURANCE' ? data.generalInsurance : undefined,
     };
-    
+
     setTimeout(() => {
-      onSave(newAsset);
+      onSave(asset);
       setIsSaving(false);
-    }, 1000);
-  };
-  
-  const handleSaveUploads = (uploadedFiles: { category: string; file: File }[]) => {
-    toast({ title: 'Success', description: `${uploadedFiles.length} document(s) have been "uploaded".` });
-    setIsUploadModalOpen(false);
+      toast({ title: 'Saved', description: 'Asset saved (prototype)' });
+    }, 500);
   };
 
-  const formTitle = isViewMode ? "View Asset" : (assetToEdit ? "Edit Asset" : "Add New Asset");
-  const formDescription = isViewMode ? "Viewing asset details." : "Select a family and asset type to begin.";
+  if (!isOpen) return null;
 
+  /* ----------------------------- UI ------------------------------- */
 
   return (
-    <>
-      <div
-        className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <fieldset
+        disabled={isViewMode}
+        className={cn(
+          'bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh]',
+          assetType ? 'w-4/5' : 'w-2/5'
+        )}
+        onClick={e => e.stopPropagation()}
       >
-        <fieldset
-          disabled={isViewMode}
-          className={cn(
-            "bg-card rounded-xl shadow-lg border relative flex flex-col max-w-[90vw] max-h-[90vh]",
-            selectedAssetType ? "w-4/5" : "w-2/5"
-          )}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="p-6 flex-shrink-0 relative border-b">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="absolute top-4 right-4 z-10 close-icon"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            
-            <h2 className="text-lg font-semibold">{formTitle}</h2>
-            <p className="text-sm text-muted-foreground">{formDescription}</p>
-          </div>
-
-          <form onSubmit={handleSubmit(handleSave)} className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b mb-4">
-                  <div>
-                      <Label>Family Head</Label>
-                      <Controller
-                          name="familyHead"
-                          control={control}
-                          render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value} disabled={isViewMode || !!assetToEdit}>
-                              <SelectTrigger>
-                              <SelectValue placeholder="Select Family Head" />
-                              </SelectTrigger>
-                              <SelectContent>
-                              {familyHeads.map((head) => (
-                                  <SelectItem key={head.id} value={head.id}>
-                                  {head.name}
-                                  </SelectItem>
-                              ))}
-                              </SelectContent>
-                          </Select>
-                          )}
-                      />
-                      {errors.familyHead && <p className="text-sm text-destructive">{errors.familyHead.message}</p>}
-                  </div>
-                  <div>
-                      <Label>Asset</Label>
-                      <Controller
-                          name="assetType"
-                          control={control}
-                          render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value} disabled={isViewMode || !!assetToEdit}>
-                              <SelectTrigger>
-                              <SelectValue placeholder="Select Asset Type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                              {ASSET_TYPES.map((asset) => (
-                                  <SelectItem key={asset} value={asset}>
-                                  {asset}
-                                  </SelectItem>
-                              ))}
-                              </SelectContent>
-                          </Select>
-                          )}
-                      />
-                      {errors.assetType && <p className="text-sm text-destructive">{errors.assetType.message}</p>}
-                  </div>
-              </div>
-              
-              {selectedAssetType === 'GENERAL INSURANCE' && (
-                <GeneralInsuranceFields control={control} errors={errors} familyMembers={familyMembers} />
-              )}
-              {selectedAssetType === 'PHYSICAL TO DEMAT' && (
-                  <PhysicalToDematFields register={register} errors={errors} control={control} setValue={setValue} watch={watch} unregister={unregister} familyMembers={familyMembers} />
-              )}
-              {selectedAssetType === 'BONDS' && (
-                  <BondFields register={register} errors={errors} control={control} familyMembers={familyMembers} setValue={setValue} watch={watch} />
-              )}
-              {selectedAssetType === 'FIXED DEPOSITS' && (
-                  <FDFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
-              )}
-              {selectedAssetType === 'PPF' && (
-                  <PPFFields register={register} errors={errors} control={control} familyMembers={familyMembers} />
-              )}
-              {selectedAssetType === 'STOCKS' && (
-                  <StocksFields control={control} errors={errors} register={register} watch={watch} setValue={setValue} familyMembers={familyMembers} />
-              )}
-              
-              
-              {selectedAssetType && !isViewMode && (
-                  <div className="mt-6 border-t pt-4">
-                      <Button type="button" variant="outline" onClick={() => setIsUploadModalOpen(true)}>
-                          <Upload className="mr-2 h-4 w-4" />
-                          Upload Document
-                      </Button>
-                  </div>
-              )}
-            </div>
-            
-            <div className="flex justify-end gap-2 p-6 flex-shrink-0 border-t">
-              <Button type="button" variant="outline" onClick={onClose}>
-                {isViewMode ? 'Close' : 'Cancel'}
-              </Button>
-              {!isViewMode && (
-                <Button type="submit" disabled={isSaving}>
-                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Asset'}
-                </Button>
-              )}
-            </div>
-          </form>
-        </fieldset>
-      </div>
-
-      {isUploadModalOpen && selectedFamilyHead && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60]">
-          <div className="bg-card rounded-xl p-6 w-full max-w-2xl shadow-lg border relative" onClick={(e) => e.stopPropagation()}>
-            <UploadDocModal 
-              member={familyMembers.find(m => m.id === selectedFamilyHead)!}
-              onClose={() => setIsUploadModalOpen(false)}
-              onSave={handleSaveUploads}
-              initialCategory={selectedAssetType || 'General'}
-            />
-          </div>
+        {/* Header */}
+        <div className="p-6 border-b relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="absolute top-4 right-4"
+          >
+            <X />
+          </Button>
+          <h2 className="font-semibold text-lg">
+            {assetToEdit ? 'Edit Asset' : 'Add Asset'}
+          </h2>
         </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {/* Top selectors */}
+            <div className="grid grid-cols-2 gap-4">
+              <Controller
+                name="familyHead"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} disabled={!!assetToEdit}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Family Head" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {familyHeads.map(h => (
+                        <SelectItem key={h.id} value={h.id}>
+                          {h.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+
+              <Controller
+                name="assetType"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} disabled={!!assetToEdit}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Asset Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ASSET_TYPES.map(a => (
+                        <SelectItem key={a} value={a}>
+                          {a}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+            {/* Conditional Forms */}
+            {assetType === 'GENERAL INSURANCE' && (
+              <GeneralInsuranceFields
+                control={control}
+                errors={errors}
+                familyMembers={familyMembers}
+              />
+            )}
+            
+            {assetType === 'PHYSICAL TO DEMAT' && (
+              <PhysicalToDematFields
+                control={control}
+                register={register}
+                watch={watch}
+                setValue={setValue}
+                familyMembers={familyMembers}
+                errors={errors}
+                unregister={unregister}
+              />
+            )}
+
+            {assetType === 'BONDS' && (
+              <BondFields
+                control={control}
+                register={register}
+                watch={watch}
+                setValue={setValue}
+                familyMembers={familyMembers}
+                errors={errors}
+              />
+            )}
+
+            {assetType === 'FIXED DEPOSITS' && (
+              <FDFields
+                control={control}
+                register={register}
+                familyMembers={familyMembers}
+                errors={errors}
+              />
+            )}
+
+            {assetType === 'PPF' && (
+              <PPFFields
+                control={control}
+                register={register}
+                familyMembers={familyMembers}
+                errors={errors}
+              />
+            )}
+
+            {assetType === 'STOCKS' && (
+              <StocksFields
+                control={control}
+                register={register}
+                watch={watch}
+                setValue={setValue}
+                familyMembers={familyMembers}
+                errors={errors}
+              />
+            )}
+
+            {assetType && !isViewMode && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsUploadModalOpen(true)}
+              >
+                <Upload className="mr-2 h-4 w-4" /> Upload Document
+              </Button>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 border-t flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            {!isViewMode && (
+              <Button type="submit" disabled={isSaving}>
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Asset
+              </Button>
+            )}
+          </div>
+        </form>
+      </fieldset>
+
+      {isUploadModalOpen && (
+        <UploadDocModal
+          member={familyMembers[0]}
+          onClose={() => setIsUploadModalOpen(false)}
+          onSave={() => setIsUploadModalOpen(false)}
+          initialCategory={assetType}
+        />
       )}
-    </>
+    </div>
   );
 }
-
-    
