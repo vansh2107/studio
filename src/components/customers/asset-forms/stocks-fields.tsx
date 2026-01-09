@@ -16,7 +16,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
 
   const { fields: jointHolderFields, append: appendJointHolder, remove: removeJointHolder } = useFieldArray({
     control,
-    name: "jointHolders"
+    name: "stocks.jointHolders"
   });
   
   return (
@@ -27,7 +27,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
           <div>
             <Label>Name of the Holder</Label>
             <Controller
-              name="holderName"
+              name="stocks.holderName"
               control={control}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
@@ -48,22 +48,29 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
           </div>
         </div>
 
-        {jointHolderFields.map((field, index) => (
-          <div key={field.id} className="flex items-end gap-2 mt-2">
-            <div className="flex-1">
-              <Label>Joint Holder {index + 1}</Label>
-               <Input {...register(`jointHolders.${index}.name`)} />
+        <div className="space-y-2 pt-4">
+            <Label>Joint Holders</Label>
+            <div className="flex flex-wrap gap-2 items-center">
+                {jointHolderFields.map((field, index) => (
+                <div key={field.id} className="flex items-center gap-2 flex-grow">
+                    <Input 
+                        {...register(`stocks.jointHolders.${index}.name`)} 
+                        placeholder={`Joint Holder ${index + 1}`}
+                        className="w-auto flex-grow"
+                    />
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removeJointHolder(index)}>
+                        <Trash2 className="h-4 w-4 text-destructive"/>
+                    </Button>
+                </div>
+                ))}
+                {jointHolderFields.length < 3 && (
+                <Button type="button" variant="link" size="sm" onClick={() => appendJointHolder({ name: "" })}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add
+                </Button>
+                )}
             </div>
-            <Button type="button" variant="ghost" size="icon" onClick={() => removeJointHolder(index)}>
-                <Trash2 className="h-4 w-4 text-destructive"/>
-            </Button>
-          </div>
-        ))}
-         {jointHolderFields.length < 2 && (
-            <Button type="button" variant="link" size="sm" onClick={() => appendJointHolder({ name: "" })}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Joint Holder
-            </Button>
-          )}
+            {errors?.jointHolders && <p className="text-sm text-destructive">{errors.jointHolders.message}</p>}
+        </div>
       </div>
 
       <Separator />
@@ -71,32 +78,32 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>DPID</Label>
-          <Input {...register('dpId')} />
+          <Input {...register('stocks.dpId')} />
            {errors?.dpId && <p className="text-sm text-destructive">{errors.dpId.message}</p>}
         </div>
         <div>
           <Label>DP Name</Label>
-          <Input {...register('dpName')} />
+          <Input {...register('stocks.dpName')} />
            {errors?.dpName && <p className="text-sm text-destructive">{errors.dpName.message}</p>}
         </div>
         <div>
           <Label>Bank Name</Label>
-          <Input {...register('bankName')} />
+          <Input {...register('stocks.bankName')} />
            {errors?.bankName && <p className="text-sm text-destructive">{errors.bankName.message}</p>}
         </div>
         <div>
           <Label>Bank Account Number</Label>
-          <Input {...register('bankAccountNumber')} />
+          <Input {...register('stocks.bankAccountNumber')} />
            {errors?.bankAccountNumber && <p className="text-sm text-destructive">{errors.bankAccountNumber.message}</p>}
         </div>
         <div>
           <Label>Mobile Number</Label>
-          <Input type="tel" {...register('mobileNumber')} />
+          <Input type="tel" {...register('stocks.mobileNumber')} />
            {errors?.mobileNumber && <p className="text-sm text-destructive">{errors.mobileNumber.message}</p>}
         </div>
         <div>
           <Label>Email Address</Label>
-          <Input type="email" {...register('emailAddress')} />
+          <Input type="email" {...register('stocks.emailAddress')} />
            {errors?.emailAddress && <p className="text-sm text-destructive">{errors.emailAddress.message}</p>}
         </div>
       </div>
@@ -105,12 +112,12 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
 
       <NomineeFields
         control={control}
-        register={register}
         errors={errors?.nominees}
         familyMembers={familyMembers}
         watch={watch}
         getValues={getValues}
         setValue={setValue}
+        fieldArrayName="stocks.nominees"
       />
     </div>
   );

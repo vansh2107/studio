@@ -35,7 +35,7 @@ const nomineeSchema = z.object({
   dateOfBirth: z.string().optional(),
 });
 
-const nomineesArraySchema = z.array(nomineeSchema).optional().superRefine((nominees, ctx) => {
+const nomineesArraySchema = z.array(nomineeSchema).max(3, 'You can add a maximum of 3 nominees.').optional().superRefine((nominees, ctx) => {
     if (nominees) {
         const totalAllocation = nominees.reduce((acc, nominee) => acc + (nominee.allocation || 0), 0);
         if (totalAllocation > 100) {
@@ -54,9 +54,7 @@ const baseAssetSchema = z.object({
   assetType: z.enum(ASSET_TYPES)
 });
 
-const generalInsuranceSchema = baseAssetSchema.extend({
-  assetType: z.literal("GENERAL INSURANCE"),
-  familyMember: z.string().min(1, "Family member is required."),
+const generalInsuranceSchema = z.object({
   category: z.string().min(1, "Category is required."),
   issuer: z.string().min(1, "Issuer is required."),
   planName: z.string().optional(),
@@ -71,11 +69,11 @@ const generalInsuranceSchema = baseAssetSchema.extend({
   priceWithGST: z.string().optional(),
   eligiblePremium: z.string().optional(),
   referenceAgent: z.string().optional(),
+  familyMember: z.string().min(1, "Family member is required."),
   nominees: nomineesArraySchema,
 });
 
-const physicalToDematSchema = baseAssetSchema.extend({
-  assetType: z.literal("PHYSICAL TO DEMAT"),
+const physicalToDematSchema = z.object({
   clientName: z.string().min(1, "Client name is required."),
   nameOnShare: z.string().optional(),
   folioNumber: z.string().optional(),
@@ -84,11 +82,10 @@ const physicalToDematSchema = baseAssetSchema.extend({
   quantity: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   marketPrice: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   totalValue: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-  jointHolders: z.array(z.object({ name: z.string().min(1, 'Joint holder name is required') })).optional(),
+  jointHolders: z.array(z.object({ name: z.string() })).max(3).optional(),
 });
 
-const bondsSchema = baseAssetSchema.extend({
-  assetType: z.literal("BONDS"),
+const bondsSchema = z.object({
   familyMember: z.string().min(1, "Family member is required."),
   issuer: z.string().min(1, "Issuer is required."),
   isin: z.string().optional(),
@@ -100,8 +97,7 @@ const bondsSchema = baseAssetSchema.extend({
   nominees: nomineesArraySchema,
 });
 
-const fdSchema = baseAssetSchema.extend({
-  assetType: z.literal("FIXED DEPOSITS"),
+const fdSchema = z.object({
   companyName: z.string().min(1, "Company/Bank Name is required."),
   investorName: z.string().min(1, "Investor name is required"),
   fdName: z.string().optional(),
@@ -116,8 +112,7 @@ const fdSchema = baseAssetSchema.extend({
   nominees: nomineesArraySchema,
 });
 
-const ppfSchema = baseAssetSchema.extend({
-  assetType: z.literal("PPF"),
+const ppfSchema = z.object({
   familyMemberName: z.string().min(1, "Family member is required."),
   bankName: z.string().min(1, "Bank name is required."),
   contributedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
@@ -127,10 +122,9 @@ const ppfSchema = baseAssetSchema.extend({
   nominees: nomineesArraySchema,
 });
 
-const stocksSchema = baseAssetSchema.extend({
-  assetType: z.literal("STOCKS"),
+const stocksSchema = z.object({
   holderName: z.string().min(1, "Holder name is required."),
-  jointHolders: z.array(z.object({ name: z.string().optional() })).optional(),
+  jointHolders: z.array(z.object({ name: z.string() })).max(3).optional(),
   dpId: z.string().min(1, "DPID is required."),
   dpName: z.string().min(1, "DP Name is required."),
   bankName: z.string().min(1, "Bank name is required."),
@@ -140,25 +134,17 @@ const stocksSchema = baseAssetSchema.extend({
   nominees: nomineesArraySchema,
 });
 
-const lifeInsuranceSchema = baseAssetSchema.extend({
-    assetType: z.literal("LIFE INSURANCE"),
-});
-
-const mutualFundsSchema = baseAssetSchema.extend({
-    assetType: z.literal("MUTUAL FUNDS"),
-});
-
-
 const assetFormSchema = z.discriminatedUnion("assetType", [
-  generalInsuranceSchema,
-  physicalToDematSchema,
-  bondsSchema,
-  fdSchema,
-  ppfSchema,
-  stocksSchema,
-  lifeInsuranceSchema,
-  mutualFundsSchema,
+  baseAssetSchema.extend({ assetType: z.literal("GENERAL INSURANCE"), generalInsurance: generalInsuranceSchema }),
+  baseAssetSchema.extend({ assetType: z.literal("PHYSICAL TO DEMAT"), physicalToDemat: physicalToDematSchema }),
+  baseAssetSchema.extend({ assetType: z.literal("BONDS"), bonds: bondsSchema }),
+  baseAssetSchema.extend({ assetType: z.literal("FIXED DEPOSITS"), fixedDeposits: fdSchema }),
+  baseAssetSchema.extend({ assetType: z.literal("PPF"), ppf: ppfSchema }),
+  baseAssetSchema.extend({ assetType: z.literal("STOCKS"), stocks: stocksSchema }),
+  baseAssetSchema.extend({ assetType: z.literal("LIFE INSURANCE") }),
+  baseAssetSchema.extend({ assetType: z.literal("MUTUAL FUNDS") }),
 ]);
+
 
 type FormData = z.infer<typeof assetFormSchema>;
 
@@ -193,7 +179,6 @@ export function AddAssetModal({
   } = useForm<FormData>({
     resolver: zodResolver(assetFormSchema),
     defaultValues: {
-      assetType: undefined,
       familyHead: '',
     },
   });
@@ -203,6 +188,11 @@ export function AddAssetModal({
 
   useEffect(() => {
     if (assetToEdit) {
+      const defaultVals = {
+        familyHead: assetToEdit.familyHeadId,
+        assetType: assetToEdit.assetType,
+        [assetToEdit.assetType.toLowerCase().replace(/ /g, '')]: assetToEdit[assetToEdit.assetType.toLowerCase().replace(/ /g, '')]
+      }
       reset(assetToEdit as any);
     } else {
       reset({ familyHead: '', assetType: undefined });
@@ -223,11 +213,27 @@ export function AddAssetModal({
         return;
     };
 
+    let assetSpecificData = {};
+    if (data.assetType === 'GENERAL INSURANCE' && data.generalInsurance) {
+      assetSpecificData = { generalInsurance: data.generalInsurance };
+    } else if (data.assetType === 'PHYSICAL TO DEMAT' && data.physicalToDemat) {
+      assetSpecificData = { physicalToDemat: data.physicalToDemat };
+    } else if (data.assetType === 'BONDS' && data.bonds) {
+      assetSpecificData = { bonds: data.bonds };
+    } else if (data.assetType === 'FIXED DEPOSITS' && data.fixedDeposits) {
+      assetSpecificData = { fixedDeposits: data.fixedDeposits };
+    } else if (data.assetType === 'PPF' && data.ppf) {
+      assetSpecificData = { ppf: data.ppf };
+    } else if (data.assetType === 'STOCKS' && data.stocks) {
+      assetSpecificData = { stocks: data.stocks };
+    }
+
     const newAsset: Asset = {
       id: assetToEdit?.id ?? `asset-${Date.now()}`,
       familyHeadId: head.id,
       familyHeadName: `${head.firstName} ${head.lastName}`,
-      ...data,
+      assetType: data.assetType,
+      ...assetSpecificData
     };
     
     setTimeout(() => {
@@ -249,7 +255,7 @@ export function AddAssetModal({
       <div
         className={cn(
           'bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh] overflow-hidden',
-          assetType ? 'w-4/5' : 'w-2/5'
+          'w-full max-w-4xl'
         )}
       >
         <div className="p-6 border-b relative">
@@ -281,7 +287,7 @@ export function AddAssetModal({
                       <SelectContent>
                         {familyHeads.map((h) => (
                           <SelectItem key={h.id} value={h.id}>
-                            {h.name}
+                            {h.firstName} {h.lastName}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -317,30 +323,30 @@ export function AddAssetModal({
 
               {assetType === 'GENERAL INSURANCE' && (
                 <>
-                  <GeneralInsuranceFields control={control} register={register} errors={(errors as any)} familyMembers={familyMembers} />
-                  <NomineeFields control={control} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+                  <GeneralInsuranceFields control={control} register={register} errors={(errors as any)?.generalInsurance} familyMembers={familyMembers} />
+                  <NomineeFields control={control} errors={(errors as any)?.generalInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
                 </>
               )}
-              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={(errors as any)} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
+              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={(errors as any)?.physicalToDemat} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
               {assetType === 'BONDS' && (
                 <>
-                  <BondFields control={control} errors={(errors as any)} familyMembers={familyMembers} watch={watch} setValue={setValue} />
-                  <NomineeFields control={control} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+                  <BondFields control={control} errors={(errors as any)?.bonds} familyMembers={familyMembers} watch={watch} setValue={setValue} />
+                  <NomineeFields control={control} errors={(errors as any)?.bonds?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue}/>
                 </>
               )}
               {assetType === 'FIXED DEPOSITS' && (
                  <>
-                  <FDFields control={control} errors={(errors as any)} familyMembers={familyMembers} />
-                  <NomineeFields control={control} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+                  <FDFields control={control} errors={(errors as any)?.fixedDeposits} familyMembers={familyMembers} />
+                  <NomineeFields control={control} errors={(errors as any)?.fixedDeposits?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue}/>
                 </>
               )}
               {assetType === 'PPF' && (
                 <>
-                  <PPFFields control={control} errors={(errors as any)} familyMembers={familyMembers} />
-                  <NomineeFields control={control} errors={(errors as any)?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+                  <PPFFields control={control} errors={(errors as any)?.ppf} familyMembers={familyMembers} />
+                  <NomineeFields control={control} errors={(errors as any)?.ppf?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue}/>
                 </>
               )}
-              {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={(errors as any)} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={(errors as any)?.stocks} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               
               {assetType && !isViewMode && (
                 <Button
@@ -368,9 +374,9 @@ export function AddAssetModal({
         </form>
       </div>
 
-      {isUploadModalOpen && (
+      {isUploadModalOpen && familyMembers.length > 0 && (
         <UploadDocModal
-          member={familyMembers[0]}
+          member={familyMembers[0] as FamilyMember}
           onClose={() => setIsUploadModalOpen(false)}
           onSave={() => setIsUploadModalOpen(false)}
           initialCategory={assetType}

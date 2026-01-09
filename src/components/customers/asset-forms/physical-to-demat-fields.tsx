@@ -38,17 +38,17 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     }
   };
 
-  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+    const { value } = e.target;
     if (value === '') {
-      setValue(name, '', { shouldValidate: true });
+      setValue(fieldName, '', { shouldValidate: true });
       return;
     }
     const numValue = Number(value);
     if (numValue < 0) {
-      setValue(name, '0', { shouldValidate: true });
+      setValue(fieldName, '0', { shouldValidate: true });
     } else {
-      setValue(name, value, { shouldValidate: true });
+      setValue(fieldName, value, { shouldValidate: true });
     }
   };
 
@@ -70,14 +70,14 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
                     <SelectContent>
                     {familyMembers.map((member) => (
                         <SelectItem key={member.id} value={member.name}>
-                        {member.name}
+                          {member.name}
                         </SelectItem>
                     ))}
                     </SelectContent>
                 </Select>
                 )}
             />
-            {errors?.physicalToDemat?.clientName && <p className="text-sm text-destructive">{errors.physicalToDemat.clientName.message}</p>}
+            {errors?.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
         </div>
         <div>
           <Label>Name on Share</Label>
@@ -103,39 +103,43 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>Quantity</Label>
-          <Input type="number" min="0" {...register('physicalToDemat.quantity')} onKeyDown={handleNumericKeyDown} onChange={handleNumericChange} />
-          {errors?.physicalToDemat?.quantity && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.quantity.message}</p>}
+          <Input type="number" min="0" {...register('physicalToDemat.quantity')} onKeyDown={handleNumericKeyDown} onChange={(e) => handleNumericChange(e, 'physicalToDemat.quantity')} />
+          {errors?.quantity && <p className="text-sm text-destructive mt-1">{errors.quantity.message}</p>}
         </div>
         <div>
           <Label>Market Price</Label>
-          <Input type="number" min="0" step="any" {...register('physicalToDemat.marketPrice')} onKeyDown={handleNumericKeyDown} onChange={handleNumericChange} />
-          {errors?.physicalToDemat?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.marketPrice.message}</p>}
+          <Input type="number" min="0" step="any" {...register('physicalToDemat.marketPrice')} onKeyDown={handleNumericKeyDown} onChange={(e) => handleNumericChange(e, 'physicalToDemat.marketPrice')} />
+          {errors?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.marketPrice.message}</p>}
         </div>
         <div>
           <Label>Total Value</Label>
           <Input readOnly {...register('physicalToDemat.totalValue')} />
-          {errors?.physicalToDemat?.totalValue && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.totalValue.message}</p>}
+          {errors?.totalValue && <p className="text-sm text-destructive mt-1">{errors.totalValue.message}</p>}
         </div>
       </div>
       
       <div className="space-y-2 pt-4">
           <Label>Joint Holders</Label>
-          {fields.map((item, index) => (
-              <div key={item.id} className="flex items-center gap-2">
-                  <Input 
-                      {...register(`physicalToDemat.jointHolders.${index}.name`)} 
-                      placeholder={`Joint Holder ${index + 1}`}
-                  />
-                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                      <Trash2 className="h-4 w-4 text-destructive"/>
-                  </Button>
-              </div>
-          ))}
-          {fields.length < 3 && (
-            <Button type="button" variant="link" size="sm" onClick={addJointHolder}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Joint Holder
-            </Button>
-          )}
+            <div className="flex flex-wrap gap-2 items-center">
+              {fields.map((item, index) => (
+                  <div key={item.id} className="flex items-center gap-2 flex-grow">
+                      <Input 
+                          {...register(`physicalToDemat.jointHolders.${index}.name`)} 
+                          placeholder={`Joint Holder ${index + 1}`}
+                          className="w-auto flex-grow"
+                      />
+                      <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                          <Trash2 className="h-4 w-4 text-destructive"/>
+                      </Button>
+                  </div>
+              ))}
+              {fields.length < 3 && (
+                <Button type="button" variant="link" size="sm" onClick={addJointHolder}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add
+                </Button>
+              )}
+            </div>
+             {errors?.jointHolders && <p className="text-sm text-destructive">{errors.jointHolders.message}</p>}
       </div>
 
     </div>
