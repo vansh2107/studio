@@ -149,8 +149,8 @@ export function StocksFields({ control, register, errors, familyMembers }: { con
                         <SelectItem key={member.id} value={member.name}>
                           {member.name}
                         </SelectItem>
-                      </SelectContent>
-                    </Select>
+                      ))}
+                    </SelectContent>
                   </Select>
                 )}
               />
