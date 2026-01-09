@@ -85,10 +85,11 @@ export function BondFields({ control, errors, familyMembers }: { control: any, e
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label>Issuer</Label>
             <Controller name="bonds.issuer" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
+             {errors?.issuer && <p className="text-sm text-destructive mt-1">{errors.issuer.message}</p>}
           </div>
           <div>
             <Label>ISIN Number</Label>
@@ -114,7 +115,7 @@ export function BondFields({ control, errors, familyMembers }: { control: any, e
           </div>
         </div>
         {/* Row 3 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label>Purchase Date</Label>
             <Controller name="bonds.purchaseDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
