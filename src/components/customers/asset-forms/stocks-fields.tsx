@@ -69,7 +69,7 @@ export function StocksFields({ control, register, errors, familyMembers }: { con
                 </Select>
               )}
             />
-            {errors.stocks?.holderName && <p className="text-sm text-destructive">{errors.stocks.holderName.message}</p>}
+            {errors?.stocks?.holderName && <p className="text-sm text-destructive">{errors.stocks.holderName.message}</p>}
           </div>
         </div>
 
@@ -98,32 +98,32 @@ export function StocksFields({ control, register, errors, familyMembers }: { con
         <div>
           <Label>DPID</Label>
           <Input {...register('stocks.dpId')} />
-           {errors.stocks?.dpId && <p className="text-sm text-destructive">{errors.stocks.dpId.message}</p>}
+           {errors?.stocks?.dpId && <p className="text-sm text-destructive">{errors.stocks.dpId.message}</p>}
         </div>
         <div>
           <Label>DP Name</Label>
           <Input {...register('stocks.dpName')} />
-           {errors.stocks?.dpName && <p className="text-sm text-destructive">{errors.stocks.dpName.message}</p>}
+           {errors?.stocks?.dpName && <p className="text-sm text-destructive">{errors.stocks.dpName.message}</p>}
         </div>
         <div>
           <Label>Bank Name</Label>
           <Input {...register('stocks.bankName')} />
-           {errors.stocks?.bankName && <p className="text-sm text-destructive">{errors.stocks.bankName.message}</p>}
+           {errors?.stocks?.bankName && <p className="text-sm text-destructive">{errors.stocks.bankName.message}</p>}
         </div>
         <div>
           <Label>Bank Account Number</Label>
           <Input {...register('stocks.bankAccountNumber')} />
-           {errors.stocks?.bankAccountNumber && <p className="text-sm text-destructive">{errors.stocks.bankAccountNumber.message}</p>}
+           {errors?.stocks?.bankAccountNumber && <p className="text-sm text-destructive">{errors.stocks.bankAccountNumber.message}</p>}
         </div>
         <div>
           <Label>Mobile Number</Label>
           <Input type="tel" {...register('stocks.mobileNumber')} />
-           {errors.stocks?.mobileNumber && <p className="text-sm text-destructive">{errors.stocks.mobileNumber.message}</p>}
+           {errors?.stocks?.mobileNumber && <p className="text-sm text-destructive">{errors.stocks.mobileNumber.message}</p>}
         </div>
         <div>
           <Label>Email Address</Label>
           <Input type="email" {...register('stocks.emailAddress')} />
-           {errors.stocks?.emailAddress && <p className="text-sm text-destructive">{errors.stocks.emailAddress.message}</p>}
+           {errors?.stocks?.emailAddress && <p className="text-sm text-destructive">{errors.stocks.emailAddress.message}</p>}
         </div>
       </div>
 
@@ -149,8 +149,8 @@ export function StocksFields({ control, register, errors, familyMembers }: { con
                         <SelectItem key={member.id} value={member.name}>
                           {member.name}
                         </SelectItem>
-                      ))}
-                    </SelectContent>
+                      </SelectContent>
+                    </Select>
                   </Select>
                 )}
               />
@@ -191,7 +191,7 @@ export function StocksFields({ control, register, errors, familyMembers }: { con
                   />
                 )}
               />
-               {errors.stocks?.nominees?.[index]?.allocation && (
+               {errors?.stocks?.nominees?.[index]?.allocation && (
                 <p className="text-xs text-destructive mt-1">{errors.stocks?.nominees?.[index]?.allocation?.message}</p>
               )}
             </div>

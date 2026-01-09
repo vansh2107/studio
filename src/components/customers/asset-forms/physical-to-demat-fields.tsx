@@ -60,7 +60,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
                 </Select>
                 )}
             />
-            {errors.physicalToDemat?.clientName && <p className="text-sm text-destructive">{errors.physicalToDemat.clientName.message}</p>}
+            {errors?.physicalToDemat?.clientName && <p className="text-sm text-destructive">{errors.physicalToDemat.clientName.message}</p>}
         </div>
         <div>
           <Label>Name on Share</Label>
@@ -89,17 +89,17 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         <div>
           <Label>Quantity</Label>
           <Input type="number" min="0" {...register('physicalToDemat.quantity', { valueAsNumber: true })} />
-          {errors.physicalToDemat?.quantity && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.quantity.message}</p>}
+          {errors?.physicalToDemat?.quantity && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.quantity.message}</p>}
         </div>
         <div>
           <Label>Market Price</Label>
           <Input type="number" min="0" {...register('physicalToDemat.marketPrice', { valueAsNumber: true })} />
-          {errors.physicalToDemat?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.marketPrice.message}</p>}
+          {errors?.physicalToDemat?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.marketPrice.message}</p>}
         </div>
         <div>
           <Label>Total Value</Label>
           <Input readOnly {...register('physicalToDemat.totalValue', { valueAsNumber: true })} />
-          {errors.physicalToDemat?.totalValue && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.totalValue.message}</p>}
+          {errors?.physicalToDemat?.totalValue && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.totalValue.message}</p>}
         </div>
       </div>
       

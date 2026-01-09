@@ -39,12 +39,12 @@ export function PPFFields({ register, errors, control, familyMembers }: { regist
         <div>
           <Label>Contributed Amount</Label>
           <Input type="number" min="0" {...register('ppf.contributedAmount', { valueAsNumber: true })} />
-          {errors.ppf?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf.contributedAmount.message}</p>}
+          {errors?.ppf?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf.contributedAmount.message}</p>}
         </div>
         <div>
           <Label>Balance</Label>
           <Input type="number" min="0" {...register('ppf.balance', { valueAsNumber: true })} />
-          {errors.ppf?.balance && <p className="text-sm text-destructive mt-1">{errors.ppf.balance.message}</p>}
+          {errors?.ppf?.balance && <p className="text-sm text-destructive mt-1">{errors.ppf.balance.message}</p>}
         </div>
         <div>
           <Label>Date of Opening</Label>
@@ -58,5 +58,3 @@ export function PPFFields({ register, errors, control, familyMembers }: { regist
     </div>
   );
 }
-
-    

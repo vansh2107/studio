@@ -78,7 +78,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
                     />
                   )}
                 />
-                {errors.generalInsurance?.issuer && <p className="text-sm text-destructive">{errors.generalInsurance.issuer.message}</p>}
+                {errors?.generalInsurance?.issuer && <p className="text-sm text-destructive">{errors.generalInsurance.issuer.message}</p>}
             </div>
              <div>
                 <Label>Plan Name</Label>

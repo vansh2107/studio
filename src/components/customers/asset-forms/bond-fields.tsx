@@ -61,17 +61,17 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
           <div>
             <Label>Bond Price</Label>
             <Input type="number" min="0" {...register('bonds.bondPrice', { valueAsNumber: true })} />
-            {errors.bonds?.bondPrice && <p className="text-sm text-destructive mt-1">{errors.bonds.bondPrice.message}</p>}
+            {errors?.bonds?.bondPrice && <p className="text-sm text-destructive mt-1">{errors.bonds.bondPrice.message}</p>}
           </div>
           <div>
             <Label>Bond Unit</Label>
             <Input type="number" min="0" step="1" {...register('bonds.bondUnit', { valueAsNumber: true })} />
-            {errors.bonds?.bondUnit && <p className="text-sm text-destructive mt-1">{errors.bonds.bondUnit.message}</p>}
+            {errors?.bonds?.bondUnit && <p className="text-sm text-destructive mt-1">{errors.bonds.bondUnit.message}</p>}
           </div>
           <div>
             <Label>Bond Amount</Label>
             <Input readOnly {...register('bonds.bondAmount', { valueAsNumber: true })} />
-            {errors.bonds?.bondAmount && <p className="text-sm text-destructive mt-1">{errors.bonds.bondAmount.message}</p>}
+            {errors?.bonds?.bondAmount && <p className="text-sm text-destructive mt-1">{errors.bonds.bondAmount.message}</p>}
           </div>
         </div>
         {/* Row 3 */}
@@ -134,5 +134,3 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
     </div>
   );
 }
-
-    
