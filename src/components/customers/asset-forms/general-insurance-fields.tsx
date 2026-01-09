@@ -159,13 +159,15 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
                 <Label>Price With GST</Label>
                 <Controller name="generalInsurance.priceWithGST" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             </div>
-             <div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <Label>Eligible Premium</Label>
                 <Controller name="generalInsurance.eligiblePremium" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-            </div>
-            <div>
+              </div>
+              <div>
                 <Label>Reference Agent</Label>
                 <Controller name="generalInsurance.referenceAgent" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
+              </div>
             </div>
         </div>
     </div>
