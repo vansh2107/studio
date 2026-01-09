@@ -13,7 +13,7 @@ import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.mjs`;
 
 
 const DetailItem = ({ label, value }: { label: string; value?: string }) => (
