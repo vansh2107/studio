@@ -159,7 +159,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
                 <Label>Price With GST</Label>
                 <Controller name="generalInsurance.priceWithGST" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 col-span-1 md:col-span-2 lg:col-span-3">
               <div>
                 <Label>Eligible Premium</Label>
                 <Controller name="generalInsurance.eligiblePremium" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
