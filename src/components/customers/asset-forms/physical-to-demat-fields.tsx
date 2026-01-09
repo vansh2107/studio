@@ -23,7 +23,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
   useEffect(() => {
     const q = parseFloat(quantity) || 0;
     const p = parseFloat(marketPrice) || 0;
-    setValue('physicalToDemat.totalValue', q * p);
+    setValue('physicalToDemat.totalValue', q * p, { shouldValidate: true });
   }, [quantity, marketPrice, setValue]);
   
   const addJointHolder = () => {
@@ -32,6 +32,25 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     }
   };
 
+  const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (value === '') {
+      setValue(name, '', { shouldValidate: true });
+      return;
+    }
+    const numValue = Number(value);
+    if (numValue < 0) {
+      setValue(name, '0', { shouldValidate: true });
+    } else {
+      setValue(name, value, { shouldValidate: true });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -50,7 +69,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
                     </SelectTrigger>
                     <SelectContent>
                     {familyMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.id}>
+                        <SelectItem key={member.id} value={member.name}>
                         {member.name}
                         </SelectItem>
                     ))}
@@ -58,7 +77,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
                 </Select>
                 )}
             />
-            {errors?.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
+            {errors?.physicalToDemat?.clientName && <p className="text-sm text-destructive">{errors.physicalToDemat.clientName.message}</p>}
         </div>
         <div>
           <Label>Name on Share</Label>
@@ -84,18 +103,18 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>Quantity</Label>
-          <Input type="number" min="0" {...register('physicalToDemat.quantity')} />
-          {errors?.quantity && <p className="text-sm text-destructive mt-1">{errors.quantity.message}</p>}
+          <Input type="number" min="0" {...register('physicalToDemat.quantity')} onKeyDown={handleNumericKeyDown} onChange={handleNumericChange} />
+          {errors?.physicalToDemat?.quantity && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.quantity.message}</p>}
         </div>
         <div>
           <Label>Market Price</Label>
-          <Input type="number" min="0" {...register('physicalToDemat.marketPrice')} />
-          {errors?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.marketPrice.message}</p>}
+          <Input type="number" min="0" step="any" {...register('physicalToDemat.marketPrice')} onKeyDown={handleNumericKeyDown} onChange={handleNumericChange} />
+          {errors?.physicalToDemat?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.marketPrice.message}</p>}
         </div>
         <div>
           <Label>Total Value</Label>
           <Input readOnly {...register('physicalToDemat.totalValue')} />
-          {errors?.totalValue && <p className="text-sm text-destructive mt-1">{errors.totalValue.message}</p>}
+          {errors?.physicalToDemat?.totalValue && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.totalValue.message}</p>}
         </div>
       </div>
       

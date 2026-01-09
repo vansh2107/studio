@@ -6,7 +6,28 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Client, FamilyMember } from '@/lib/types';
 
-export function PPFFields({ register, errors, control, familyMembers }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[] }) {
+export function PPFFields({ control, errors, familyMembers }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[] }) {
+
+  const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+  
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const value = e.target.value;
+    if (value === '') {
+      field.onChange('');
+      return;
+    }
+    const numValue = Number(value);
+    if (numValue < 0) {
+      field.onChange('0');
+    } else {
+      field.onChange(value);
+    }
+  };
+  
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">PPF Details</h3>
@@ -23,7 +44,7 @@ export function PPFFields({ register, errors, control, familyMembers }: { regist
                 </SelectTrigger>
                 <SelectContent>
                   {familyMembers.map((member) => (
-                    <SelectItem key={member.id} value={member.id}>
+                    <SelectItem key={member.id} value={member.name}>
                       {member.name}
                     </SelectItem>
                   ))}
@@ -34,25 +55,25 @@ export function PPFFields({ register, errors, control, familyMembers }: { regist
         </div>
         <div>
           <Label>Bank Name</Label>
-          <Input {...register('ppf.bankName')} />
+          <Controller name="ppf.bankName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
         </div>
         <div>
           <Label>Contributed Amount</Label>
-          <Input type="number" min="0" {...register('ppf.contributedAmount', { valueAsNumber: true })} />
+          <Controller name="ppf.contributedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
           {errors?.ppf?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf.contributedAmount.message}</p>}
         </div>
         <div>
           <Label>Balance</Label>
-          <Input type="number" min="0" {...register('ppf.balance', { valueAsNumber: true })} />
+          <Controller name="ppf.balance" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
           {errors?.ppf?.balance && <p className="text-sm text-destructive mt-1">{errors.ppf.balance.message}</p>}
         </div>
         <div>
           <Label>Date of Opening</Label>
-          <Input type="date" {...register('ppf.openingDate')} />
+          <Controller name="ppf.openingDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
         </div>
         <div>
           <Label>Date of Mature</Label>
-          <Input type="date" {...register('ppf.matureDate')} />
+          <Controller name="ppf.matureDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
         </div>
       </div>
     </div>

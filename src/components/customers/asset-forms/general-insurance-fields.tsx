@@ -16,6 +16,26 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
     control,
     name: 'generalInsurance.category',
   });
+
+  const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const value = e.target.value;
+    if (value === '') {
+      field.onChange('');
+      return;
+    }
+    const numValue = Number(value);
+    if (numValue < 0) {
+      field.onChange('0');
+    } else {
+      field.onChange(value);
+    }
+  };
   
   return (
     <div className="space-y-4">
@@ -33,7 +53,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
                     </SelectTrigger>
                     <SelectContent>
                       {familyMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.id}>
+                        <SelectItem key={member.id} value={member.name}>
                           {member.name}
                         </SelectItem>
                       ))}
@@ -129,19 +149,19 @@ export function GeneralInsuranceFields({ control, errors, familyMembers }: { con
             )}
              <div>
                 <Label>Sum Assured</Label>
-                <Controller name="generalInsurance.sumAssured" control={control} render={({ field }) => <Input type="number" min="0" {...field} value={field.value || ''} />} />
+                <Controller name="generalInsurance.sumAssured" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Price Without GST</Label>
-                <Controller name="generalInsurance.priceWithoutGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} value={field.value || ''} />} />
+                <Controller name="generalInsurance.priceWithoutGST" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Price With GST</Label>
-                <Controller name="generalInsurance.priceWithGST" control={control} render={({ field }) => <Input type="number" min="0" {...field} value={field.value || ''} />} />
+                <Controller name="generalInsurance.priceWithGST" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             </div>
              <div>
                 <Label>Eligible Premium</Label>
-                <Controller name="generalInsurance.eligiblePremium" control={control} render={({ field }) => <Input type="number" min="0" {...field} value={field.value || ''} />} />
+                <Controller name="generalInsurance.eligiblePremium" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Reference Agent</Label>

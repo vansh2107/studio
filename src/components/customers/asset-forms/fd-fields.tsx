@@ -6,10 +6,30 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Client, FamilyMember } from '@/lib/types';
 
-export function FDFields({ register, errors, control, familyMembers }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[] }) {
+export function FDFields({ control, errors, familyMembers }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[] }) {
     
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
+
+  const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const value = e.target.value;
+    if (value === '') {
+      field.onChange('');
+      return;
+    }
+    const numValue = Number(value);
+    if (numValue < 0) {
+      field.onChange('0');
+    } else {
+      field.onChange(value);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -19,7 +39,7 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <Label>Company/Bank Name</Label>
-                <Input {...register('fixedDeposits.companyName')} />
+                <Controller name="fixedDeposits.companyName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Investor Name</Label>
@@ -33,7 +53,7 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
                         </SelectTrigger>
                         <SelectContent>
                         {familyMembers.map((member) => (
-                            <SelectItem key={member.id} value={member.id}>
+                            <SelectItem key={member.id} value={member.name}>
                             {member.name}
                             </SelectItem>
                         ))}
@@ -48,16 +68,20 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <Label>FD Name</Label>
-                <Input {...register('fixedDeposits.fdName')} />
+                <Controller name="fixedDeposits.fdName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>FD Number</Label>
-                <Input {...register('fixedDeposits.fdNumber')} />
+                <Controller name="fixedDeposits.fdNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
             </div>
         </div>
 
         {/* Row 3 - Corrected Layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 items-start">
+            <div className="space-y-2">
+                <Label>Deposited Amount (₹)</Label>
+                <Controller name="fixedDeposits.depositedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
+            </div>
             {/* Period */}
             <div className="space-y-2">
                 <Label>Period</Label>
@@ -104,23 +128,13 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
             {/* Interest Rate */}
             <div className="space-y-2">
                 <Label htmlFor="fd_interestRate">Interest Rate (%)</Label>
-                <Input
-                id="fd_interestRate"
-                type="number"
-                min="0"
-                {...register('fixedDeposits.interestRate')}
-                />
+                <Controller name="fixedDeposits.interestRate" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} id="fd_interestRate" value={field.value || ''} />} />
             </div>
 
             {/* Maturity Amount */}
             <div className="space-y-2">
                 <Label htmlFor="fd_maturityAmount">Maturity Amount (₹)</Label>
-                <Input
-                id="fd_maturityAmount"
-                type="number"
-                min="0"
-                {...register('fixedDeposits.maturityAmount')}
-                />
+                <Controller name="fixedDeposits.maturityAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} id="fd_maturityAmount" value={field.value || ''} />} />
             </div>
         </div>
 
@@ -128,15 +142,13 @@ export function FDFields({ register, errors, control, familyMembers }: { registe
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <Label>Date of Purchase</Label>
-                <Input type="date" {...register('fixedDeposits.purchaseDate')} />
+                <Controller name="fixedDeposits.purchaseDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>Date of Maturity</Label>
-                <Input type="date" {...register('fixedDeposits.maturityDate')} />
+                <Controller name="fixedDeposits.maturityDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
             </div>
         </div>
     </div>
   );
 }
-
-    

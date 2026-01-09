@@ -9,7 +9,7 @@ import { Client, FamilyMember } from '@/lib/types';
 import { BOND_TRANSACTION_TYPES } from '@/lib/asset-form-types';
 
 
-export function BondFields({ register, errors, control, familyMembers, setValue, watch }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[], setValue: any, watch: any }) {
+export function BondFields({ control, errors, familyMembers, setValue, watch }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], setValue: any, watch: any }) {
   
   const bondPrice = watch('bonds.bondPrice');
   const bondUnit = watch('bonds.bondUnit');
@@ -17,8 +17,28 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
   useEffect(() => {
     const price = parseFloat(bondPrice) || 0;
     const unit = parseInt(bondUnit, 10) || 0;
-    setValue('bonds.bondAmount', price * unit);
+    setValue('bonds.bondAmount', price * unit, { shouldValidate: true });
   }, [bondPrice, bondUnit, setValue]);
+
+  const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (value === '') {
+      setValue(name, '', { shouldValidate: true });
+      return;
+    }
+    const numValue = Number(value);
+    if (numValue < 0) {
+      setValue(name, '0', { shouldValidate: true });
+    } else {
+      setValue(name, value, { shouldValidate: true });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -38,7 +58,7 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
                       </SelectTrigger>
                       <SelectContent>
                       {familyMembers.map((member) => (
-                          <SelectItem key={member.id} value={member.id}>
+                          <SelectItem key={member.id} value={member.name}>
                           {member.name}
                           </SelectItem>
                       ))}
@@ -49,40 +69,40 @@ export function BondFields({ register, errors, control, familyMembers, setValue,
           </div>
           <div>
             <Label>Issuer</Label>
-            <Input {...register('bonds.issuer')} />
+            <Controller name="bonds.issuer" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
           </div>
           <div>
             <Label>ISIN Number</Label>
-            <Input {...register('bonds.isin')} />
+            <Controller name="bonds.isin" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
           </div>
         </div>
         {/* Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Bond Price</Label>
-            <Input type="number" min="0" {...register('bonds.bondPrice')} />
-            {errors?.bondPrice && <p className="text-sm text-destructive mt-1">{errors.bondPrice.message}</p>}
+            <Controller name="bonds.bondPrice" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e)} value={field.value || ''} />} />
+            {errors?.bonds?.bondPrice && <p className="text-sm text-destructive mt-1">{errors.bonds.bondPrice.message}</p>}
           </div>
           <div>
             <Label>Bond Unit</Label>
-            <Input type="number" min="0" step="1" {...register('bonds.bondUnit')} />
-            {errors?.bondUnit && <p className="text-sm text-destructive mt-1">{errors.bondUnit.message}</p>}
+            <Controller name="bonds.bondUnit" control={control} render={({ field }) => <Input type="number" min="0" step="1" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e)} value={field.value || ''} />} />
+            {errors?.bonds?.bondUnit && <p className="text-sm text-destructive mt-1">{errors.bonds.bondUnit.message}</p>}
           </div>
           <div>
             <Label>Bond Amount</Label>
-            <Input readOnly {...register('bonds.bondAmount')} />
-            {errors?.bondAmount && <p className="text-sm text-destructive mt-1">{errors.bondAmount.message}</p>}
+            <Controller name="bonds.bondAmount" control={control} render={({ field }) => <Input readOnly {...field} value={field.value || ''} />} />
+            {errors?.bonds?.bondAmount && <p className="text-sm text-destructive mt-1">{errors.bonds.bondAmount.message}</p>}
           </div>
         </div>
         {/* Row 3 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Purchase Date</Label>
-            <Input type="date" {...register('bonds.purchaseDate')} />
+            <Controller name="bonds.purchaseDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
           </div>
           <div>
             <Label>Maturity Date</Label>
-            <Input type="date" {...register('bonds.maturityDate')} />
+            <Controller name="bonds.maturityDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
           </div>
           <div>
               <Label>Transaction Type</Label>

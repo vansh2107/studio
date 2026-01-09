@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
-export function NomineeFields({ control, register, errors, familyMembers, watch, getValues, setValue, maxNominees = 3 }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any, getValues: any, setValue: any, maxNominees?: number }) {
+export function NomineeFields({ control, errors, familyMembers, watch, getValues, setValue, maxNominees = 3 }: { control: any; errors: any; familyMembers: FamilyMember[], watch: any, getValues: any, setValue: any, maxNominees?: number }) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'nominees',
@@ -27,6 +27,12 @@ export function NomineeFields({ control, register, errors, familyMembers, watch,
   const handleAddNominee = () => {
     if (fields.length < maxNominees) {
       append({ name: '', allocation: '', dateOfBirth: '' });
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
     }
   };
   
@@ -82,20 +88,36 @@ export function NomineeFields({ control, register, errors, familyMembers, watch,
             
             <div>
               <Label>Allocation %</Label>
-              <Input
-                type="number"
-                min="0"
-                max="100"
-                {...register(`nominees.${index}.allocation`)}
-                onChange={(e) => handleAllocationChange(e, index)}
+              <Controller
+                name={`nominees.${index}.allocation`}
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="any"
+                    inputMode="numeric"
+                    {...field}
+                    onKeyDown={handleKeyDown}
+                    onChange={(e) => handleAllocationChange(e, index)}
+                  />
+                )}
               />
             </div>
              <div>
               <Label>Date of Birth</Label>
-              <Input
-                type="date"
-                max={getToday()}
-                {...register(`nominees.${index}.dateOfBirth`)}
+              <Controller
+                name={`nominees.${index}.dateOfBirth`}
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="date"
+                    max={getToday()}
+                    {...field}
+                    value={field.value || ''}
+                  />
+                )}
               />
             </div>
             <Button
