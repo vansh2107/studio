@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -76,7 +77,7 @@ const bondSchema = z.object({
   b_purchaseDate: z.string().optional(),
   b_maturityDate: z.string().optional(),
   b_nomineeName: z.string().optional(),
-  b_nameOfFamilyMember: z.string().optional(),
+  b_familyMember: z.string().optional(),
 });
 
 const fdSchema = z.object({
@@ -178,6 +179,13 @@ export function AddAssetModal({
       gi_eligiblePremium: '',
       gi_referenceAgent: '',
       p2d_clientName: '',
+      p2d_folioNumber: '',
+      p2d_nameOnShare: '',
+      p2d_jointHolder1: '',
+      p2d_jointHolder2: '',
+      p2d_jointHolder3: '',
+      p2d_companyName: '',
+      p2d_rtaName: '',
       stocks: {
         holderName: '',
         jointHolder1: '',
@@ -235,7 +243,7 @@ export function AddAssetModal({
           b_purchaseDate: assetToEdit.bonds?.purchaseDate,
           b_maturityDate: assetToEdit.bonds?.maturityDate,
           b_nomineeName: assetToEdit.bonds?.nomineeName,
-          b_nameOfFamilyMember: assetToEdit.bonds?.nameOfFamilyMember,
+          b_familyMember: assetToEdit.bonds?.familyMember,
           fd_companyName: assetToEdit.fixedDeposits?.companyName,
           fd_investorName: assetToEdit.fixedDeposits?.investorName,
           fd_fdName: assetToEdit.fixedDeposits?.fdName,
@@ -371,7 +379,7 @@ export function AddAssetModal({
             purchaseDate: data.b_purchaseDate,
             maturityDate: data.b_maturityDate,
             nomineeName: data.b_nomineeName,
-            nameOfFamilyMember: data.b_nameOfFamilyMember
+            familyMember: data.b_familyMember
         } : undefined,
         fixedDeposits: data.assetType === 'FIXED DEPOSITS' ? {
             companyName: data.fd_companyName,
@@ -421,8 +429,8 @@ export function AddAssetModal({
         <fieldset
           disabled={isViewMode}
           className={cn(
-            "bg-card rounded-xl shadow-lg border relative flex flex-col transition-all duration-300 ease-in-out w-full max-h-[90vh]",
-            selectedAssetType ? "max-w-4xl" : "max-w-xl"
+            "bg-card rounded-xl shadow-lg border relative flex flex-col max-w-[90vw] max-h-[90vh]",
+            selectedAssetType ? "w-4/5" : "w-2/5"
           )}
           onClick={(e) => e.stopPropagation()}
         >

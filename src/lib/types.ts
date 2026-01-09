@@ -218,7 +218,7 @@ export interface BondDetails {
     purchaseDate?: string;
     maturityDate?: string;
     nomineeName?: string;
-    nameOfFamilyMember?: string;
+    familyMember?: string;
 }
 
 export interface FDDetails {
