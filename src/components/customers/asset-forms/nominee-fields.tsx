@@ -10,14 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
-export function NomineeFields({ control, register, errors, familyMembers, maxNominees = 3 }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], maxNominees?: number }) {
+export function NomineeFields({ control, register, errors, familyMembers, watch, maxNominees = 3 }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any, maxNominees?: number }) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'nominees',
   });
   
   const [totalAllocation, setTotalAllocation] = useState(0);
-  const watchedNominees = control.watch('nominees');
+  const watchedNominees = watch('nominees');
   
   useEffect(() => {
     const currentAllocation = watchedNominees?.reduce((acc: number, nominee: any) => acc + (parseFloat(nominee.allocation) || 0), 0) || 0;
@@ -35,7 +35,6 @@ export function NomineeFields({ control, register, errors, familyMembers, maxNom
     if (isNaN(value) || value < 0) value = 0;
     if (value > 100) value = 100;
     
-    // Create a temporary copy to check potential total
     const tempNominees = [...(control.getValues('nominees') || [])];
     tempNominees[index] = { ...tempNominees[index], allocation: value };
     const tempTotal = tempNominees.reduce((acc, n) => acc + (n.allocation || 0), 0);
@@ -43,7 +42,6 @@ export function NomineeFields({ control, register, errors, familyMembers, maxNom
     if (tempTotal <= 100) {
         control.setValue(`nominees.${index}.allocation`, value, { shouldValidate: true });
     } else {
-        // If it would exceed 100, clamp it
         const clampedValue = value - (tempTotal - 100);
         control.setValue(`nominees.${index}.allocation`, clampedValue < 0 ? 0 : clampedValue, { shouldValidate: true });
     }
@@ -111,8 +109,8 @@ export function NomineeFields({ control, register, errors, familyMembers, maxNom
           </div>
         ))}
         
-        {errors?.nominees?.root && (
-            <p className="text-sm text-destructive mt-1">{errors.nominees.root.message}</p>
+        {errors && errors.root && (
+            <p className="text-sm text-destructive mt-1">{errors.root.message}</p>
         )}
       </div>
       {fields.length < maxNominees && (
