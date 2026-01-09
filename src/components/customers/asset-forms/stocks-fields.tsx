@@ -12,12 +12,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 import { NomineeFields } from './nominee-fields';
 
-export function StocksFields({ control, register, errors, familyMembers, watch, getValues, setValue }: { control: any; register: any; errors: any; familyMembers: FamilyMember[], watch: any; getValues: any; setValue: any; }) {
+export function StocksFields({ control, register, errors, familyMembers }: { control: any; register: any; errors: any; familyMembers: FamilyMember[] }) {
 
   const { fields: jointHolderFields, append: appendJointHolder, remove: removeJointHolder } = useFieldArray({
     control,
     name: "stocks.jointHolders"
   });
+
+  const handleMobileKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['e', 'E', '+', '-'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -50,25 +56,25 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
 
         <div className="space-y-2 pt-4">
             <Label>Joint Holders</Label>
-            <div className="flex flex-wrap gap-2 items-center">
+              <div className="space-y-2">
                 {jointHolderFields.map((field, index) => (
-                <div key={field.id} className="flex items-center gap-2 flex-grow">
+                  <div key={field.id} className="flex items-center gap-2">
                     <Input 
-                        {...register(`stocks.jointHolders.${index}.name`)} 
-                        placeholder={`Joint Holder ${index + 1}`}
-                        className="w-auto flex-grow"
+                      {...register(`stocks.jointHolders.${index}.name`)} 
+                      placeholder={`Joint Holder ${index + 1}`}
+                      className="flex-grow"
                     />
                     <Button type="button" variant="ghost" size="icon" onClick={() => removeJointHolder(index)}>
-                        <Trash2 className="h-4 w-4 text-destructive"/>
+                      <Trash2 className="h-4 w-4 text-destructive"/>
                     </Button>
-                </div>
+                  </div>
                 ))}
-                {jointHolderFields.length < 3 && (
-                <Button type="button" variant="link" size="sm" onClick={() => appendJointHolder({ name: "" })}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add
+              </div>
+              {jointHolderFields.length < 3 && (
+                <Button type="button" variant="link" size="sm" onClick={() => appendJointHolder({ name: "" })} className="p-0 h-auto">
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Joint Holder
                 </Button>
-                )}
-            </div>
+              )}
             {errors?.jointHolders && <p className="text-sm text-destructive">{errors.jointHolders.message}</p>}
         </div>
       </div>
@@ -98,7 +104,13 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
         </div>
         <div>
           <Label>Mobile Number</Label>
-          <Input type="tel" {...register('stocks.mobileNumber')} />
+          <Input
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
+            {...register('stocks.mobileNumber')}
+            onKeyDown={handleMobileKeyDown}
+          />
            {errors?.mobileNumber && <p className="text-sm text-destructive">{errors.mobileNumber.message}</p>}
         </div>
         <div>
@@ -110,15 +122,6 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
 
       <Separator />
 
-      <NomineeFields
-        control={control}
-        errors={errors?.nominees}
-        familyMembers={familyMembers}
-        watch={watch}
-        getValues={getValues}
-        setValue={setValue}
-        fieldArrayName="stocks.nominees"
-      />
     </div>
   );
 }
