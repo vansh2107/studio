@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { Client, FamilyMember } from '@/lib/types';
 import { NomineeFields } from './nominee-fields';
 import { JointHolderFields } from './joint-holder-fields';
-import { DPID_LIST } from '@/lib/constants';
 
 export function StocksFields({ control, register, errors, familyMembers, watch, getValues, setValue }: { control: any; register: any; errors: any; familyMembers: (Client | FamilyMember)[], watch: any; getValues: any; setValue: any; }) {
 
@@ -61,18 +60,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
             <Controller
               name="stocks.dpId"
               control={control}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select DPID" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DPID_LIST.map(n => (
-                      <SelectItem key={n} value={n}>{n}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              render={({ field }) => <Input {...field} value={field.value || ''} placeholder="Enter DPID" />}
             />
            {errors?.dpId && <p className="text-sm text-destructive">{errors.dpId.message}</p>}
         </div>

@@ -4,7 +4,7 @@ import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { GENERAL_INSURANCE_CATEGORIES, GENERAL_INSURANCE_POLICY_TYPES, POLICY_NUMBERS } from '@/lib/asset-form-types';
+import { GENERAL_INSURANCE_CATEGORIES, GENERAL_INSURANCE_POLICY_TYPES } from '@/lib/asset-form-types';
 import { Client, FamilyMember } from '@/lib/types';
 import { useWatch } from 'react-hook-form';
 import { INSURANCE_COMPANIES } from '@/lib/constants';
@@ -111,22 +111,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
             </div>
             <div>
                 <Label>Policy Number</Label>
-                <Controller
-                  name="generalInsurance.policyNumber"
-                  control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Policy Number" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {POLICY_NUMBERS.map(n => (
-                          <SelectItem key={n} value={n}>{n}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
+                <Controller name="generalInsurance.policyNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} placeholder="Enter Policy Number"/>} />
             </div>
             <div>
               <Label>Policy Type</Label>

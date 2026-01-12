@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Client, FamilyMember } from '@/lib/types';
 import { JointHolderFields } from './joint-holder-fields';
 import { NomineeFields } from './nominee-fields';
-import { ISIN_NUMBERS } from '@/lib/constants';
 
 
 export function BondFields({ control, errors, familyMembers, watch, register, getValues, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], watch: any, register: any, getValues: any, setValue: any }) {
@@ -102,18 +101,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
             <Controller
               name="bonds.isin"
               control={control}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select ISIN" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ISIN_NUMBERS.map(n => (
-                      <SelectItem key={n} value={n}>{n}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              render={({ field }) => <Input {...field} value={field.value || ''} placeholder="Enter ISIN" />}
             />
           </div>
         </div>
