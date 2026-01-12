@@ -189,6 +189,7 @@ export interface Task {
   };
   ppfTask?: {
       serviceCategory?: string;
+      policyNumber?: string;
   };
   physicalToDematTask?: {
       serviceCategory?: string;

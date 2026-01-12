@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -69,7 +70,6 @@ const mutualFundSchema = z.object({
 
 const insuranceSchema = z.object({
   familyHead: z.string(),
-  typeOfService: z.string().optional(),
   associate: z.string(),
   policyNo: z.string().min(1, "Policy No. is required"),
   company: z.string().min(1, "Company is required"),
@@ -147,6 +147,7 @@ const bondsTaskSchema = z.object({
 });
 const ppfTaskSchema = z.object({
   serviceCategory: z.string().optional(),
+  policyNumber: z.string().optional(),
 });
 const physicalToDematTaskSchema = z.object({
   serviceCategory: z.string().optional(),
@@ -610,14 +611,31 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
             <Separator />
             <h3 className="text-md font-semibold">PPF Task Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                    <Label>Service Category</Label>
-                    <Controller name="ppfTask.serviceCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
-                            <SelectContent>{PPF_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                        </Select>
-                    )} />
-                </div>
+              <div className="space-y-1">
+                <Label>Service Category</Label>
+                <Controller
+                  name="ppfTask.serviceCategory"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Service..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PPF_TASK_SERVICES.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label>Policy Number</Label>
+                <Input {...register('ppfTask.policyNumber')} />
+              </div>
             </div>
           </div>
         )}
