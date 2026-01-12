@@ -59,14 +59,17 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
                 </Select>
               )}
             />
+             {errors?.familyMemberName && <p className="text-sm text-destructive mt-1">{errors.familyMemberName.message}</p>}
           </div>
           <div>
             <Label>Bank Name</Label>
             <Controller name="ppf.bankName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
+             {errors?.bankName && <p className="text-sm text-destructive mt-1">{errors.bankName.message}</p>}
           </div>
           <div>
             <Label>Bank Account Number</Label>
             <Controller name="ppf.bankAccountNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
+            {errors?.bankAccountNumber && <p className="text-sm text-destructive mt-1">{errors.bankAccountNumber.message}</p>}
           </div>
         </div>
         

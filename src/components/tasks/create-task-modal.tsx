@@ -163,7 +163,7 @@ const physicalToDematTaskSchema = z.object({
 });
 
 const stocksTaskSchema = z.object({
-    service: z.string().min(1, "Service is required"),
+    service: z.string().optional(),
     dpid: z.string().optional(),
 });
 
@@ -177,19 +177,86 @@ const taskSchema = baseTaskSchema.extend({
   physicalToDematTask: physicalToDematTaskSchema.optional(),
   stocksTask: stocksTaskSchema.optional(),
 }).superRefine((data, ctx) => {
-  if (data.category === 'Mutual Funds' && !data.mutualFund) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Mutual Fund details are required.",
-      path: ["mutualFund"],
-    });
-  }
-  if (data.category === 'Life Insurance' && !data.insurance) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Insurance details are required.",
-      path: ["insurance"],
-    });
+  switch (data.category) {
+    case 'Mutual Funds':
+      if (!data.mutualFund) {
+        ctx.addIssue({
+          path: ['mutualFund'],
+          message: 'Mutual Fund details are required',
+          code: z.ZodIssueCode.custom,
+        });
+      }
+      break;
+
+    case 'Life Insurance':
+      if (!data.insurance) {
+        ctx.addIssue({
+          path: ['insurance'],
+          message: 'Life Insurance details are required',
+          code: z.ZodIssueCode.custom,
+        });
+      }
+      break;
+
+    case 'General Insurance':
+      if (!data.generalInsuranceTask?.serviceCategory) {
+        ctx.addIssue({
+          path: ['generalInsuranceTask', 'serviceCategory'],
+          message: 'Service Category is required',
+          code: z.ZodIssueCode.custom,
+        });
+      }
+      break;
+
+    case 'FDs':
+      if (!data.fdTask?.serviceCategory) {
+        ctx.addIssue({
+          path: ['fdTask', 'serviceCategory'],
+          message: 'FD Service Category is required',
+          code: z.ZodIssueCode.custom,
+        });
+      }
+      break;
+
+    case 'Bonds':
+      if (!data.bondsTask?.serviceCategory) {
+        ctx.addIssue({
+          path: ['bondsTask', 'serviceCategory'],
+          message: 'Bond Service Category is required',
+          code: z.ZodIssueCode.custom,
+        });
+      }
+      break;
+
+    case 'PPF':
+      if (!data.ppfTask?.serviceCategory) {
+        ctx.addIssue({
+          path: ['ppfTask', 'serviceCategory'],
+          message: 'PPF Service Category is required',
+          code: z.ZodIssueCode.custom,
+        });
+      }
+      break;
+
+    case 'Physical to Demat':
+      if (!data.physicalToDematTask?.serviceCategory) {
+        ctx.addIssue({
+          path: ['physicalToDematTask', 'serviceCategory'],
+          message: 'Service Category is required',
+          code: z.ZodIssueCode.custom,
+        });
+      }
+      break;
+
+    case 'Stocks':
+      if (!data.stocksTask?.service) {
+        ctx.addIssue({
+          path: ['stocksTask', 'service'],
+          message: 'Stocks Service is required',
+          code: z.ZodIssueCode.custom,
+        });
+      }
+      break;
   }
 });
 
@@ -787,7 +854,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     />
                 </div>
                 <div className="space-y-1">
-                    <Label htmlFor="status2">Status 2 (Optional)</Label>
+                    <Label htmlFor="status2">Status 2</Label>
                     <Controller
                     name="status2"
                     control={control}
