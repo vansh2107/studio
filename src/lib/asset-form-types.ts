@@ -24,6 +24,5 @@ export const GENERAL_INSURANCE_POLICY_TYPES = [
 ] as const;
 
 export const BOND_TRANSACTION_TYPES = [
-    'Purchase',
     'Sell'
 ] as const;
