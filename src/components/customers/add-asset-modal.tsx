@@ -290,6 +290,8 @@ export function AddAssetModal({
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
       onMouseDown={(e) => {
+        // Disable closing on backdrop click ONLY for view mode
+        if (isViewMode) return;
         if (e.target === e.currentTarget) onClose();
       }}
     >
@@ -304,7 +306,10 @@ export function AddAssetModal({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="absolute top-4 right-4"
+            className={cn(
+              'absolute top-4 right-4',
+              isViewMode && 'close-icon'
+            )}
           >
             <X />
           </Button>
@@ -362,7 +367,7 @@ export function AddAssetModal({
               </div>
 
               {currentAssetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors?.generalInsurance} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {currentAssetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields register={register} errors={errors?.physicalToDemat} control={control} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
+              {currentAssetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors?.physicalToDemat} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
               {currentAssetType === 'BONDS' && <BondFields control={control} register={register} errors={errors?.bonds} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               {currentAssetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors?.fixedDeposits} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               {currentAssetType === 'PPF' && <PPFFields control={control} register={register} errors={errors?.ppf} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}

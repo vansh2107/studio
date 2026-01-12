@@ -82,12 +82,12 @@ body {
 
 /* Global style for all close icons */
 .close-icon {
-  color: inherit !important;
+  color: hsl(var(--destructive-foreground)) !important;
+  background-color: hsl(var(--destructive)) !important;
 }
 .close-icon:hover {
-  background: #dc2626 !important;   /* red-600 */
-  color: #ffffff !important;        /* white icon */
-  stroke: #ffffff !important;       /* for lucide icons */
+  background-color: hsl(var(--destructive) / 0.9) !important;
+  color: hsl(var(--destructive-foreground)) !important;
 }
 
 /* Specific overrides for shadcn components */
