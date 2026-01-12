@@ -136,6 +136,7 @@ const insuranceSchema = z.object({
 const generalInsuranceTaskSchema = z.object({
   serviceCategory: z.string().optional(),
   subCategory: z.string().optional(),
+  policyNumber: z.string().optional(),
 });
 const fdTaskSchema = z.object({
   serviceCategory: z.string().optional(),
@@ -540,7 +541,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
           <div className="space-y-4 pt-4">
             <Separator />
             <h3 className="text-md font-semibold">General Insurance Task Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1">
                     <Label>Service Category</Label>
                     <Controller name="generalInsuranceTask.serviceCategory" control={control} render={({ field }) => (
@@ -556,6 +557,10 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                             <SelectContent>{GENERAL_INSURANCE_TASK_SUB_CATEGORIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
+                </div>
+                 <div className="space-y-1">
+                    <Label>Policy Number</Label>
+                    <Input {...register('generalInsuranceTask.policyNumber')} />
                 </div>
             </div>
           </div>

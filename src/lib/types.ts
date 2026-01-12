@@ -178,6 +178,7 @@ export interface Task {
   generalInsuranceTask?: {
       serviceCategory?: string;
       subCategory?: string;
+      policyNumber?: string;
   };
   fdTask?: {
       serviceCategory?: string;
