@@ -123,7 +123,7 @@ export const AMC_NAMES = [
   'HDFC Mutual Fund',
   'Helios Mutual Fund',
   'HSBC Mutual Fund',
-  'ICICI Prudential Mutual Fund',
+  'ICICI Prudential Life Insurance Co. Ltd',
   'IL&FS Mutual Fund (IDF)',
   'Invesco Mutual Fund',
   'ITI Mutual Fund',
@@ -266,4 +266,12 @@ export const DPID_LIST = [
   "12044700",
   "12010900",
   "12059300"
+];
+
+export const BANK_ACCOUNT_NUMBERS = [
+  "409812345678",
+  "501267890123",
+  "678945123009",
+  "789001234567",
+  "912345678001"
 ];

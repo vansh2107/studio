@@ -196,6 +196,7 @@ export interface Task {
   ppfTask?: {
       serviceCategory?: string;
       policyNumber?: string;
+      bankAccountNumber?: string;
   };
   physicalToDematTask?: {
       serviceCategory?: string;

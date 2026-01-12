@@ -34,6 +34,7 @@ import {
   FOLIO_NUMBERS,
   ISIN_NUMBERS,
   DPID_LIST,
+  BANK_ACCOUNT_NUMBERS,
 } from '@/lib/constants';
 import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
@@ -154,6 +155,7 @@ const bondsTaskSchema = z.object({
 const ppfTaskSchema = z.object({
   serviceCategory: z.string().optional(),
   policyNumber: z.string().optional(),
+  bankAccountNumber: z.string().optional(),
 });
 const physicalToDematTaskSchema = z.object({
   serviceCategory: z.string().optional(),
@@ -710,7 +712,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
           <div className="space-y-4 pt-4">
             <Separator />
             <h3 className="text-md font-semibold">PPF Task Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <Label>Service Category</Label>
                 <Controller
@@ -744,6 +746,25 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       </SelectTrigger>
                       <SelectContent>
                         {POLICY_NUMBERS.map(n => (
+                          <SelectItem key={n} value={n}>{n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label>Bank Account Number</Label>
+                <Controller
+                  name="ppfTask.bankAccountNumber"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Bank Account Number" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BANK_ACCOUNT_NUMBERS.map(n => (
                           <SelectItem key={n} value={n}>{n}</SelectItem>
                         ))}
                       </SelectContent>
