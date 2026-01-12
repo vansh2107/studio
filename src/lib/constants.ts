@@ -1,4 +1,5 @@
 
+
 export const ROLES = ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'] as const;
 export type Role = typeof ROLES[number];
 
@@ -60,6 +61,8 @@ export const TASK_CATEGORIES = [
 ] as const;
 
 export type TaskCategory = typeof TASK_CATEGORIES[number];
+
+export const DOC_UPLOAD_CATEGORIES = [...TASK_CATEGORIES] as const;
 
 export const TASK_STATUSES = [
   'Pending',

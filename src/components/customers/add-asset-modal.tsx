@@ -10,6 +10,8 @@ import {
   Loader2,
   X,
   Upload,
+  PlusCircle,
+  Trash2,
 } from 'lucide-react';
 import { Client, FamilyMember, Asset } from '@/lib/types';
 import { familyMembers as mockFamilyMembers } from '@/lib/mock-data';
@@ -20,12 +22,13 @@ import { BondFields } from './asset-forms/bond-fields';
 import { FDFields } from './asset-forms/fd-fields';
 import { PPFFields } from './asset-forms/ppf-fields';
 import { StocksFields } from './asset-forms/stocks-fields';
-import { NomineeFields } from './asset-forms/nominee-fields';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { UploadDocModal } from '../doc-vault/upload-doc-modal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { JointHolderFields } from './asset-forms/joint-holder-fields';
+import { Label } from '../ui/label';
+import { DOC_UPLOAD_CATEGORIES } from '@/lib/constants';
+import { Input } from '../ui/input';
 
 const jointHolderSchema = z.object({
   name: z.string().min(1, 'Joint holder name is required.'),
@@ -172,6 +175,90 @@ const assetFormSchema = baseAssetSchema.and(z.discriminatedUnion("assetType", [
 
 type FormData = z.infer<typeof assetFormSchema>;
 
+interface UploadItem {
+  id: number;
+  serviceType: string;
+  file: File | null;
+}
+
+function DocumentUploadSection({ onUpload }: { onUpload: (files: File[]) => void }) {
+  const [documents, setDocuments] = useState<UploadItem[]>([{ id: Date.now(), serviceType: '', file: null }]);
+
+  const handleAddRow = () => {
+    setDocuments([...documents, { id: Date.now(), serviceType: '', file: null }]);
+  };
+
+  const handleRemoveRow = (id: number) => {
+    if (documents.length > 1) {
+      setDocuments(documents.filter(item => item.id !== id));
+    } else {
+      setDocuments([{ id: Date.now(), serviceType: '', file: null }])
+    }
+  };
+  
+  const handleUpdate = (id: number, field: 'serviceType' | 'file', value: string | File | null) => {
+    setDocuments(documents.map(item => (item.id === id ? { ...item, [field]: value } : item)));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
+    const file = e.target.files?.[0] || null;
+    handleUpdate(id, 'file', file);
+  };
+  
+  // This is a dummy onUpload for now as we are not saving the files yet
+  useEffect(() => {
+    const validFiles = documents.map(d => d.file).filter((f): f is File => f !== null);
+    onUpload(validFiles);
+  }, [documents, onUpload]);
+
+
+  return (
+    <div className="space-y-4 pt-4 border-t mt-6">
+        <h3 className="font-semibold text-lg">Document Upload</h3>
+        {documents.map((item, index) => (
+          <div key={item.id} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
+            <div className="space-y-1">
+              {index === 0 && <Label>Service Type</Label>}
+              <Select value={item.serviceType} onValueChange={value => handleUpdate(item.id, 'serviceType', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select service..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {DOC_UPLOAD_CATEGORIES.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              {index === 0 && <Label>File</Label>}
+              <Input type="file" onChange={e => handleFileChange(e, item.id)} />
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => handleRemoveRow(item.id)}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleAddRow}
+        >
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add Another Document
+        </Button>
+    </div>
+  );
+}
+
+
 export function AddAssetModal({
   isOpen,
   onClose,
@@ -189,7 +276,9 @@ export function AddAssetModal({
 }) {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [showDocuments, setShowDocuments] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
 
   const {
     control,
@@ -263,7 +352,7 @@ export function AddAssetModal({
           'bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh] overflow-hidden',
           'w-full max-w-4xl'
         )}
-        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 border-b relative">
           <Button
@@ -334,15 +423,17 @@ export function AddAssetModal({
               {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               
-              {assetType && !isViewMode && (
+               {assetType && !isViewMode && !showDocuments && (
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsUploadModalOpen(true)}
+                  onClick={() => setShowDocuments(true)}
                 >
                   <Upload className="mr-2 h-4 w-4" /> Upload Document
                 </Button>
               )}
+
+              {showDocuments && <DocumentUploadSection onUpload={setUploadedFiles} />}
             </fieldset>
           </div>
 
@@ -359,15 +450,6 @@ export function AddAssetModal({
           </div>
         </form>
       </div>
-
-      {isUploadModalOpen && familyMembers.length > 0 && (
-        <UploadDocModal
-          member={familyMembers[0] as FamilyMember}
-          onClose={() => setIsUploadModalOpen(false)}
-          onSave={() => setIsUploadModalOpen(false)}
-          initialCategory={assetType}
-        />
-      )}
     </div>
   );
 }
