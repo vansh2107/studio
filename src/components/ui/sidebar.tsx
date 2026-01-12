@@ -48,6 +48,26 @@ function useSidebar() {
   return context
 }
 
+const getInitialSidebarState = (defaultOpen: boolean): boolean => {
+  if (typeof window === "undefined") {
+    return defaultOpen;
+  }
+  try {
+    const cookieValue = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
+      ?.split("=")[1];
+
+    if (cookieValue) {
+      return cookieValue === "true";
+    }
+  } catch (error) {
+    // Ignore errors in environments where cookies are not available
+  }
+  return defaultOpen;
+};
+
+
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
@@ -58,7 +78,7 @@ const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = true,
+      defaultOpen = false, // Set default to collapsed
       open: openProp,
       onOpenChange: setOpenProp,
       className,
@@ -71,9 +91,9 @@ const SidebarProvider = React.forwardRef<
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
 
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
-    const [_open, _setOpen] = React.useState(defaultOpen)
+    // Initialize state from cookie or defaultOpen prop
+    const [_open, _setOpen] = React.useState(() => getInitialSidebarState(defaultOpen));
+
     const open = openProp ?? _open
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
@@ -85,7 +105,11 @@ const SidebarProvider = React.forwardRef<
         }
 
         // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        try {
+          document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        } catch (error) {
+           // Ignore errors in environments where cookies are not available
+        }
       },
       [setOpenProp, open]
     )
