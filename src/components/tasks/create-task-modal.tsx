@@ -524,29 +524,6 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
             <Input id="dueDate" type="datetime-local" {...register('dueDate')} disabled={isTerminal} />
             {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
           </div>
-          
-          {selectedCategory === 'Physical to Demat' && (
-            <div className="space-y-1">
-              <Label htmlFor="status2">Status 2 (Optional)</Label>
-              <Controller
-                name="status2"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
-                    <SelectTrigger id="status2">
-                      <SelectValue placeholder="Select Status 2" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TASK_STATUS_2_OPTIONS.map(status => (
-                        <SelectItem key={status} value={status}>{status}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.status2 && <p className="text-sm text-destructive">{errors.status2.message}</p>}
-            </div>
-          )}
 
         </div>
 
@@ -781,7 +758,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
           <div className="space-y-4 pt-4">
             <Separator />
             <h3 className="text-md font-semibold">Physical to Demat Task Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1">
                     <Label>Service Category</Label>
                     <Controller name="physicalToDematTask.serviceCategory" control={control} render={({ field }) => (
@@ -808,6 +785,26 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                         </Select>
                       )}
                     />
+                </div>
+                <div className="space-y-1">
+                    <Label htmlFor="status2">Status 2 (Optional)</Label>
+                    <Controller
+                    name="status2"
+                    control={control}
+                    render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                        <SelectTrigger id="status2">
+                            <SelectValue placeholder="Select Status 2" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {TASK_STATUS_2_OPTIONS.map(status => (
+                            <SelectItem key={status} value={status}>{status}</SelectItem>
+                            ))}
+                        </SelectContent>
+                        </Select>
+                    )}
+                    />
+                    {errors.status2 && <p className="text-sm text-destructive">{errors.status2.message}</p>}
                 </div>
             </div>
           </div>
