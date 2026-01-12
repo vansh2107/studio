@@ -58,8 +58,6 @@ export const TASK_CATEGORIES = [
   'Bonds',
   'PPF',
   'FDs',
-  'NPS',
-  'LAS'
 ] as const;
 
 export type TaskCategory = typeof TASK_CATEGORIES[number];
