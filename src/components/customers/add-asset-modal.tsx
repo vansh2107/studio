@@ -76,7 +76,7 @@ const generalInsuranceSchema = z.object({
   priceWithoutGST: z.string().optional(),
   priceWithGST: z.string().optional(),
   eligiblePremium: z.string().optional(),
-  referenceAgent: z.string().optional(),
+  referenceAgent: zstring().optional(),
   familyMember: z.string().min(1, "Family member is required."),
   nominees: nomineesArraySchema,
   jointHolders: z.array(jointHolderSchema).max(3).optional(),
@@ -161,7 +161,7 @@ const stocksSchema = z.object({
   jointHolders: z.array(jointHolderSchema).max(3).optional(),
 });
 
-const assetFormSchema = baseAssetSchema.and(z.discriminatedUnion("assetType", [
+const assetFormSchema = z.discriminatedUnion("assetType", [
   generalInsuranceSchema,
   physicalToDematSchema,
   bondsSchema,
@@ -170,39 +170,38 @@ const assetFormSchema = baseAssetSchema.and(z.discriminatedUnion("assetType", [
   stocksSchema,
   z.object({ assetType: z.literal("LIFE INSURANCE") }),
   z.object({ assetType: z.literal("MUTUAL FUNDS") }),
-]));
+]);
 
 
 type FormData = z.infer<typeof assetFormSchema>;
 
 interface UploadItem {
   id: number;
-  serviceType: string;
   file: File | null;
 }
 
 function DocumentUploadSection({ onUpload }: { onUpload: (files: File[]) => void }) {
-  const [documents, setDocuments] = useState<UploadItem[]>([{ id: Date.now(), serviceType: '', file: null }]);
+  const [documents, setDocuments] = useState<UploadItem[]>([{ id: Date.now(), file: null }]);
 
   const handleAddRow = () => {
-    setDocuments([...documents, { id: Date.now(), serviceType: '', file: null }]);
+    setDocuments([...documents, { id: Date.now(), file: null }]);
   };
 
   const handleRemoveRow = (id: number) => {
     if (documents.length > 1) {
       setDocuments(documents.filter(item => item.id !== id));
     } else {
-      setDocuments([{ id: Date.now(), serviceType: '', file: null }])
+      setDocuments([{ id: Date.now(), file: null }])
     }
   };
   
-  const handleUpdate = (id: number, field: 'serviceType' | 'file', value: string | File | null) => {
-    setDocuments(documents.map(item => (item.id === id ? { ...item, [field]: value } : item)));
+  const handleUpdate = (id: number, value: File | null) => {
+    setDocuments(documents.map(item => (item.id === id ? { ...item, file: value } : item)));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
     const file = e.target.files?.[0] || null;
-    handleUpdate(id, 'file', file);
+    handleUpdate(id, file);
   };
   
   // This is a dummy onUpload for now as we are not saving the files yet
@@ -216,20 +215,7 @@ function DocumentUploadSection({ onUpload }: { onUpload: (files: File[]) => void
     <div className="space-y-4 pt-4 border-t mt-6">
         <h3 className="font-semibold text-lg">Document Upload</h3>
         {documents.map((item, index) => (
-          <div key={item.id} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
-            <div className="space-y-1">
-              {index === 0 && <Label>Service Type</Label>}
-              <Select value={item.serviceType} onValueChange={value => handleUpdate(item.id, 'serviceType', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select service..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {DOC_UPLOAD_CATEGORIES.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div key={item.id} className="grid grid-cols-[1fr_auto] gap-2 items-center">
             <div className="space-y-1">
               {index === 0 && <Label>File</Label>}
               <Input type="file" onChange={e => handleFileChange(e, item.id)} />
@@ -239,7 +225,7 @@ function DocumentUploadSection({ onUpload }: { onUpload: (files: File[]) => void
               variant="ghost"
               size="icon"
               onClick={() => handleRemoveRow(item.id)}
-              className="text-destructive hover:text-destructive"
+              className="text-destructive hover:text-destructive self-end"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -416,12 +402,12 @@ export function AddAssetModal({
                 />
               </div>
 
-              {assetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
-              {assetType === 'BONDS' && <BondFields control={control} register={register} errors={errors} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
+              {assetType === 'BONDS' && <BondFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               
                {assetType && !isViewMode && !showDocuments && (
                 <Button
