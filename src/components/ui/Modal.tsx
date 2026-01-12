@@ -6,7 +6,6 @@ export default function Modal({ open, onClose, children, className }: { open: bo
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
-      // onClick={onClose} // Removed to prevent closing on backdrop click
     >
       <div
         className={`bg-card rounded-xl p-6 w-full max-w-2xl shadow-lg border relative ${className}`}

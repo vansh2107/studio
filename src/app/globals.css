@@ -84,16 +84,10 @@ body {
 .close-icon {
   color: hsl(var(--destructive-foreground)) !important;
   background-color: hsl(var(--destructive)) !important;
+  opacity: 1 !important;
+  border-radius: 9999px !important;
 }
 .close-icon:hover {
   background-color: hsl(var(--destructive) / 0.9) !important;
   color: hsl(var(--destructive-foreground)) !important;
-}
-
-/* Specific overrides for shadcn components */
-[class*="Dialog_DialogContent"] > button:hover > svg,
-[class*="Toast_ToastClose"] > svg:hover,
-[class*="Sheet_SheetContent"] > button:hover > svg {
-    color: #dc2626 !important;
-    stroke: #dc2626 !important;
 }

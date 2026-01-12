@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { UploadDocModal } from '../doc-vault/upload-doc-modal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { JointHolderFields } from './asset-forms/joint-holder-fields';
 
 const jointHolderSchema = z.object({
   name: z.string().min(1, 'Joint holder name is required.'),
@@ -289,11 +290,6 @@ export function AddAssetModal({
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-      onMouseDown={(e) => {
-        // Disable closing on backdrop click ONLY for view mode
-        if (isViewMode) return;
-        if (e.target === e.currentTarget) onClose();
-      }}
     >
       <div
         className={cn(
@@ -306,10 +302,7 @@ export function AddAssetModal({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className={cn(
-              'absolute top-4 right-4',
-              isViewMode && 'close-icon'
-            )}
+            className={'absolute top-4 right-4 close-icon'}
           >
             <X />
           </Button>
