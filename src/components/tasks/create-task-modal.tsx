@@ -32,6 +32,8 @@ import {
   STOCKS_TASK_SERVICES,
   POLICY_NUMBERS,
   FOLIO_NUMBERS,
+  ISIN_NUMBERS,
+  DPID_LIST,
 } from '@/lib/constants';
 import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
@@ -563,7 +565,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 </div>
                 <div className="space-y-1">
                     <Label>DPID</Label>
-                    <Input {...register('stocksTask.dpid')} />
+                     <Controller
+                      name="stocksTask.dpid"
+                      control={control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select DPID" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DPID_LIST.map(n => (
+                              <SelectItem key={n} value={n}>{n}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                 </div>
             </div>
           </div>
@@ -667,7 +684,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 </div>
                 <div className="space-y-1">
                     <Label>ISIN Number</Label>
-                    <Input {...register('bondsTask.isinNumber')} />
+                    <Controller
+                      name="bondsTask.isinNumber"
+                      control={control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select ISIN" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ISIN_NUMBERS.map(n => (
+                              <SelectItem key={n} value={n}>{n}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                 </div>
             </div>
           </div>
@@ -1157,5 +1189,3 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
-
-    

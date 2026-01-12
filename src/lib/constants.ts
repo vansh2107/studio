@@ -1,5 +1,4 @@
 
-
 export const ROLES = ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'] as const;
 export type Role = typeof ROLES[number];
 
@@ -251,4 +250,20 @@ export const FOLIO_NUMBERS = [
   "34012766",
   "81560493",
   "22947851"
+];
+
+export const ISIN_NUMBERS = [
+  "INE009A01021",
+  "INE467B01029",
+  "INE040A01034",
+  "INE002A01018",
+  "INE123C01045"
+];
+
+export const DPID_LIST = [
+  "12081600",
+  "12033200",
+  "12044700",
+  "12010900",
+  "12059300"
 ];
