@@ -57,109 +57,122 @@ const nomineesArraySchema = z.array(nomineeSchema).max(3, 'You can add a maximum
 });
 
 
-const baseAssetSchema = z.object({
+const baseSchema = z.object({
   familyHead: z.string().min(1, "Family Head is required."),
 });
 
-const generalInsuranceSchema = z.object({
+const generalInsuranceSchema = baseSchema.extend({
   assetType: z.literal("GENERAL INSURANCE"),
-  category: z.string().min(1, "Category is required."),
-  issuer: z.string().min(1, "Issuer is required."),
-  planName: z.string().optional(),
-  policyNumber: z.string().optional(),
-  policyType: z.string().optional(),
-  policyStartDate: z.string().optional(),
-  policyIssueDate: z.string().optional(),
-  policyEndDate: z.string().optional(),
-  vehicleRegNumber: z.string().optional(),
-  sumAssured: z.string().optional(),
-  priceWithoutGST: z.string().optional(),
-  priceWithGST: z.string().optional(),
-  eligiblePremium: z.string().optional(),
-  referenceAgent: zstring().optional(),
-  familyMember: z.string().min(1, "Family member is required."),
-  nominees: nomineesArraySchema,
-  jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  generalInsurance: z.object({
+      category: z.string().min(1, "Category is required."),
+      issuer: z.string().min(1, "Issuer is required."),
+      planName: z.string().optional(),
+      policyNumber: z.string().optional(),
+      policyType: z.string().optional(),
+      policyStartDate: z.string().optional(),
+      policyIssueDate: z.string().optional(),
+      policyEndDate: z.string().optional(),
+      vehicleRegNumber: z.string().optional(),
+      sumAssured: z.string().optional(),
+      priceWithoutGST: z.string().optional(),
+      priceWithGST: z.string().optional(),
+      eligiblePremium: z.string().optional(),
+      referenceAgent: z.string().optional(),
+      familyMember: z.string().min(1, "Family member is required."),
+      nominees: nomineesArraySchema,
+      jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  })
 });
 
-const physicalToDematSchema = z.object({
+const physicalToDematSchema = baseSchema.extend({
   assetType: z.literal("PHYSICAL TO DEMAT"),
-  clientName: z.string().min(1, "Client name is required."),
-  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must be exactly 10 digits"),
-  emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
-  nameOnShare: z.string().optional(),
-  folioNumber: z.string().optional(),
-  companyName: z.string().optional(),
-  rtaName: z.string().optional(),
-  quantity: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-  marketPrice: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-  totalValue: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-  jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  physicalToDemat: z.object({
+      clientName: z.string().min(1, "Client name is required."),
+      mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must be exactly 10 digits"),
+      emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
+      nameOnShare: z.string().optional(),
+      folioNumber: z.string().optional(),
+      companyName: z.string().optional(),
+      rtaName: z.string().optional(),
+      quantity: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+      marketPrice: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+      totalValue: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+      jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  })
 });
 
-const bondsSchema = z.object({
+const bondsSchema = baseSchema.extend({
   assetType: z.literal("BONDS"),
-  familyMember: z.string().min(1, "Family member is required."),
-  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must contain only digits"),
-  emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
-  issuer: z.string().min(1, "Issuer is required."),
-  isin: z.string().optional(),
-  bondPrice: z.preprocess((a) => (a === '' ? undefined : parseFloat(String(a))), z.number().min(0).optional()),
-  bondUnit: z.preprocess((a) => (a === '' ? undefined : parseInt(String(a), 10)), z.number().int().min(1).optional()),
-  bondAmount: z.number().min(0).optional(),
-  purchaseDate: z.string().optional(),
-  maturityDate: z.string().optional(),
-  nominees: nomineesArraySchema,
-  jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  bonds: z.object({
+      familyMember: z.string().min(1, "Family member is required."),
+      mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must contain only digits"),
+      emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
+      issuer: z.string().min(1, "Issuer is required."),
+      isin: z.string().optional(),
+      bondPrice: z.preprocess((a) => (a === '' ? undefined : parseFloat(String(a))), z.number().min(0).optional()),
+      bondUnit: z.preprocess((a) => (a === '' ? undefined : parseInt(String(a), 10)), z.number().int().min(1).optional()),
+      bondAmount: z.number().min(0).optional(),
+      purchaseDate: z.string().optional(),
+      maturityDate: z.string().optional(),
+      nominees: nomineesArraySchema,
+      jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  })
 });
 
-const fdSchema = z.object({
+const fdSchema = baseSchema.extend({
   assetType: z.literal("FIXED DEPOSITS"),
-  investorName: z.string().min(1, "Investor name is required"),
-  companyName: z.string().min(1, "Company/Bank Name is required."),
-  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must contain only digits"),
-  emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
-  fdName: z.string().optional(),
-  fdNumber: z.string().optional(),
-  depositedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-  periodMonth: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(999).optional()),
-  periodDays: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(365).optional()),
-  interestRate: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(100).optional()),
-  maturityAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-  purchaseDate: z.string().optional(),
-  maturityDate: z.string().optional(),
-  nominees: nomineesArraySchema,
-  jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  fixedDeposits: z.object({
+      investorName: z.string().min(1, "Investor name is required"),
+      companyName: z.string().min(1, "Company/Bank Name is required."),
+      mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must contain only digits"),
+      emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
+      fdName: z.string().optional(),
+      fdNumber: z.string().optional(),
+      depositedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+      periodMonth: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(999).optional()),
+      periodDays: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(365).optional()),
+      interestRate: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(100).optional()),
+      maturityAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+      purchaseDate: z.string().optional(),
+      maturityDate: z.string().optional(),
+      nominees: nomineesArraySchema,
+      jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  })
 });
 
-const ppfSchema = z.object({
+const ppfSchema = baseSchema.extend({
   assetType: z.literal("PPF"),
-  familyMemberName: z.string().min(1, "Family member is required."),
-  bankName: z.string().min(1, "Bank name is required."),
-  bankAccountNumber: z.string().min(1, 'Bank account number is required'),
-  contributedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-  balance: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-  openingDate: z.string().optional(),
-  matureDate: z.string().optional(),
-  jointHolders: z.array(jointHolderSchema).max(3).optional(),
-  nominees: nomineesArraySchema,
+  ppf: z.object({
+      familyMemberName: z.string().min(1, "Family member is required."),
+      bankName: z.string().min(1, "Bank name is required."),
+      bankAccountNumber: z.string().min(1, 'Bank account number is required'),
+      contributedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+      balance: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+      openingDate: z.string().optional(),
+      matureDate: z.string().optional(),
+      jointHolders: z.array(jointHolderSchema).max(3).optional(),
+      nominees: nomineesArraySchema,
+  })
 });
 
-const stocksSchema = z.object({
+const stocksSchema = baseSchema.extend({
   assetType: z.literal("STOCKS"),
-  holderName: z.string().min(1, "Holder name is required."),
-  dpId: z.string().min(1, "DPID is required."),
-  dpName: z.string().min(1, "DP Name is required."),
-  bankName: z.string().min(1, "Bank name is required."),
-  bankAccountNumber: z.string().min(1, "Bank Account Number is required."),
-  mobileNumber: z
-    .string()
-    .length(10, { message: "Mobile number must be exactly 10 digits." })
-    .regex(/^[0-9]{10}$/, { message: "Mobile number must contain only digits." }),
-  emailAddress: z.string().email("Invalid email address.").optional().or(z.literal("")),
-  nominees: nomineesArraySchema,
-  jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  stocks: z.object({
+      holderName: z.string().min(1, "Holder name is required."),
+      dpId: z.string().min(1, "DPID is required."),
+      dpName: z.string().min(1, "DP Name is required."),
+      bankName: z.string().min(1, "Bank name is required."),
+      bankAccountNumber: z.string().min(1, "Bank Account Number is required."),
+      mobileNumber: z
+        .string()
+        .length(10, { message: "Mobile number must be exactly 10 digits." })
+        .regex(/^[0-9]{10}$/, { message: "Mobile number must contain only digits." }),
+      emailAddress: z.string().email("Invalid email address.").optional().or(z.literal("")),
+      nominees: nomineesArraySchema,
+      jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  })
 });
+
 
 const assetFormSchema = z.discriminatedUnion("assetType", [
   generalInsuranceSchema,
@@ -168,8 +181,8 @@ const assetFormSchema = z.discriminatedUnion("assetType", [
   fdSchema,
   ppfSchema,
   stocksSchema,
-  z.object({ assetType: z.literal("LIFE INSURANCE") }),
-  z.object({ assetType: z.literal("MUTUAL FUNDS") }),
+  baseSchema.extend({ assetType: z.literal("LIFE INSURANCE") }),
+  baseSchema.extend({ assetType: z.literal("MUTUAL FUNDS") }),
 ]);
 
 
@@ -402,12 +415,12 @@ export function AddAssetModal({
                 />
               </div>
 
-              {assetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
-              {assetType === 'BONDS' && <BondFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors.generalInsurance} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors.physicalToDemat} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
+              {assetType === 'BONDS' && <BondFields control={control} register={register} errors={errors.bonds} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors.fixedDeposits} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors.ppf} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors.stocks} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               
                {assetType && !isViewMode && !showDocuments && (
                 <Button

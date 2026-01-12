@@ -94,18 +94,18 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
               />
             )}
           />
-           {errors?.stocks?.mobileNumber && <p className="text-sm text-destructive">{errors.stocks.mobileNumber.message}</p>}
+           {errors?.mobileNumber && <p className="text-sm text-destructive">{errors.mobileNumber.message}</p>}
         </div>
         <div>
           <Label>Email Address</Label>
           <Input type="email" {...register('stocks.emailAddress')} />
-           {errors?.stocks?.emailAddress && <p className="text-sm text-destructive">{errors.stocks.emailAddress.message}</p>}
+           {errors?.emailAddress && <p className="text-sm text-destructive">{errors.emailAddress.message}</p>}
         </div>
       </div>
 
       <Separator />
 
-      <NomineeFields control={control} errors={errors?.stocks?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+      <NomineeFields control={control} errors={errors?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
     </div>
   );
 }

@@ -41,7 +41,7 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
         {/* ROW 1 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
             <div>
-                <Label>Bank Name</Label>
+                <Label>Company/Bank Name</Label>
                 <Controller name="fixedDeposits.companyName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
                  {errors?.companyName && <p className="text-sm text-destructive mt-1">{errors.companyName.message}</p>}
             </div>

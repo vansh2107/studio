@@ -78,12 +78,12 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
           <div>
             <Label>Contributed Amount</Label>
             <Controller name="ppf.contributedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-            {errors?.ppf?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf.contributedAmount.message}</p>}
+            {errors?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.contributedAmount.message}</p>}
           </div>
            <div>
             <Label>Balance</Label>
             <Controller name="ppf.balance" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-            {errors?.ppf?.balance && <p className="text-sm text-destructive mt-1">{errors.ppf.balance.message}</p>}
+            {errors?.balance && <p className="text-sm text-destructive mt-1">{errors.balance.message}</p>}
           </div>
           <div>
             <Label>Date of Opening</Label>

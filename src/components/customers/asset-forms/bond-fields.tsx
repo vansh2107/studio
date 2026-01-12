@@ -61,6 +61,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
                   </Select>
                   )}
               />
+               {errors?.familyMember && <p className="text-sm text-destructive mt-1">{errors.familyMember.message}</p>}
           </div>
           <div>
             <Label>Mobile Number</Label>
