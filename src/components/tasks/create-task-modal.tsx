@@ -30,6 +30,8 @@ import {
   PHYSICAL_TO_DEMAT_SERVICES,
   TASK_STATUS_2_OPTIONS,
   STOCKS_TASK_SERVICES,
+  POLICY_NUMBERS,
+  FOLIO_NUMBERS,
 } from '@/lib/constants';
 import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
@@ -591,7 +593,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 </div>
                  <div className="space-y-1">
                     <Label>Policy Number</Label>
-                    <Input {...register('generalInsuranceTask.policyNumber')} />
+                    <Controller
+                      name="generalInsuranceTask.policyNumber"
+                      control={control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Policy Number" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {POLICY_NUMBERS.map(n => (
+                              <SelectItem key={n} value={n}>{n}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                 </div>
             </div>
           </div>
@@ -613,7 +630,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 </div>
                 <div className="space-y-1">
                     <Label>Folio Number</Label>
-                    <Input {...register('fdTask.folioNumber')} />
+                    <Controller
+                      name="fdTask.folioNumber"
+                      control={control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Folio Number" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FOLIO_NUMBERS.map(n => (
+                              <SelectItem key={n} value={n}>{n}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                 </div>
             </div>
           </div>
@@ -670,7 +702,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               </div>
               <div className="space-y-1">
                 <Label>Policy Number</Label>
-                <Input {...register('ppfTask.policyNumber')} />
+                <Controller
+                  name="ppfTask.policyNumber"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Policy Number" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {POLICY_NUMBERS.map(n => (
+                          <SelectItem key={n} value={n}>{n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
             </div>
           </div>
@@ -692,7 +739,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 </div>
                 <div className="space-y-1">
                     <Label>Folio Number</Label>
-                    <Input {...register('physicalToDematTask.folioNumber')} />
+                    <Controller
+                      name="physicalToDematTask.folioNumber"
+                      control={control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Folio Number" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FOLIO_NUMBERS.map(n => (
+                              <SelectItem key={n} value={n}>{n}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                 </div>
             </div>
           </div>
@@ -731,7 +793,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
               <div className="space-y-1">
                 <Label>Folio No.</Label>
-                <Input {...register('mutualFund.folioNo')} />
+                 <Controller
+                  name="mutualFund.folioNo"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Folio Number" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FOLIO_NUMBERS.map(n => (
+                          <SelectItem key={n} value={n}>{n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.mutualFund?.folioNo && <p className="text-sm text-destructive">{errors.mutualFund.folioNo.message}</p>}
               </div>
 
@@ -831,7 +908,22 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               </div>
               <div className="space-y-1">
                 <Label>Policy No.</Label>
-                <Input {...register('insurance.policyNo')} />
+                <Controller
+                  name="insurance.policyNo"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Policy Number" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {POLICY_NUMBERS.map(n => (
+                          <SelectItem key={n} value={n}>{n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.insurance?.policyNo && <p className="text-sm text-destructive">{errors.insurance.policyNo.message}</p>}
               </div>
               <div className="space-y-1">

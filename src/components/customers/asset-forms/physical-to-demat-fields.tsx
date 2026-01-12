@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { Client, FamilyMember } from '@/lib/types';
 import { useEffect } from 'react';
 import { JointHolderFields } from './joint-holder-fields';
+import { FOLIO_NUMBERS } from '@/lib/constants';
 
 
 export function PhysicalToDematFields({ register, errors, control, familyMembers, watch, setValue }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[], watch: any, setValue: any }) {
@@ -110,7 +111,22 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         </div>
         <div>
           <Label>Folio Number</Label>
-          <Input {...register('physicalToDemat.folioNumber')} />
+            <Controller
+                name="physicalToDemat.folioNumber"
+                control={control}
+                render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                    <SelectValue placeholder="Select Folio Number" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {FOLIO_NUMBERS.map(n => (
+                        <SelectItem key={n} value={n}>{n}</SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+                )}
+            />
         </div>
          <div>
           <Label>Company Name</Label>
