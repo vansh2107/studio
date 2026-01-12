@@ -95,7 +95,7 @@ const physicalToDematSchema = z.object({
 
 const bondsSchema = z.object({
   familyMember: z.string().min(1, "Family member is required."),
-  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must be exactly 10 digits"),
+  mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must contain only digits"),
   emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
   issuer: z.string().min(1, "Issuer is required."),
   isin: z.string().optional(),
@@ -129,6 +129,7 @@ const fdSchema = z.object({
 const ppfSchema = z.object({
   familyMemberName: z.string().min(1, "Family member is required."),
   bankName: z.string().min(1, "Bank name is required."),
+  bankAccountNumber: z.string().optional(),
   contributedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   balance: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   openingDate: z.string().optional(),
@@ -283,6 +284,11 @@ export function AddAssetModal({
     }, 500);
   };
 
+  const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isViewMode) return;
+      onClose();
+  }
+
   if (!isOpen) return null;
 
   const currentAssetType = assetToEdit?.assetType || assetType;
@@ -290,19 +296,21 @@ export function AddAssetModal({
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      onMouseDown={handleClose}
     >
       <div
         className={cn(
           'bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh] overflow-hidden',
           'w-full max-w-4xl'
         )}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="p-6 border-b relative">
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className={'absolute top-4 right-4 close-icon'}
+            className={cn('absolute top-4 right-4 close-icon')}
           >
             <X />
           </Button>

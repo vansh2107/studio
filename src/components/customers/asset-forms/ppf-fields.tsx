@@ -65,15 +65,19 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
             <Controller name="ppf.bankName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
           </div>
           <div>
-            <Label>Contributed Amount</Label>
-            <Controller name="ppf.contributedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-            {errors?.ppf?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf.contributedAmount.message}</p>}
+            <Label>Bank Account Number</Label>
+            <Controller name="ppf.bankAccountNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
           </div>
         </div>
         
         {/* ROW 2 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
+            <Label>Contributed Amount</Label>
+            <Controller name="ppf.contributedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
+            {errors?.ppf?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf.contributedAmount.message}</p>}
+          </div>
+           <div>
             <Label>Balance</Label>
             <Controller name="ppf.balance" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             {errors?.ppf?.balance && <p className="text-sm text-destructive mt-1">{errors.ppf.balance.message}</p>}

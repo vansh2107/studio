@@ -271,6 +271,7 @@ export interface PPFDetails {
     contributedAmount?: number;
     balance?: number;
     bankName?: string;
+    bankAccountNumber?: string;
     openingDate?: string;
     matureDate?: string;
     jointHolders?: { name: string }[];
