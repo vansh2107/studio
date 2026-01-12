@@ -134,8 +134,8 @@ const ppfSchema = z.object({
   balance: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
   openingDate: z.string().optional(),
   matureDate: z.string().optional(),
-  nominees: nomineesArraySchema,
   jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  nominees: nomineesArraySchema,
 });
 
 const stocksSchema = z.object({
@@ -286,7 +286,6 @@ export function AddAssetModal({
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
       if (isViewMode) return;
-      onClose();
   }
 
   if (!isOpen) return null;
