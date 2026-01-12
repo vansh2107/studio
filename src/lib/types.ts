@@ -144,6 +144,11 @@ export interface InsuranceDetails {
 }
 
 
+export interface StocksTaskDetails {
+    service?: string;
+    dpid?: string;
+}
+
 export interface Task {
   id: string;
   clientId: string; // The ID of the assigned member
@@ -196,6 +201,7 @@ export interface Task {
       serviceCategory?: string;
       folioNumber?: string;
   };
+  stocksTask?: StocksTaskDetails;
 }
 
 

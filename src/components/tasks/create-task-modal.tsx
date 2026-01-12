@@ -29,6 +29,7 @@ import {
   PPF_TASK_SERVICES,
   PHYSICAL_TO_DEMAT_SERVICES,
   TASK_STATUS_2_OPTIONS,
+  STOCKS_TASK_SERVICES,
 } from '@/lib/constants';
 import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
@@ -155,6 +156,11 @@ const physicalToDematTaskSchema = z.object({
   folioNumber: z.string().optional(),
 });
 
+const stocksTaskSchema = z.object({
+    service: z.string().min(1, "Service is required"),
+    dpid: z.string().optional(),
+});
+
 const taskSchema = baseTaskSchema.extend({
   mutualFund: mutualFundSchema.optional(),
   insurance: insuranceSchema.optional(),
@@ -163,6 +169,7 @@ const taskSchema = baseTaskSchema.extend({
   bondsTask: bondsTaskSchema.optional(),
   ppfTask: ppfTaskSchema.optional(),
   physicalToDematTask: physicalToDematTaskSchema.optional(),
+  stocksTask: stocksTaskSchema.optional(),
 }).superRefine((data, ctx) => {
   if (data.category === 'Mutual Funds' && !data.mutualFund) {
     ctx.addIssue({
@@ -401,6 +408,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       if (submissionData.category !== 'Bonds') delete submissionData.bondsTask;
       if (submissionData.category !== 'PPF') delete submissionData.ppfTask;
       if (submissionData.category !== 'Physical to Demat') delete submissionData.physicalToDematTask;
+      if (submissionData.category !== 'Stocks') delete submissionData.stocksTask;
 
 
       onSave(submissionData);
@@ -535,6 +543,29 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
           )}
 
         </div>
+
+        {/* --- STOCKS --- */}
+        {selectedCategory === 'Stocks' && (
+          <div className="space-y-4 pt-4">
+            <Separator />
+            <h3 className="text-md font-semibold">Stocks Task Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                    <Label>SERVICE</Label>
+                    <Controller name="stocksTask.service" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                            <SelectContent>{STOCKS_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                        </Select>
+                    )} />
+                    {errors.stocksTask?.service && <p className="text-sm text-destructive">{errors.stocksTask.service.message}</p>}
+                </div>
+                <div className="space-y-1">
+                    <Label>DPID</Label>
+                    <Input {...register('stocksTask.dpid')} />
+                </div>
+            </div>
+          </div>
+        )}
 
         {/* --- GENERAL INSURANCE --- */}
         {selectedCategory === 'General Insurance' && (

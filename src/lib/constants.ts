@@ -230,3 +230,5 @@ export const PHYSICAL_TO_DEMAT_SERVICES = [
     'IEPF', 'Lost shares', 'Duplicate Share', 'Normal Convert to shares', 
     'Transmission', 'KYC update', 'Name deletion', 'Succession', 'FIR', 'Gazett'
 ] as const;
+
+export const STOCKS_TASK_SERVICES = ['NOMINEE UPDATE', 'CLUSTER CUM TRANSFER', 'KYC UPDATE'] as const;

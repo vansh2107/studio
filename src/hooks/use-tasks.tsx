@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
@@ -37,6 +38,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         description: task.description,
         mutualFund: task.mutualFund,
         insurance: task.insurance,
+        stocksTask: task.stocksTask,
         id: `task-${Date.now()}`,
         status: 'Pending',
         createDate: new Date().toISOString(),
