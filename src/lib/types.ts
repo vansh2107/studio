@@ -299,6 +299,29 @@ export interface StocksDetails {
     nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
 }
 
+export interface MutualFundsDetails {
+  familyMember?: string;
+  folioNumber: string;
+  amc: string;
+  schemeName: string;
+  investedAmount?: number;
+  jointHolders?: { name: string }[];
+  nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
+}
+
+export interface LifeInsuranceDetails {
+  familyMember?: string;
+  company: string;
+  policyNumber: string;
+  planName?: string;
+  sumAssured?: number;
+  premiumAmount?: number;
+  policyStartDate?: string;
+  policyEndDate?: string;
+  jointHolders?: { name: string }[];
+  nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
+}
+
 
 export interface Asset {
   id: string;
@@ -311,6 +334,8 @@ export interface Asset {
   fixedDeposits?: FDDetails;
   ppf?: PPFDetails;
   stocks?: StocksDetails;
+  mutualFunds?: MutualFundsDetails;
+  lifeInsurance?: LifeInsuranceDetails;
 }
 
 export interface Document {
@@ -329,3 +354,5 @@ export interface DashboardAsset {
   value: number;
   familyHeadId: string;
 }
+
+    

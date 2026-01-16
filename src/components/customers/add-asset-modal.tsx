@@ -22,6 +22,8 @@ import { BondFields } from './asset-forms/bond-fields';
 import { FDFields } from './asset-forms/fd-fields';
 import { PPFFields } from './asset-forms/ppf-fields';
 import { StocksFields } from './asset-forms/stocks-fields';
+import { MutualFundsFields } from './asset-forms/mutual-funds-fields';
+import { LifeInsuranceFields } from './asset-forms/life-insurance-fields';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -175,16 +177,35 @@ const stocksSchema = z.object({
   })
 });
 
-// Schemas for asset types that don't have a dedicated form yet.
-// This makes them valid options in the discriminated union without requiring fields.
 const lifeInsuranceSchema = z.object({
-  familyHead: z.string().min(1, "Family Head is required"),
-  assetType: z.literal('LIFE INSURANCE'),
+    familyHead: z.string().min(1, "Family Head is required."),
+    assetType: z.literal("LIFE INSURANCE"),
+    lifeInsurance: z.object({
+        familyMember: z.string().min(1, "Family member is required."),
+        company: z.string().min(1, "Company is required."),
+        policyNumber: z.string().min(1, "Policy Number is required."),
+        planName: z.string().optional(),
+        sumAssured: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+        premiumAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
+        policyStartDate: z.string().optional(),
+        policyEndDate: z.string().optional(),
+        nominees: nomineesArraySchema,
+        jointHolders: z.array(jointHolderSchema).max(3).optional(),
+    })
 });
 
 const mutualFundsSchema = z.object({
-  familyHead: z.string().min(1, "Family Head is required"),
-  assetType: z.literal('MUTUAL FUNDS'),
+  familyHead: z.string().min(1, "Family Head is required."),
+  assetType: z.literal("MUTUAL FUNDS"),
+  mutualFunds: z.object({
+      familyMember: z.string().min(1, "Family member is required."),
+      folioNumber: z.string().min(1, "Folio number is required."),
+      amc: z.string().min(1, "AMC is required."),
+      schemeName: z.string().min(1, "Scheme name is required."),
+      investedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0, "Must be positive").optional()),
+      nominees: nomineesArraySchema,
+      jointHolders: z.array(jointHolderSchema).max(3).optional(),
+  })
 });
 
 
@@ -307,6 +328,7 @@ export function AddAssetModal({
     defaultValues: {
       familyHead: '',
     },
+    shouldUnregister: true,
   });
 
   const assetType = watch('assetType');
@@ -416,12 +438,6 @@ export function AddAssetModal({
                       reset({
                         familyHead: currentFamilyHead,
                         assetType: value as any,
-                        generalInsurance: undefined,
-                        physicalToDemat: undefined,
-                        bonds: undefined,
-                        fixedDeposits: undefined,
-                        ppf: undefined,
-                        stocks: undefined,
                       });
                     }} value={field.value || ''} disabled={!!assetToEdit}>
                       <SelectTrigger>
@@ -445,6 +461,8 @@ export function AddAssetModal({
               {assetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors.fixedDeposits} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors.ppf} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors.stocks} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'MUTUAL FUNDS' && <MutualFundsFields control={control} register={register} errors={errors.mutualFunds} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'LIFE INSURANCE' && <LifeInsuranceFields control={control} register={register} errors={errors.lifeInsurance} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               
                {assetType && !isViewMode && !showDocuments && (
                 <Button
