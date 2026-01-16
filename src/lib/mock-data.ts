@@ -281,6 +281,7 @@ export const documents: Document[] = [
   { id: 'doc-2', clientId: 'client-1', memberId: 'fm-1-1', category: 'Life Insurance', name: 'LIC_Policy_Bond.pdf', url: '#' },
   { id: 'doc-4', clientId: 'client-4', memberId: 'fm-4-1', category: 'Stocks', name: 'Tata_Motors_Shares.pdf', url: '#' },
   { id: 'doc-3', clientId: 'client-3', memberId: 'fm-3-1', category: 'Term Insurance', name: 'HDFC_Term_Policy.pdf', url: '#' },
+  { id: 'doc-5', clientId: 'client-3', memberId: 'fm-4-1', category: 'PPF', name: 'PPF_Statement_2023.pdf', url: '#' },
 ];
 
 // --- Permissions ---
