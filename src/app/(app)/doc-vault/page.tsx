@@ -1,37 +1,20 @@
 
 'use client';
+
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { getFamilyMembersForClient, getDocumentsForClient, Document } from '@/lib/mock-data';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Button } from '@/components/ui/button';
-import { Upload, FileText, Trash2, Folder, Download } from 'lucide-react';
-import { TASK_CATEGORIES } from '@/lib/constants';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Folder } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import Modal from '@/components/ui/Modal';
-import { UploadDocModal } from '@/components/doc-vault/upload-doc-modal';
 import type { FamilyMember } from '@/lib/types';
-import { LifeInsuranceUploadModal } from '@/components/doc-vault/life-insurance-upload-modal';
-
+import Link from 'next/link';
 
 export default function DocVaultPage() {
   const { effectiveUser, hasPermission } = useCurrentUser();
-  const { toast } = useToast();
 
   const [documents, setDocuments] = useState<Document[]>(
     useMemo(() => (effectiveUser?.role === 'CUSTOMER' ? getDocumentsForClient(effectiveUser.id) : []), [effectiveUser])
   );
-
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isLiUploadModalOpen, setIsLiUploadModalOpen] = useState(false);
-  const [selectedMemberForUpload, setSelectedMemberForUpload] = useState<FamilyMember | null>(null);
-  const [activeCategoryForUpload, setActiveCategoryForUpload] = useState<string | null>(null);
 
   const familyMembers = useMemo(() => 
     (effectiveUser?.role === 'CUSTOMER') ? getFamilyMembersForClient(effectiveUser.id) : [],
@@ -39,8 +22,6 @@ export default function DocVaultPage() {
   );
   
   const canView = hasPermission('DOC_VAULT', 'view');
-  const canCreate = hasPermission('DOC_VAULT', 'create');
-  const canDelete = hasPermission('DOC_VAULT', 'delete');
 
   if (!canView) {
     return (
@@ -54,185 +35,44 @@ export default function DocVaultPage() {
       </Card>
     );
   }
-
-  const getDocsForMemberAndCategory = (memberId: string, category: string) => {
-    return documents.filter(doc => doc.memberId === memberId && doc.category === category);
-  };
   
   const getDocCountForMember = (memberId: string) => {
     return documents.filter(doc => doc.memberId === memberId).length;
-  }
-
-  const handleOpenUploadModal = (member: FamilyMember, category: string) => {
-      if (!canCreate) {
-          toast({ title: 'Permission Denied', description: 'You do not have permission to upload documents.', variant: 'destructive'});
-          return;
-      }
-      setSelectedMemberForUpload(member);
-      setActiveCategoryForUpload(category);
-      if (category === 'Life Insurance') {
-        setIsLiUploadModalOpen(true);
-      } else {
-        setIsUploadModalOpen(true);
-      }
-  }
-  
-  const handleCloseUploadModal = () => {
-    setIsUploadModalOpen(false);
-    setIsLiUploadModalOpen(false);
-    setSelectedMemberForUpload(null);
-    setActiveCategoryForUpload(null);
-  }
-
-  const handleSaveUploads = (uploadedFiles: { category: string; file: File }[], member: FamilyMember) => {
-    const newDocs: Document[] = uploadedFiles.map(({ category, file }) => ({
-      id: `doc-${Date.now()}-${Math.random()}`,
-      clientId: member.clientId,
-      memberId: member.id,
-      category,
-      name: file.name,
-      url: URL.createObjectURL(file), // Mock URL
-    }));
-
-    setDocuments(prev => [...prev, ...newDocs]);
-    toast({ title: 'Success', description: `${uploadedFiles.length} document(s) have been uploaded.` });
-    handleCloseUploadModal();
-  };
-  
-  const handleSaveLiUploads = (uploadedFiles: { company: string; file: File }[], member: FamilyMember) => {
-    const newDocs: Document[] = uploadedFiles.map(({ company, file }) => ({
-      id: `doc-${Date.now()}-${Math.random()}`,
-      clientId: member.clientId,
-      memberId: member.id,
-      category: 'Life Insurance',
-      name: `${company} - ${file.name}`, // Prepend company name to file name
-      url: URL.createObjectURL(file), // Mock URL
-    }));
-
-    setDocuments(prev => [...prev, ...newDocs]);
-    toast({ title: 'Success', description: `${uploadedFiles.length} document(s) have been uploaded.` });
-    handleCloseUploadModal();
-  }
-
-
-  const handleDelete = (docId: string) => {
-      if (!canDelete) {
-          toast({ title: 'Permission Denied', description: 'You do not have permission to delete documents.', variant: 'destructive'});
-          return;
-      }
-      setDocuments(prev => prev.filter(doc => doc.id !== docId));
-      toast({ title: 'Success', description: 'Document has been deleted.' });
-  }
-
-  const handleDownload = (doc: Document) => {
-    const link = document.createElement("a");
-    link.href = doc.url;
-    link.download = doc.name || "document";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   return (
-    <>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Document Vault</h1>
-          <p className="text-muted-foreground">Securely store and manage your family's important documents.</p>
-        </div>
-
-        <Accordion type="single" collapsible className="w-full">
-          {familyMembers.map((member) => (
-            <AccordionItem value={member.id} key={member.id}>
-              <AccordionTrigger className="text-lg font-medium hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <Folder className="h-6 w-6 text-primary"/>
-                  {member.firstName} {member.lastName} ({member.relation})
-                  <span className="text-sm font-normal text-muted-foreground ml-2">
-                    ({getDocCountForMember(member.id)} documents)
-                  </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="pl-8 space-y-4 pt-2">
-                  {TASK_CATEGORIES.map(category => {
-                    const memberDocs = getDocsForMemberAndCategory(member.id, category);
-                    
-                    return (
-                      <Card key={category} className="bg-card/50">
-                        <CardHeader className="flex flex-row items-center justify-between py-4">
-                          <CardTitle className="text-base">{category}</CardTitle>
-                          {canCreate && (
-                              <Button variant="outline" size="sm" onClick={() => handleOpenUploadModal(member, category)}>
-                                <Upload className="mr-2 h-4 w-4" />
-                                Upload
-                              </Button>
-                          )}
-                        </CardHeader>
-                        {memberDocs.length > 0 && (
-                          <CardContent>
-                            <ul className="space-y-2">
-                              {memberDocs.map(doc => (
-                                <li key={doc.id} className="flex items-center justify-between p-2 rounded-md hover:bg-background">
-                                  <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-muted-foreground" />
-                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                                      {doc.name}
-                                    </a>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownload(doc)}>
-                                      <Download className="h-4 w-4 text-muted-foreground" />
-                                    </Button>
-                                    {canDelete && (
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(doc.id)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    )}
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          </CardContent>
-                        )}
-                      </Card>
-                    );
-                  })}
-                  <div className="pt-4">
-                      {canCreate && (
-                          <Button variant="outline" onClick={() => handleOpenUploadModal(member, 'General')}>
-                              <Upload className="mr-2 h-4 w-4" />
-                              Upload New Document for {member.firstName}
-                          </Button>
-                      )}
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold font-headline">Document Vault</h1>
+        <p className="text-muted-foreground">Securely store and manage your family's important documents.</p>
       </div>
 
-      <Modal open={isUploadModalOpen} onClose={handleCloseUploadModal}>
-        {selectedMemberForUpload && activeCategoryForUpload && (
-          <UploadDocModal 
-            member={selectedMemberForUpload}
-            onClose={handleCloseUploadModal}
-            onSave={handleSaveUploads}
-            initialCategory={activeCategoryForUpload}
-          />
-        )}
-      </Modal>
-
-      <Modal open={isLiUploadModalOpen} onClose={handleCloseUploadModal}>
-        {selectedMemberForUpload && (
-          <LifeInsuranceUploadModal
-            member={selectedMemberForUpload}
-            onClose={handleCloseUploadModal}
-            onSave={handleSaveLiUploads}
-          />
-        )}
-      </Modal>
-    </>
+      {familyMembers.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {familyMembers.map((member) => (
+            <Link href={`/documents/${member.id}?clientId=${member.clientId}`} key={member.id} className="block">
+              <Card className="hover:shadow-lg hover:border-primary/50 transition-all duration-200 cursor-pointer h-full flex flex-col text-center group">
+                <CardHeader className="flex-grow flex items-center justify-center p-6">
+                  <Folder className="h-20 w-20 text-primary/30 group-hover:text-primary/60 transition-colors" />
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
+                  <p className="font-bold text-lg group-hover:text-primary transition-colors">{member.firstName} {member.lastName}</p>
+                  <p className="text-sm text-muted-foreground">{member.relation}</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {getDocCountForMember(member.id)} document{getDocCountForMember(member.id) !== 1 ? 's' : ''}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-10 text-center text-muted-foreground">
+            <p>No family members found to display document folders.</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
