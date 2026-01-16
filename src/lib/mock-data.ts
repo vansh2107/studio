@@ -239,8 +239,8 @@ export let familyMembers: FamilyMember[] = [
     dateOfBirth: '1990-05-12', 
     address: 'Bangalore, Karnataka',
     panPhotoUrl: 'https://picsum.photos/seed/pan1/400/300',
-    aadhaarPhotoUrl: '/documents/aadhaar-sample.pdf',
-    aadhaarFileName: 'Aadhaar.pdf'
+    aadhaarPhotoUrl: 'https://picsum.photos/seed/aadhaar1/400/300',
+    aadhaarFileName: 'Aadhaar.jpg'
   },
   { id: 'fm-4-2', name: 'Ashish Hirpara', clientId: 'client-3', firstName: 'Ashish', lastName: 'Hirpara', relation: 'Son', phoneNumber: '9876543211', emailId: 'hirenbhai.h@example.com', dateOfBirth: '1992-11-20', address: 'Mumbai, India' },
   { id: 'fm-4-3', name: 'Sumita Hirpara', clientId: 'client-3', firstName: 'Sumita', lastName: 'Hirpara', relation: 'Daughter-in-law', phoneNumber: '', emailId: '', dateOfBirth: '2020-01-15', address: 'Mumbai, India' },
@@ -281,7 +281,7 @@ export const documents: Document[] = [
   { id: 'doc-2', clientId: 'client-1', memberId: 'fm-1-1', category: 'Life Insurance', name: 'LIC_Policy_Bond.pdf', url: '#' },
   { id: 'doc-4', clientId: 'client-4', memberId: 'fm-4-1', category: 'Stocks', name: 'Tata_Motors_Shares.pdf', url: '#' },
   { id: 'doc-3', clientId: 'client-3', memberId: 'fm-3-1', category: 'Term Insurance', name: 'HDFC_Term_Policy.pdf', url: '#' },
-  { id: 'doc-5', clientId: 'client-3', memberId: 'fm-4-1', category: 'PPF', name: 'PPF_Statement_2023.pdf', url: '#' },
+  { id: 'doc-5', clientId: 'client-3', memberId: 'fm-4-1', category: 'PPF', name: 'PPF_Statement.pdf', url: 'https://picsum.photos/seed/doc/400/300' },
 ];
 
 // --- Permissions ---
