@@ -57,11 +57,8 @@ const nomineesArraySchema = z.array(nomineeSchema).max(3, 'You can add a maximum
 });
 
 
-const baseSchema = z.object({
+const generalInsuranceSchema = z.object({
   familyHead: z.string().min(1, "Family Head is required."),
-});
-
-const generalInsuranceSchema = baseSchema.extend({
   assetType: z.literal("GENERAL INSURANCE"),
   generalInsurance: z.object({
       category: z.string().min(1, "Category is required."),
@@ -84,7 +81,8 @@ const generalInsuranceSchema = baseSchema.extend({
   })
 });
 
-const physicalToDematSchema = baseSchema.extend({
+const physicalToDematSchema = z.object({
+  familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("PHYSICAL TO DEMAT"),
   physicalToDemat: z.object({
       clientName: z.string().min(1, "Client name is required."),
@@ -101,7 +99,8 @@ const physicalToDematSchema = baseSchema.extend({
   })
 });
 
-const bondsSchema = baseSchema.extend({
+const bondsSchema = z.object({
+  familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("BONDS"),
   bonds: z.object({
       familyMember: z.string().min(1, "Family member is required."),
@@ -119,7 +118,8 @@ const bondsSchema = baseSchema.extend({
   })
 });
 
-const fdSchema = baseSchema.extend({
+const fdSchema = z.object({
+  familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("FIXED DEPOSITS"),
   fixedDeposits: z.object({
       investorName: z.string().min(1, "Investor name is required"),
@@ -140,7 +140,8 @@ const fdSchema = baseSchema.extend({
   })
 });
 
-const ppfSchema = baseSchema.extend({
+const ppfSchema = z.object({
+  familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("PPF"),
   ppf: z.object({
       familyMemberName: z.string().min(1, "Family member is required."),
@@ -155,7 +156,8 @@ const ppfSchema = baseSchema.extend({
   })
 });
 
-const stocksSchema = baseSchema.extend({
+const stocksSchema = z.object({
+  familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("STOCKS"),
   stocks: z.object({
       holderName: z.string().min(1, "Holder name is required."),
@@ -173,6 +175,14 @@ const stocksSchema = baseSchema.extend({
   })
 });
 
+const baseSchema = z.object({
+  familyHead: z.string().min(1, "Family Head is required"),
+  assetType: z.union([
+    z.literal('LIFE INSURANCE'),
+    z.literal('MUTUAL FUNDS'),
+  ]),
+});
+
 
 const assetFormSchema = z.discriminatedUnion("assetType", [
   generalInsuranceSchema,
@@ -181,8 +191,7 @@ const assetFormSchema = z.discriminatedUnion("assetType", [
   fdSchema,
   ppfSchema,
   stocksSchema,
-  baseSchema.extend({ assetType: z.literal("LIFE INSURANCE") }),
-  baseSchema.extend({ assetType: z.literal("MUTUAL FUNDS") }),
+  baseSchema,
 ]);
 
 
