@@ -59,7 +59,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
                 name="physicalToDemat.clientName"
                 control={control}
                 render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value || ''}>
                     <SelectTrigger>
                     <SelectValue placeholder="Select Member" />
                     </SelectTrigger>

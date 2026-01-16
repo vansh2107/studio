@@ -52,7 +52,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
                 name="generalInsurance.familyMember"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select Member" />
                     </SelectTrigger>
@@ -73,7 +73,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
                 name="generalInsurance.category"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select Category" />
                     </SelectTrigger>
@@ -96,7 +96,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
                   render={({ field }) => (
                      <Combobox
                       options={INSURANCE_COMPANIES.map(c => ({ label: c, value: c }))}
-                      value={field.value}
+                      value={field.value || ''}
                       onChange={field.onChange}
                       placeholder="Select Insurance Company"
                       searchPlaceholder='Search company...'
@@ -119,7 +119,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
                 name="generalInsurance.policyType"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select Type" />
                     </SelectTrigger>

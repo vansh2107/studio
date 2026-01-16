@@ -47,7 +47,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
                   name="bonds.familyMember"
                   control={control}
                   render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
                       <SelectTrigger>
                       <SelectValue placeholder="Select Member" />
                       </SelectTrigger>

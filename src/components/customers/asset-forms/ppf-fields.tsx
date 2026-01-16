@@ -45,7 +45,7 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
               name="ppf.familyMemberName"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value || ''}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Member" />
                   </SelectTrigger>

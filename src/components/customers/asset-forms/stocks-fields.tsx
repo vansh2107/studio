@@ -32,7 +32,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
               name="stocks.holderName"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value || ''}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Holder" />
                   </SelectTrigger>

@@ -379,7 +379,7 @@ export function AddAssetModal({
                   name="familyHead"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!!assetToEdit}>
+                    <Select onValueChange={field.onChange} value={field.value || ''} disabled={!!assetToEdit}>
                       <SelectTrigger>
                         <SelectValue placeholder="Family Head" />
                       </SelectTrigger>
@@ -403,7 +403,7 @@ export function AddAssetModal({
                         familyHead: currentFamilyHead,
                         assetType: value as any,
                       });
-                    }} value={field.value} disabled={!!assetToEdit}>
+                    }} value={field.value || ''} disabled={!!assetToEdit}>
                       <SelectTrigger>
                         <SelectValue placeholder="Asset Type" />
                       </SelectTrigger>
