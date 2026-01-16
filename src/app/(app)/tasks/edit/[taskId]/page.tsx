@@ -75,18 +75,12 @@ export default function EditTaskPage() {
 
   const allRms = useMemo(() => getAllRMs().map(rm => ({ label: `${rm.name} (RM)`, value: rm.id })), []);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<TaskFormData>({
+  const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     shouldUnregister: true,
   });
+
+  const { reset, setValue } = form;
 
   useEffect(() => {
     if (!task) return;
@@ -202,7 +196,7 @@ export default function EditTaskPage() {
             <CreateTaskModal.Form
                 isEditMode={true}
                 task={task}
-                form={{ register, handleSubmit, control, watch, errors, setValue }}
+                form={form}
                 clientOptions={clientOptions}
                 allRms={allRms}
                 onSubmit={onSubmit}
