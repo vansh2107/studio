@@ -325,7 +325,6 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date') => {
         if (!dateString) return '';
         try {
-          // Handles ISO strings from new Date().toISOString()
           const date = parseISO(dateString);
           if (!isNaN(date.getTime())) { 
              return type === 'datetime' ? format(date, "yyyy-MM-dd'T'HH:mm") : format(date, "yyyy-MM-dd");
@@ -333,17 +332,16 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         } catch {}
 
         try {
-           // Handles "dd-MM-yyyy HH:mm" from old chatbot tasks
            const parsed = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
            if (!isNaN(parsed.getTime())) {
              return type === 'datetime' ? format(parsed, "yyyy-MM-dd'T'HH:mm") : format(parsed, "yyyy-MM-dd");
            }
         } catch {}
         
-        return dateString; // Fallback
+        return dateString;
       };
       
-      const taskDataForForm = {
+      const taskDataForForm: Partial<TaskFormData> = {
         // Base fields
         clientId: task.clientId,
         category: task.category as any,
@@ -372,7 +370,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         fdTask: task.category === 'FDs' ? task.fdTask : undefined,
       };
       
-      reset(taskDataForForm as unknown as TaskFormData);
+      reset(taskDataForForm as TaskFormData);
     } else {
       reset({
         clientId: '',
@@ -471,21 +469,11 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               name="category"
               control={control}
               render={({ field }) => (
-                <Select 
-                  onValueChange={(value) => {
-                      const currentValues = watch();
-                      reset({
-                        clientId: currentValues.clientId,
-                        rmName: currentValues.rmName,
-                        serviceableRM: currentValues.serviceableRM,
-                        dueDate: currentValues.dueDate,
-                        description: currentValues.description,
-                        status2: currentValues.status2,
-                        category: value as any,
-                      }, { keepErrors: false });
-                  }} 
-                  value={field.value || ''} 
-                  disabled={isTerminal}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ''}
+                  disabled={isTerminal}
+                >
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -1219,11 +1207,3 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
-
-    
-
-    
-
-    
-
-    
