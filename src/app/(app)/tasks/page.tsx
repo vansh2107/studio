@@ -46,7 +46,7 @@ import type { User } from '@/lib/types';
 import Link from 'next/link';
 
 
-const ExpandedTaskDetails = ({ task }: { task: Task }) => {
+const ExpandedTaskDetails = ({ task, canUpdate, canEditTask }: { task: Task; canUpdate: boolean; canEditTask: boolean }) => {
   const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
     <div>
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
@@ -92,7 +92,28 @@ const ExpandedTaskDetails = ({ task }: { task: Task }) => {
   };
 
   return (
-    <div className="bg-muted/30 p-6 space-y-6">
+    <div className="bg-muted/30 p-6 space-y-6 relative">
+      {canUpdate && (
+        <div className="absolute top-6 right-6">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button asChild variant="outline" size="sm" disabled={!canEditTask}>
+                <Link href={`/tasks/edit/${task.id}`}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Task
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            {
+              !canEditTask && (
+                <TooltipContent>
+                  <p>Task is locked and cannot be edited.</p>
+                </TooltipContent>
+              )
+            }
+          </Tooltip>
+        </div>
+      )}
       <Section title="General Information">
         <DetailItem label="Task ID">{task.id}</DetailItem>
         <DetailItem label="Category">{task.category}</DetailItem>
@@ -502,7 +523,7 @@ export default function TasksPage() {
                             {isExpanded && (
                                 <TableRow className="bg-muted/50 hover:bg-muted/50">
                                     <TableCell colSpan={11}>
-                                        <ExpandedTaskDetails task={task} />
+                                        <ExpandedTaskDetails task={task} canUpdate={canUpdate} canEditTask={canEditTask} />
                                     </TableCell>
                                 </TableRow>
                             )}
