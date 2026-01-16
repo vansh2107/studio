@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { getFamilyMembersForClient, getDocumentsForClient, Document } from '@/lib/mock-data';
+import { getFamilyMembersForClient, getDocumentsForClient, Document, clients } from '@/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Folder } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -16,10 +15,15 @@ export default function DocVaultPage() {
     useMemo(() => (effectiveUser?.role === 'CUSTOMER' ? getDocumentsForClient(effectiveUser.id) : []), [effectiveUser])
   );
 
-  const familyMembers = useMemo(() => 
-    (effectiveUser?.role === 'CUSTOMER') ? getFamilyMembersForClient(effectiveUser.id) : [],
-    [effectiveUser]
-  );
+  const familyMembers = useMemo(() => {
+    if (effectiveUser?.role !== 'CUSTOMER') return [];
+    const head = clients.find(c => c.id === effectiveUser.id);
+    if (!head) return [];
+    return [
+        head as unknown as FamilyMember,
+        ...getFamilyMembersForClient(effectiveUser.id)
+    ];
+  }, [effectiveUser]);
   
   const canView = hasPermission('DOC_VAULT', 'view');
 
@@ -48,17 +52,17 @@ export default function DocVaultPage() {
       </div>
 
       {familyMembers.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {familyMembers.map((member) => (
-            <Link href={`/documents/${member.id}?clientId=${member.clientId}`} key={member.id} className="block">
+            <Link href={`/documents/${member.id}?clientId=${member.clientId || effectiveUser?.id}`} key={member.id} className="block">
               <Card className="hover:shadow-lg hover:border-primary/50 transition-all duration-200 cursor-pointer h-full flex flex-col text-center group">
-                <CardHeader className="flex-grow flex items-center justify-center p-6">
-                  <Folder className="h-20 w-20 text-primary/30 group-hover:text-primary/60 transition-colors" />
+                <CardHeader className="flex-grow flex items-center justify-center p-4">
+                  <Folder className="h-12 w-12 text-primary/30 group-hover:text-primary/60 transition-colors" />
                 </CardHeader>
-                <CardContent className="p-6 pt-0">
-                  <p className="font-bold text-lg group-hover:text-primary transition-colors">{member.firstName} {member.lastName}</p>
-                  <p className="text-sm text-muted-foreground">{member.relation}</p>
-                  <p className="text-sm text-muted-foreground mt-2">
+                <CardContent className="p-4 pt-0">
+                  <p className="font-bold text-base group-hover:text-primary transition-colors truncate">{member.firstName} {member.lastName}</p>
+                  <p className="text-xs text-muted-foreground">{member.relation || 'Head'}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {getDocCountForMember(member.id)} document{getDocCountForMember(member.id) !== 1 ? 's' : ''}
                   </p>
                 </CardContent>
