@@ -93,27 +93,6 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask }: { task: Task; can
 
   return (
     <div className="bg-muted/30 p-6 space-y-6 relative">
-      {canUpdate && (
-        <div className="absolute top-6 right-6">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button asChild variant="outline" size="sm" disabled={!canEditTask}>
-                <Link href={`/tasks/edit/${task.id}`}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit Task
-                </Link>
-              </Button>
-            </TooltipTrigger>
-            {
-              !canEditTask && (
-                <TooltipContent>
-                  <p>Task is locked and cannot be edited.</p>
-                </TooltipContent>
-              )
-            }
-          </Tooltip>
-        </div>
-      )}
       <Section title="General Information">
         <DetailItem label="Task ID">{task.id}</DetailItem>
         <DetailItem label="Category">{task.category}</DetailItem>
@@ -508,20 +487,6 @@ export default function TasksPage() {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-1">
-                                        {canUpdate && (
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button variant="ghost" size="icon" asChild>
-                                                      <Link href={`/tasks/edit/${task.id}`}>
-                                                        <Edit className="h-4 w-4" />
-                                                      </Link>
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>{canEditTask ? 'Edit Task' : 'Task is locked'}</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        )}
                                         {canDelete && (
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
