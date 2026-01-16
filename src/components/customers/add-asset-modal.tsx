@@ -175,12 +175,16 @@ const stocksSchema = z.object({
   })
 });
 
-const baseSchema = z.object({
+// Schemas for asset types that don't have a dedicated form yet.
+// This makes them valid options in the discriminated union without requiring fields.
+const lifeInsuranceSchema = z.object({
   familyHead: z.string().min(1, "Family Head is required"),
-  assetType: z.union([
-    z.literal('LIFE INSURANCE'),
-    z.literal('MUTUAL FUNDS'),
-  ]),
+  assetType: z.literal('LIFE INSURANCE'),
+});
+
+const mutualFundsSchema = z.object({
+  familyHead: z.string().min(1, "Family Head is required"),
+  assetType: z.literal('MUTUAL FUNDS'),
 });
 
 
@@ -191,7 +195,8 @@ const assetFormSchema = z.discriminatedUnion("assetType", [
   fdSchema,
   ppfSchema,
   stocksSchema,
-  baseSchema,
+  lifeInsuranceSchema,
+  mutualFundsSchema,
 ]);
 
 
@@ -411,6 +416,12 @@ export function AddAssetModal({
                       reset({
                         familyHead: currentFamilyHead,
                         assetType: value as any,
+                        generalInsurance: undefined,
+                        physicalToDemat: undefined,
+                        bonds: undefined,
+                        fixedDeposits: undefined,
+                        ppf: undefined,
+                        stocks: undefined,
                       });
                     }} value={field.value || ''} disabled={!!assetToEdit}>
                       <SelectTrigger>
@@ -465,3 +476,5 @@ export function AddAssetModal({
     </div>
   );
 }
+
+    
