@@ -273,37 +273,27 @@ export default function TasksPage() {
     return [...heads, ...members].sort((a, b) => a.label.localeCompare(b.label));
   }, []);
 
-  const canViewTask = (user: User | null, task: Task): boolean => {
-    if (!user) return false;
-
-    if (user.role === 'SUPER_ADMIN') return true;
-    if (user.id === task.clientId) return true; // Customer can see their own tasks
-    if (user.id === task.familyHeadId) return true; // Family head can see member tasks
-
-    if (user.role === 'ASSOCIATE') {
-      return user.id === task.associateId;
-    }
-
-    if (user.role === 'RM') {
-      const allAssociates = getAllAssociates();
-      const taskAssociate = allAssociates.find(a => a.id === task.associateId);
-      return taskAssociate?.rmId === user.id;
-    }
-    
-    if (user.role === 'ADMIN') {
-        const allAssociates = getAllAssociates();
-        const allRms = getAllRMs();
-        const taskAssociate = allAssociates.find(a => a.id === task.associateId);
-        const taskRm = allRms.find(rm => rm.id === taskAssociate?.rmId);
-        return taskRm?.adminId === user.id;
-    }
-
-    return false;
-  };
+  const allRms = useMemo(() => getAllRMs(), []);
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter(task => canViewTask(effectiveUser, task));
-  }, [tasks, effectiveUser]);
+    if (!effectiveUser) return [];
+    if (effectiveUser.role === 'SUPER_ADMIN') {
+        return tasks;
+    }
+
+    return tasks.filter(task => {
+        const serviceableRm = allRms.find(rm => rm.name === task.serviceableRM);
+
+        return (
+            task.adminId === effectiveUser.id ||
+            task.rmId === effectiveUser.id ||
+            task.associateId === effectiveUser.id ||
+            (serviceableRm && serviceableRm.id === effectiveUser.id) ||
+            task.clientId === effectiveUser.id ||
+            task.familyHeadId === effectiveUser.id
+        );
+    });
+  }, [tasks, effectiveUser, allRms]);
 
 
   const getStatusBadgeVariant = (status: string) => {
@@ -329,6 +319,7 @@ export default function TasksPage() {
         return;
     }
     setEditingTask(task);
+    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -341,15 +332,10 @@ export default function TasksPage() {
         updateTask(editingTask.id, formData);
         toast({
             title: 'Task Updated',
-            description: `The task for "${editingTask.clientName}" has been successfully updated.`,
+            description: `The task for "${formData.clientName}" has been successfully updated.`,
         });
     } else {
-        const selectedClientOption = clientOptions.find(opt => opt.value === formData.clientId);
-        const derivedClientName = selectedClientOption ? selectedClientOption.label : 'N/A';
-        addTask({
-            ...formData,
-            clientName: derivedClientName,
-        });
+        addTask(formData);
     }
     handleCloseModal();
   };

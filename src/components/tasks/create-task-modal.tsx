@@ -60,6 +60,10 @@ const baseTaskSchema = z.object({
   dueDate: z.string().min(1, 'Due date and time are required'),
   description: z.string().max(300, 'Description cannot exceed 300 characters.').optional(),
   status2: z.string().optional(),
+  familyHeadId: z.string().optional(),
+  associateId: z.string().optional(),
+  rmId: z.string().optional(),
+  adminId: z.string().optional(),
 });
 
 const mutualFundDetailsSchema = z.object({
@@ -250,8 +254,13 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
 
             if (associateName && selectedCategory === 'Life Insurance')
             setValue('insurance.associate', associateName, { shouldValidate: true });
+
+            setValue('familyHeadId', familyHead?.id);
+            setValue('associateId', assignedAssociate?.id);
+            setValue('rmId', assignedRM?.id);
+            setValue('adminId', assignedAdmin?.id);
         }
-    }, [familyHeadName, associateName, rmName, selectedCategory, setValue, isEditMode]);
+    }, [familyHeadName, associateName, rmName, selectedCategory, setValue, isEditMode, familyHead, assignedAssociate, assignedRM, assignedAdmin]);
 
 
     return (
@@ -314,7 +323,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                 name="serviceableRM"
                 control={control}
                 render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isTerminal}>
                     <SelectTrigger id="serviceableRM">
                         <SelectValue placeholder="Select Serviceable RM" />
                     </SelectTrigger>
@@ -346,7 +355,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     <div className="space-y-1">
                         <Label>SERVICE</Label>
                         <Controller name="stocksTask.service" control={control} render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                                 <SelectContent>{STOCKS_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
@@ -358,7 +367,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         name="stocksTask.dpid"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select DPID" />
                             </SelectTrigger>
@@ -384,7 +393,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     <div className="space-y-1">
                         <Label>Service Category</Label>
                         <Controller name="generalInsuranceTask.serviceCategory" control={control} render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                                 <SelectContent>{GENERAL_INSURANCE_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
@@ -393,7 +402,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     <div className="space-y-1">
                         <Label>Sub Category</Label>
                         <Controller name="generalInsuranceTask.subCategory" control={control} render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Sub Category..." /></SelectTrigger>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Sub Category..." /></SelectTrigger>
                                 <SelectContent>{GENERAL_INSURANCE_TASK_SUB_CATEGORIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
@@ -404,7 +413,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         name="generalInsuranceTask.policyNumber"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select Policy Number" />
                             </SelectTrigger>
@@ -430,7 +439,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     <div className="space-y-1">
                         <Label>Service Category</Label>
                         <Controller name="fdTask.serviceCategory" control={control} render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                                 <SelectContent>{FD_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
@@ -442,7 +451,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         name="fdTask.folioNumber"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select Folio Number" />
                             </SelectTrigger>
@@ -468,7 +477,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     <div className="space-y-1">
                         <Label>Service Category</Label>
                         <Controller name="bondsTask.serviceCategory" control={control} render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                                 <SelectContent>{BONDS_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
@@ -480,7 +489,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         name="bondsTask.isinNumber"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select ISIN" />
                             </SelectTrigger>
@@ -509,7 +518,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     name="ppfTask.serviceCategory"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select Service..." />
                         </SelectTrigger>
@@ -531,7 +540,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     name="ppfTask.policyNumber"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select Policy Number" />
                         </SelectTrigger>
@@ -550,7 +559,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     name="ppfTask.bankAccountNumber"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select Bank Account Number" />
                         </SelectTrigger>
@@ -576,7 +585,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     <div className="space-y-1">
                         <Label>Service Category</Label>
                         <Controller name="physicalToDematTask.serviceCategory" control={control} render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                                 <SelectContent>{PHYSICAL_TO_DEMAT_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
@@ -588,7 +597,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         name="physicalToDematTask.folioNumber"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select Folio Number" />
                             </SelectTrigger>
@@ -607,7 +616,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         name="status2"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}>
                             <SelectTrigger id="status2">
                                 <SelectValue placeholder="Select Status 2" />
                             </SelectTrigger>
@@ -643,7 +652,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     name="mutualFund.service"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                         <SelectContent>
                             {sortedMutualFundServices.map(service => (
@@ -662,7 +671,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     name="mutualFund.folioNo"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select Folio Number" />
                         </SelectTrigger>
@@ -707,7 +716,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     control={control}
                     defaultValue="Pending"
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="Received">Received</SelectItem>
@@ -725,7 +734,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     control={control}
                     defaultValue="Pending"
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="Done">Done</SelectItem>
@@ -743,7 +752,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     control={control}
                     defaultValue="Pending"
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="Done">Done</SelectItem>
@@ -777,7 +786,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                     name="insurance.policyNo"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select Policy Number" />
                         </SelectTrigger>
@@ -842,7 +851,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         name="insurance.typeOfService"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}>
                             <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                             <SelectContent>
                                 {sortedNonFinancialInsuranceServices.map(service => (
@@ -871,7 +880,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         name="insurance.financialService"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value ?? ''}>
                             <SelectTrigger><SelectValue placeholder="Select Financial Service" /></SelectTrigger>
                             <SelectContent>
                                 {FINANCIAL_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -950,7 +959,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                                 name="insurance.reinvestmentStatus"
                                 control={control}
                                 render={({ field }) => (
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                     <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                                     <SelectContent>
                                     <SelectItem value="Pending">Pending</SelectItem>
@@ -977,7 +986,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                                     name="insurance.reinvestmentReason"
                                     control={control}
                                     render={({ field }) => (
-                                    <Select onValueChange={field.onChange} value={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                         <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
                                         <SelectContent>
                                         {REINVESTMENT_REASONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
@@ -1166,7 +1175,3 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 }
 
 CreateTaskModal.Form = CreateTaskForm;
-
-    
-
-    
