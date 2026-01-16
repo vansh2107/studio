@@ -2,8 +2,8 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { dashboardAssets as allDashboardAssets, getFamilyMembersForClient, clients } from '@/lib/mock-data';
-import type { User, AssetCategory, DashboardAsset, FamilyMember } from '@/lib/types';
+import { dashboardAssets as allDashboardAssets, getFamilyMembersForClient, clients, documents as mockDocuments } from '@/lib/mock-data';
+import type { User, AssetCategory, DashboardAsset, FamilyMember, Document } from '@/lib/types';
 import { ASSET_CATEGORIES } from '@/lib/constants';
 import { useMemo, useState } from 'react';
 import {
@@ -210,6 +210,7 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
             category={selectedCategory} 
             assets={assets}
             familyMembers={familyMembers}
+            documents={mockDocuments}
             onClose={handleCloseModal}
           />
         )}
