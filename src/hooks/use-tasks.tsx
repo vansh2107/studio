@@ -12,7 +12,7 @@ export type { TaskStatus, TaskCategory, Task };
 
 interface TaskContextType {
   tasks: Task[];
-  addTask: (task: Partial<Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'>>) => void;
+  addTask: (task: Partial<Omit<Task, 'id'>>) => void;
   updateTask: (taskId: string, updatedTask: Partial<Omit<Task, 'id'>>) => void;
   deleteTask: (taskId: string) => void;
 }
@@ -23,27 +23,21 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const { effectiveUser } = useCurrentUser();
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  const addTask = (task: Partial<Omit<Task, 'id' | 'createDate' | 'status' | 'startDate' | 'completeDate'>>) => {
+  const addTask = (taskDetails: Partial<Omit<Task, 'id'>>) => {
     const newTask: Task = {
-        clientId: task.clientId || 'N/A',
-        familyHeadId: task.familyHeadId,
-        associateId: task.associateId,
-        rmId: task.rmId,
-        adminId: task.adminId,
-        clientName: task.clientName || 'N/A',
-        category: task.category || 'N/A',
-        rmName: task.rmName || 'N/A',
-        serviceableRM: task.serviceableRM,
-        dueDate: task.dueDate || new Date().toISOString(),
-        description: task.description,
-        mutualFund: task.mutualFund,
-        insurance: task.insurance,
-        stocksTask: task.stocksTask,
-        id: `task-${Date.now()}`,
-        status: 'Pending',
-        createDate: new Date().toISOString(),
-        startDate: null,
-        completeDate: null,
+      // --- Base task structure with defaults ---
+      id: `task-${Date.now()}`,
+      status: 'Pending',
+      createDate: new Date().toISOString(),
+      startDate: null,
+      completeDate: null,
+      clientId: '', 
+      clientName: 'N/A',
+      category: 'N/A',
+      dueDate: new Date().toISOString(),
+      
+      // --- Spread the provided details to overwrite defaults ---
+      ...taskDetails,
     };
     setTasks(prevTasks => [...prevTasks, newTask]);
   };
