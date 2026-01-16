@@ -14,9 +14,10 @@ import {
 import { useTasks } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, ChevronRight, Edit } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
+import type { TaskFormData } from '@/components/tasks/create-task-modal';
 import { Task, TaskStatus } from '@/hooks/use-tasks';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -45,7 +46,7 @@ import { getAllRMs, getAllAssociates, getAllAdmins, getAllClients, familyMembers
 import type { User } from '@/lib/types';
 
 
-const ExpandedTaskDetails = ({ task, canUpdate, canEditTask }: { task: Task; canUpdate: boolean; canEditTask: boolean }) => {
+const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: Task; canUpdate: boolean; canEditTask: boolean, onEdit: (task: Task) => void }) => {
   const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
     <div>
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
@@ -92,6 +93,17 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask }: { task: Task; can
 
   return (
     <div className="bg-muted/30 p-6 space-y-6 relative">
+      {canEditTask && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="absolute top-4 right-4 bg-background"
+          onClick={() => onEdit(task)}
+        >
+          <Edit className="mr-2 h-4 w-4" />
+          Edit Task
+        </Button>
+      )}
       <Section title="General Information">
         <DetailItem label="Task ID">{task.id}</DetailItem>
         <DetailItem label="Category">{task.category}</DetailItem>
@@ -234,6 +246,7 @@ export default function TasksPage() {
   const { toast } = useToast();
   const { tasks, addTask, updateTask, deleteTask } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
@@ -306,11 +319,39 @@ export default function TasksPage() {
         toast({ title: 'Permission Denied', description: 'You do not have permission to create tasks.', variant: 'destructive' });
         return;
     }
+    setEditingTask(null);
     setIsModalOpen(true);
+  };
+  
+  const handleOpenEditModal = (task: Task) => {
+    if (!canUpdate) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to edit tasks.', variant: 'destructive' });
+        return;
+    }
+    setEditingTask(task);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setEditingTask(null);
+  };
+
+  const handleSaveTask = (formData: TaskFormData) => {
+    if (editingTask) {
+        updateTask(editingTask.id, formData);
+        toast({
+            title: 'Task Updated',
+            description: `The task for "${editingTask.clientName}" has been successfully updated.`,
+        });
+    } else {
+        const selectedClientOption = clientOptions.find(opt => opt.value === formData.clientId);
+        const derivedClientName = selectedClientOption ? selectedClientOption.label : 'N/A';
+        addTask({
+            ...formData,
+            clientName: derivedClientName,
+        });
+    }
+    handleCloseModal();
   };
 
   const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
@@ -486,6 +527,16 @@ export default function TasksPage() {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-1">
+                                        {canUpdate && (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={!canEditTask}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent><p>{canEditTask ? 'Edit Task' : 'Cannot edit locked task'}</p></TooltipContent>
+                                            </Tooltip>
+                                        )}
                                         {canDelete && (
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
@@ -504,7 +555,7 @@ export default function TasksPage() {
                             {isExpanded && (
                                 <TableRow className="bg-muted/50 hover:bg-muted/50">
                                     <TableCell colSpan={11}>
-                                        <ExpandedTaskDetails task={task} canUpdate={canUpdate} canEditTask={canEditTask} />
+                                        <ExpandedTaskDetails task={task} canUpdate={canUpdate} canEditTask={canEditTask} onEdit={handleOpenEditModal} />
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -524,21 +575,12 @@ export default function TasksPage() {
         </Card>
       </div>
 
-      {isModalOpen && (
-        <Modal open={isModalOpen} onClose={handleCloseModal}>
+      {(isModalOpen || !!editingTask) && (
+        <Modal open={isModalOpen || !!editingTask} onClose={handleCloseModal}>
           <CreateTaskModal
-            task={null}
+            task={editingTask}
             onClose={handleCloseModal}
-            onSave={(formData) => {
-              const selectedClientOption = clientOptions.find(opt => opt.value === formData.clientId);
-              const derivedClientName = selectedClientOption ? selectedClientOption.label : 'N/A';
-              addTask({
-                ...formData,
-                clientName: derivedClientName,
-                dueDate: new Date(formData.dueDate).toISOString(),
-              });
-              handleCloseModal();
-            }}
+            onSave={handleSaveTask}
           />
         </Modal>
       )}
@@ -560,3 +602,5 @@ export default function TasksPage() {
     </TooltipProvider>
   );
 }
+
+    

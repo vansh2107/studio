@@ -179,7 +179,7 @@ export const taskSchema = z.discriminatedUnion('category', [
 ]);
 
 
-type TaskFormData = z.infer<typeof taskSchema>;
+export type TaskFormData = z.infer<typeof taskSchema>;
 
 interface CreateTaskFormProps {
     isEditMode: boolean;
@@ -1058,7 +1058,18 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   });
 
   useEffect(() => {
-    if (!task) return;
+    if (!task) {
+        form.reset({
+            clientId: undefined,
+            category: undefined,
+            rmName: undefined,
+            serviceableRM: undefined,
+            dueDate: '',
+            description: '',
+            status2: undefined,
+        });
+        return;
+    }
 
     const getCategoryPayload = (task: Task) => {
       switch (task.category) {
@@ -1113,25 +1124,13 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       ...getCategoryPayload(task),
     });
 
-  }, [task, form.reset]);
+  }, [task, form]);
   
   const processSave = (data: TaskFormData) => {
     setIsSaving(true);
     
-    const selectedClientOption = clientOptions.find(opt => opt.value === data.clientId);
-    const derivedClientName = selectedClientOption ? selectedClientOption.label : 'N/A';
-
-    const enrichedFormData = {
-      ...data,
-      clientName: derivedClientName,
-    };
-
     setTimeout(() => {
-      onSave(enrichedFormData);
-      toast({
-        title: isEditMode ? 'Task Updated' : 'Task Created',
-        description: `The task has been successfully saved.`,
-      });
+      onSave(data);
       setIsSaving(false);
     }, 400);
   };
@@ -1164,3 +1163,5 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 }
 
 CreateTaskModal.Form = CreateTaskForm;
+
+    
