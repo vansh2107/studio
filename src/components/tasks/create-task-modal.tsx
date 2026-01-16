@@ -54,7 +54,6 @@ const numberField = z.preprocess(
 
 const baseTaskSchema = z.object({
   clientId: z.string().min(1, 'Client is required'),
-  category: z.string().min(1, 'Category is required'),
   rmName: z.string().optional(),
   serviceableRM: z.string().optional(),
   dueDate: z.string().min(1, 'Due date and time are required'),
@@ -62,7 +61,7 @@ const baseTaskSchema = z.object({
   status2: z.string().optional(),
 });
 
-const mutualFundSchema = z.object({
+const mutualFundDetailsSchema = z.object({
   familyHead: z.string(),
   service: z.string().min(1, "Service is required"),
   folioNo: z.string().min(1, "Folio No. is required"),
@@ -73,7 +72,7 @@ const mutualFundSchema = z.object({
   amcSubmissionStatus: z.enum(["Done", "Pending"]),
 });
 
-const insuranceSchema = z.object({
+const insuranceDetailsSchema = z.object({
   familyHead: z.string(),
   associate: z.string(),
   policyNo: z.string().min(1, "Policy No. is required"),
@@ -115,7 +114,7 @@ const insuranceSchema = z.object({
 
     if (data.financialService === 'Maturity') {
       if (!data.maturityDueDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Maturity Due Date is required.", path: ["maturityDueDate"] });
-      if (!data.maturityAmount) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Maturity Amount is required.", path: ["maturityAmount"] });
+      if (data.maturityAmount === undefined) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Maturity Amount is required.", path: ["maturityAmount"] });
     }
     if (data.financialService === 'Death Claim') {
       if (!data.deathClaimProcessDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Death Claim Process Date is required.", path: ["deathClaimProcessDate"] });
@@ -126,7 +125,7 @@ const insuranceSchema = z.object({
     
     if (data.amountStatus === 'Credited') {
       if (!data.receivedDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Received Date is required.", path: ["receivedDate"] });
-      if (!data.receivedAmount) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Received Amount is required.", path: ["receivedAmount"] });
+      if (data.receivedAmount === undefined) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Received Amount is required.", path: ["receivedAmount"] });
       if (!data.reinvestmentStatus) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Re-investment Status is required.", path: ["reinvestmentStatus"] });
 
       if (data.reinvestmentStatus === 'Pending') {
@@ -139,126 +138,45 @@ const insuranceSchema = z.object({
   }
 });
 
-const generalInsuranceTaskSchema = z.object({
-  serviceCategory: z.string().optional(),
+const generalInsuranceTaskDetailsSchema = z.object({
+  serviceCategory: z.string().min(1, 'Service Category is required'),
   subCategory: z.string().optional(),
   policyNumber: z.string().optional(),
 });
-const fdTaskSchema = z.object({
-  serviceCategory: z.string().optional(),
+const fdTaskDetailsSchema = z.object({
+  serviceCategory: z.string().min(1, 'FD Service Category is required'),
   folioNumber: z.string().optional(),
 });
-const bondsTaskSchema = z.object({
-  serviceCategory: z.string().optional(),
+const bondsTaskDetailsSchema = z.object({
+  serviceCategory: z.string().min(1, 'Bond Service Category is required'),
   isinNumber: z.string().optional(),
 });
-const ppfTaskSchema = z.object({
-  serviceCategory: z.string().optional(),
+const ppfTaskDetailsSchema = z.object({
+  serviceCategory: z.string().min(1, 'PPF Service Category is required'),
   policyNumber: z.string().optional(),
   bankAccountNumber: z.string().optional(),
 });
-const physicalToDematTaskSchema = z.object({
-  serviceCategory: z.string().optional(),
+const physicalToDematTaskDetailsSchema = z.object({
+  serviceCategory: z.string().min(1, 'Service Category is required'),
   folioNumber: z.string().optional(),
 });
 
-const stocksTaskSchema = z.object({
-    service: z.string().optional(),
+const stocksTaskDetailsSchema = z.object({
+    service: z.string().min(1, 'Stocks Service is required'),
     dpid: z.string().optional(),
 });
 
-const taskSchema = baseTaskSchema.extend({
-  mutualFund: mutualFundSchema.optional(),
-  insurance: insuranceSchema.optional(),
-  generalInsuranceTask: generalInsuranceTaskSchema.optional(),
-  fdTask: fdTaskSchema.optional(),
-  bondsTask: bondsTaskSchema.optional(),
-  ppfTask: ppfTaskSchema.optional(),
-  physicalToDematTask: physicalToDematTaskSchema.optional(),
-  stocksTask: stocksTaskSchema.optional(),
-}).superRefine((data, ctx) => {
-  switch (data.category) {
-    case 'Mutual Funds':
-      if (!data.mutualFund) {
-        ctx.addIssue({
-          path: ['mutualFund'],
-          message: 'Mutual Fund details are required',
-          code: z.ZodIssueCode.custom,
-        });
-      }
-      break;
+const taskSchema = z.discriminatedUnion('category', [
+  baseTaskSchema.extend({ category: z.literal('Mutual Funds'), mutualFund: mutualFundDetailsSchema }),
+  baseTaskSchema.extend({ category: z.literal('Life Insurance'), insurance: insuranceDetailsSchema }),
+  baseTaskSchema.extend({ category: z.literal('General Insurance'), generalInsuranceTask: generalInsuranceTaskDetailsSchema }),
+  baseTaskSchema.extend({ category: z.literal('Stocks'), stocksTask: stocksTaskDetailsSchema }),
+  baseTaskSchema.extend({ category: z.literal('Physical to Demat'), physicalToDematTask: physicalToDematTaskDetailsSchema }),
+  baseTaskSchema.extend({ category: z.literal('Bonds'), bondsTask: bondsTaskDetailsSchema }),
+  baseTaskSchema.extend({ category: z.literal('PPF'), ppfTask: ppfTaskDetailsSchema }),
+  baseTaskSchema.extend({ category: z.literal('FDs'), fdTask: fdTaskDetailsSchema }),
+]);
 
-    case 'Life Insurance':
-      if (!data.insurance) {
-        ctx.addIssue({
-          path: ['insurance'],
-          message: 'Life Insurance details are required',
-          code: z.ZodIssueCode.custom,
-        });
-      }
-      break;
-
-    case 'General Insurance':
-      if (!data.generalInsuranceTask?.serviceCategory) {
-        ctx.addIssue({
-          path: ['generalInsuranceTask', 'serviceCategory'],
-          message: 'Service Category is required',
-          code: z.ZodIssueCode.custom,
-        });
-      }
-      break;
-
-    case 'FDs':
-      if (!data.fdTask?.serviceCategory) {
-        ctx.addIssue({
-          path: ['fdTask', 'serviceCategory'],
-          message: 'FD Service Category is required',
-          code: z.ZodIssueCode.custom,
-        });
-      }
-      break;
-
-    case 'Bonds':
-      if (!data.bondsTask?.serviceCategory) {
-        ctx.addIssue({
-          path: ['bondsTask', 'serviceCategory'],
-          message: 'Bond Service Category is required',
-          code: z.ZodIssueCode.custom,
-        });
-      }
-      break;
-
-    case 'PPF':
-      if (!data.ppfTask?.serviceCategory) {
-        ctx.addIssue({
-          path: ['ppfTask', 'serviceCategory'],
-          message: 'PPF Service Category is required',
-          code: z.ZodIssueCode.custom,
-        });
-      }
-      break;
-
-    case 'Physical to Demat':
-      if (!data.physicalToDematTask?.serviceCategory) {
-        ctx.addIssue({
-          path: ['physicalToDematTask', 'serviceCategory'],
-          message: 'Service Category is required',
-          code: z.ZodIssueCode.custom,
-        });
-      }
-      break;
-
-    case 'Stocks':
-      if (!data.stocksTask?.service) {
-        ctx.addIssue({
-          path: ['stocksTask', 'service'],
-          message: 'Stocks Service is required',
-          code: z.ZodIssueCode.custom,
-        });
-      }
-      break;
-  }
-});
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
@@ -316,17 +234,13 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     resolver: zodResolver(taskSchema),
     defaultValues: {
       clientId: '',
-      category: '',
       rmName: '',
       serviceableRM: '',
       dueDate: '',
       description: '',
       status2: undefined,
-      insurance: {
-        insuranceType: 'Non-Financial',
-        amountStatus: 'Pending',
-      }
     },
+    shouldUnregister: true,
   });
 
   const selectedCategory = watch('category');
@@ -442,14 +356,12 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     } else {
       reset({
         clientId: '',
-        category: '',
+        category: undefined,
         rmName: '',
         serviceableRM: '',
         dueDate: '',
         description: '',
         status2: undefined,
-        mutualFund: undefined,
-        insurance: { insuranceType: 'Non-Financial', amountStatus: 'Pending' },
       });
     }
   }, [task, reset]);
@@ -549,7 +461,16 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               name="category"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value || ''} disabled={isTerminal || isEditMode}>
+                <Select 
+                  onValueChange={(value) => {
+                    const currentClientId = watch('clientId');
+                    reset({
+                      clientId: currentClientId,
+                      category: value as any,
+                    })
+                  }} 
+                  value={field.value || ''} 
+                  disabled={isTerminal || isEditMode}>
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -607,7 +528,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>SERVICE</Label>
                     <Controller name="stocksTask.service" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                             <SelectContent>{STOCKS_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
@@ -619,7 +540,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="stocksTask.dpid"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select DPID" />
                           </SelectTrigger>
@@ -645,15 +566,16 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>Service Category</Label>
                     <Controller name="generalInsuranceTask.serviceCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                             <SelectContent>{GENERAL_INSURANCE_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
+                    {errors.generalInsuranceTask?.serviceCategory && <p className="text-sm text-destructive">{errors.generalInsuranceTask.serviceCategory.message}</p>}
                 </div>
                 <div className="space-y-1">
                     <Label>Sub Category</Label>
                     <Controller name="generalInsuranceTask.subCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Sub Category..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Sub Category..." /></SelectTrigger>
                             <SelectContent>{GENERAL_INSURANCE_TASK_SUB_CATEGORIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
@@ -664,7 +586,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="generalInsuranceTask.policyNumber"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select Policy Number" />
                           </SelectTrigger>
@@ -690,10 +612,11 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>Service Category</Label>
                     <Controller name="fdTask.serviceCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                             <SelectContent>{FD_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
+                    {errors.fdTask?.serviceCategory && <p className="text-sm text-destructive">{errors.fdTask.serviceCategory.message}</p>}
                 </div>
                 <div className="space-y-1">
                     <Label>Folio Number</Label>
@@ -701,7 +624,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="fdTask.folioNumber"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select Folio Number" />
                           </SelectTrigger>
@@ -727,10 +650,11 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>Service Category</Label>
                     <Controller name="bondsTask.serviceCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                             <SelectContent>{BONDS_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
+                     {errors.bondsTask?.serviceCategory && <p className="text-sm text-destructive">{errors.bondsTask.serviceCategory.message}</p>}
                 </div>
                 <div className="space-y-1">
                     <Label>ISIN Number</Label>
@@ -738,7 +662,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="bondsTask.isinNumber"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select ISIN" />
                           </SelectTrigger>
@@ -767,7 +691,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="ppfTask.serviceCategory"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Service..." />
                       </SelectTrigger>
@@ -781,6 +705,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     </Select>
                   )}
                 />
+                 {errors.ppfTask?.serviceCategory && <p className="text-sm text-destructive">{errors.ppfTask.serviceCategory.message}</p>}
               </div>
               <div className="space-y-1">
                 <Label>Policy Number</Label>
@@ -788,7 +713,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="ppfTask.policyNumber"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Policy Number" />
                       </SelectTrigger>
@@ -807,7 +732,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="ppfTask.bankAccountNumber"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Bank Account Number" />
                       </SelectTrigger>
@@ -833,10 +758,11 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>Service Category</Label>
                     <Controller name="physicalToDematTask.serviceCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                             <SelectContent>{PHYSICAL_TO_DEMAT_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
+                     {errors.physicalToDematTask?.serviceCategory && <p className="text-sm text-destructive">{errors.physicalToDematTask.serviceCategory.message}</p>}
                 </div>
                 <div className="space-y-1">
                     <Label>Folio Number</Label>
@@ -844,7 +770,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="physicalToDematTask.folioNumber"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select Folio Number" />
                           </SelectTrigger>
@@ -863,7 +789,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     name="status2"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
                         <SelectTrigger id="status2">
                             <SelectValue placeholder="Select Status 2" />
                         </SelectTrigger>
@@ -899,7 +825,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="mutualFund.service"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                       <SelectContent>
                         {sortedMutualFundServices.map(service => (
@@ -918,7 +844,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="mutualFund.folioNo"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Folio Number" />
                       </SelectTrigger>
@@ -1033,7 +959,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="insurance.policyNo"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Policy Number" />
                       </SelectTrigger>
@@ -1098,7 +1024,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="insurance.typeOfService"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
                           <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                           <SelectContent>
                             {sortedNonFinancialInsuranceServices.map(service => (
@@ -1127,7 +1053,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="insurance.financialService"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
                           <SelectTrigger><SelectValue placeholder="Select Financial Service" /></SelectTrigger>
                           <SelectContent>
                             {FINANCIAL_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -1179,7 +1105,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                           name="insurance.amountStatus"
                           control={control}
                           render={({ field }) => (
-                            <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4 mt-2">
+                            <RadioGroup onValueChange={field.onChange} value={field.value || 'Pending'} className="flex space-x-4 mt-2">
                                 <div className="flex items-center space-x-2"><RadioGroupItem value="Pending" id="pending" /><Label htmlFor="pending">Pending</Label></div>
                                 <div className="flex items-center space-x-2"><RadioGroupItem value="Credited" id="credited" /><Label htmlFor="credited">Received</Label></div>
                             </RadioGroup>
@@ -1206,7 +1132,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                             name="insurance.reinvestmentStatus"
                             control={control}
                             render={({ field }) => (
-                              <Select onValueChange={field.onChange} value={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value || ''}>
                                 <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="Pending">Pending</SelectItem>
@@ -1233,7 +1159,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                                 name="insurance.reinvestmentReason"
                                 control={control}
                                 render={({ field }) => (
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value || ''}>
                                     <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
                                     <SelectContent>
                                     {REINVESTMENT_REASONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
