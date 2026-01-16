@@ -1,5 +1,5 @@
 
-import { SuperAdmin, Admin, RelationshipManager, Associate, Client, FamilyMember, Asset, Document, User } from './types';
+import { SuperAdmin, Admin, RelationshipManager, Associate, Client, FamilyMember, Asset, Document, User, DashboardAsset } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 import { Permissions } from './constants';
 
@@ -252,6 +252,18 @@ export let familyMembers: FamilyMember[] = [
   { id: 'fm-4-9', name: 'Aira Hirpara', clientId: 'client-3', firstName: 'Aira', lastName: 'Hirpara', relation: 'Grandson', phoneNumber:'', emailId:'viraansh.h@example.com' , dateOfBirth:'2020-01-15' , address:'Mumbai, India' },
 
 ];
+
+export const dashboardAssets: DashboardAsset[] = [
+  { id: 'd-asset-1', ownerMemberId: 'client-3', familyHeadId: 'client-3', category: 'Life Insurance', value: 2500000 },
+  { id: 'd-asset-2', ownerMemberId: 'client-3', familyHeadId: 'client-3', category: 'Fixed Deposits', value: 800000 },
+  { id: 'd-asset-3', ownerMemberId: 'fm-4-1', familyHeadId: 'client-3', category: 'PPF', value: 450000 },
+  { id: 'd-asset-4', ownerMemberId: 'fm-4-2', familyHeadId: 'client-3', category: 'Stocks', value: 600000 },
+  { id: 'd-asset-5', ownerMemberId: 'fm-4-2', familyHeadId: 'client-3', category: 'Mutual Funds', value: 900000 },
+  { id: 'd-asset-6', ownerMemberId: 'fm-4-4', familyHeadId: 'client-3', category: 'Term Insurance', value: 1500000 },
+  { id: 'd-asset-7', ownerMemberId: 'fm-4-3', familyHeadId: 'client-3', category: 'Fixed Deposits', value: 300000 },
+  { id: 'd-asset-8', ownerMemberId: 'fm-4-5', familyHeadId: 'client-3', category: 'Mutual Funds', value: 500000 },
+];
+
 
 export const assets: Asset[] = [
   { id: 'asset-1', familyHeadId: 'client-1', familyHeadName: 'Bipin Hirpara', assetType: 'STOCKS', },

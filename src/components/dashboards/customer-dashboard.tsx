@@ -2,8 +2,8 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getAssetsForClient, getFamilyMembersForClient, clients } from '@/lib/mock-data';
-import type { User, AssetCategory, Client } from '@/lib/types';
+import { dashboardAssets as allDashboardAssets, getFamilyMembersForClient, clients } from '@/lib/mock-data';
+import type { User, AssetCategory, DashboardAsset } from '@/lib/types';
 import { ASSET_CATEGORIES } from '@/lib/constants';
 import { useMemo, useState } from 'react';
 import {
@@ -24,6 +24,8 @@ import { cn } from '@/lib/utils';
 import { useTasks } from '@/hooks/use-tasks';
 import CustomerTaskDashboard from './customer-task-dashboard';
 import { StatCard } from '../ui/stat-card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 interface CustomerDashboardProps {
   user: User;
@@ -41,9 +43,30 @@ const categoryIcons: Record<AssetCategory, React.ElementType> = {
 
 export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState('all');
 
-  const assets = useMemo(() => user.role === 'CUSTOMER' ? getAssetsForClient(user.id) : [], [user]);
   const familyMembers = useMemo(() => user.role === 'CUSTOMER' ? getFamilyMembersForClient(user.id): [], [user]);
+
+  const familyMembersForDropdown = useMemo(() => {
+    if (user.role !== 'CUSTOMER') return [];
+    const head = clients.find(c => c.id === user.id);
+    if (!head) return [];
+    const members = getFamilyMembersForClient(user.id);
+    return [
+        { id: head.id, name: `${head.firstName} ${head.lastName} (Head)` },
+        ...members.map(m => ({ id: m.id, name: `${m.name} (${m.relation})` }))
+    ];
+  }, [user]);
+
+  const assets: DashboardAsset[] = useMemo(() => {
+      if (user.role !== 'CUSTOMER') return [];
+      const userAssets = allDashboardAssets.filter(a => a.familyHeadId === user.id);
+      if (selectedMemberId === 'all') {
+          return userAssets;
+      }
+      return userAssets.filter(a => a.ownerMemberId === selectedMemberId);
+  }, [user, selectedMemberId]);
+
 
   const { tasks } = useTasks();
   
@@ -96,7 +119,25 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
 
   return (
     <>
-      <h1 className="text-3xl font-bold font-headline">Family Dashboard</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold font-headline">Family Dashboard</h1>
+        <div className="flex items-center gap-2">
+            <Label htmlFor="member-filter">View Assets For</Label>
+            <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
+                <SelectTrigger id="member-filter" className="w-[280px]">
+                    <SelectValue placeholder="Select a member" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Members</SelectItem>
+                    {familyMembersForDropdown.map(member => (
+                        <SelectItem key={member.id} value={member.id}>
+                            {member.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+    </div>
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard label="My Tasks" value={customerTasks.length} href="/tasks" icon={ClipboardList} />
         <StatCard label="Doc Vault" value="View" href="/doc-vault" icon={FolderOpen} />

@@ -1,15 +1,16 @@
+
 'use client';
 
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import type { Asset, AssetCategory, FamilyMember } from '@/lib/types';
+import type { DashboardAsset, AssetCategory, FamilyMember } from '@/lib/types';
 import { X, User as UserIcon } from 'lucide-react';
 
 interface AssetBreakdownModalProps {
   category: AssetCategory;
-  assets: Asset[];
+  assets: DashboardAsset[];
   familyMembers: FamilyMember[];
   onClose: () => void;
 }

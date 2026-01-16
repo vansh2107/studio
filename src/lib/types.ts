@@ -312,3 +312,20 @@ export interface Asset {
   ppf?: PPFDetails;
   stocks?: StocksDetails;
 }
+
+export interface Document {
+  id: string;
+  clientId: string;
+  memberId: string;
+  category: string;
+  name: string;
+  url: string;
+}
+
+export interface DashboardAsset {
+  id: string;
+  ownerMemberId: string;
+  category: AssetCategory;
+  value: number;
+  familyHeadId: string;
+}
