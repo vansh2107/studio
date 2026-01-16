@@ -299,20 +299,31 @@ export function AddAssetModal({
   familyHeads,
   onSave,
   assetToEdit,
-  isViewMode = false,
 }: {
   isOpen: boolean;
   onClose: () => void;
   familyHeads: Client[];
   onSave: (asset: Asset) => void;
   assetToEdit?: Asset | null;
-  isViewMode?: boolean;
 }) {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [showDocuments, setShowDocuments] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
+  const defaultFormValues = useMemo(() => {
+    if (assetToEdit) {
+      const { id, familyHeadId, familyHeadName, ...restOfAsset } = assetToEdit;
+      return {
+        familyHead: familyHeadId,
+        ...(restOfAsset as any),
+      };
+    }
+    return {
+      familyHead: '',
+      assetType: undefined,
+    };
+  }, [assetToEdit]);
 
   const {
     control,
@@ -325,9 +336,7 @@ export function AddAssetModal({
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(assetFormSchema),
-    defaultValues: {
-      familyHead: '',
-    },
+    defaultValues: defaultFormValues,
     shouldUnregister: true,
   });
 
@@ -335,49 +344,59 @@ export function AddAssetModal({
   const familyHeadId = watch('familyHead');
 
   useEffect(() => {
-    if (assetToEdit) {
-      // Deconstruct the asset to separate form-data from other properties
-      const { id, familyHeadId, familyHeadName, ...restOfAsset } = assetToEdit;
-
-      const defaultVals: Partial<FormData> = {
-        // Map the storage ID to the form field name
-        familyHead: familyHeadId,
-        // The rest of the properties (assetType, bonds, etc.) should match the form structure
-        ...restOfAsset,
-      };
-      reset(defaultVals as any);
-    } else {
-      reset({ familyHead: '', assetType: undefined });
-    }
-  }, [assetToEdit, reset]);
+    reset(defaultFormValues);
+  }, [assetToEdit, reset, defaultFormValues]);
 
 
   const familyMembers = useMemo(() => {
     if (!familyHeadId) return [];
     const head = familyHeads.find((h) => h.id === familyHeadId);
-    return head ? [{ id: head.id, name: `${head.firstName} ${head.lastName}`, relation: 'Head' }, ...mockFamilyMembers.filter(m => m.clientId === familyHeadId)] : [];
+    return head ? [{
+      ...head,
+      id: head.id,
+      firstName: head.firstName,
+      lastName: head.lastName,
+      clientId: head.id,
+      relation: 'Head'
+    } as Client, ...mockFamilyMembers.filter(m => m.clientId === familyHeadId)] : [];
   }, [familyHeadId, familyHeads]);
   
-  const onSubmit = (data: FormData) => {
-    setIsSaving(true);
-    const head = familyHeads.find(h => h.id === data.familyHead);
-    if (!head) {
+  const onSubmit = async (data: FormData) => {
+    try {
+      setIsSaving(true);
+      const head = familyHeads.find(h => h.id === data.familyHead);
+      if (!head) {
+        toast({ 
+          title: 'Error', 
+          description: 'Please select a valid family head.',
+          variant: 'destructive'
+        });
         setIsSaving(false);
         return;
-    };
+      }
 
-    const newAsset: Asset = {
-      id: assetToEdit?.id ?? `asset-${Date.now()}`,
-      familyHeadId: head.id,
-      familyHeadName: `${head.firstName} ${head.lastName}`,
-      ...data
-    };
-    
-    setTimeout(() => {
+      const newAsset: Asset = {
+        id: assetToEdit?.id ?? `asset-${Date.now()}`,
+        familyHeadId: head.id,
+        familyHeadName: `${head.firstName} ${head.lastName}`,
+        ...data
+      };
+      
+      // Simulate async operation
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       onSave(newAsset);
       setIsSaving(false);
       onClose();
-    }, 500);
+    } catch (error) {
+      console.error('Error saving asset:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save asset. Please try again.',
+        variant: 'destructive'
+      });
+      setIsSaving(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -403,68 +422,93 @@ export function AddAssetModal({
             <X />
           </Button>
           <h2 className="font-semibold text-lg">
-            {isViewMode ? 'View Asset' : assetToEdit ? 'Edit Asset' : 'Add Asset'}
+            {assetToEdit ? 'Edit Asset' : 'Add Asset'}
           </h2>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-6">
-            <fieldset disabled={isViewMode} className="space-y-6">
+            {Object.keys(errors).length > 0 && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                <p className="font-semibold text-sm text-destructive mb-2">Please fix the following errors:</p>
+                <ul className="text-sm text-destructive space-y-1">
+                  {Object.entries(errors).map(([key, value]: any) => (
+                    <li key={key}>• {value?.message || `${key} is invalid`}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <fieldset disabled={false} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                  <Controller
                   name="familyHead"
                   control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''} disabled={!!assetToEdit}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Family Head" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {familyHeads.map((h) => (
-                          <SelectItem key={h.id} value={h.id}>
-                            {h.firstName} {h.lastName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                  render={({ field }) => {
+                    const selectedHead = familyHeads.find(h => h.id === field.value);
+                    return (
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Family Head</label>
+                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={!!assetToEdit}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Family Head">
+                              {selectedHead ? `${selectedHead.firstName} ${selectedHead.lastName}` : 'Family Head'}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {familyHeads.map((h) => (
+                              <SelectItem key={h.id} value={h.id}>
+                                {h.firstName} {h.lastName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {errors.familyHead && <p className="text-sm text-destructive mt-1">{errors.familyHead.message}</p>}
+                      </div>
+                    );
+                  }}
                 />
                 <Controller
                   name="assetType"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={(value) => {
-                      const currentFamilyHead = getValues('familyHead');
-                      reset({
-                        familyHead: currentFamilyHead,
-                        assetType: value as any,
-                      });
-                    }} value={field.value || ''} disabled={!!assetToEdit}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Asset Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ASSET_TYPES.map((a) => (
-                          <SelectItem key={a} value={a}>
-                            {a}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Asset Type</label>
+                      <Select onValueChange={(value) => {
+                        const currentFamilyHead = getValues('familyHead');
+                        reset({
+                          familyHead: currentFamilyHead,
+                          assetType: value as any,
+                        });
+                      }} value={field.value || ''} disabled={!!assetToEdit}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Asset Type">
+                            {field.value || 'Asset Type'}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ASSET_TYPES.map((a) => (
+                            <SelectItem key={a} value={a}>
+                              {a}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.assetType && <p className="text-sm text-destructive mt-1">{errors.assetType.message}</p>}
+                    </div>
                   )}
                 />
               </div>
 
-              {assetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors.generalInsurance} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors.physicalToDemat} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
-              {assetType === 'BONDS' && <BondFields control={control} register={register} errors={errors.bonds} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors.fixedDeposits} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors.ppf} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors.stocks} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'MUTUAL FUNDS' && <MutualFundsFields control={control} register={register} errors={errors.mutualFunds} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'LIFE INSURANCE' && <LifeInsuranceFields control={control} register={register} errors={errors.lifeInsurance} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
+              {assetType === 'BONDS' && <BondFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'MUTUAL FUNDS' && <MutualFundsFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'LIFE INSURANCE' && <LifeInsuranceFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
               
-               {assetType && !isViewMode && !showDocuments && (
+               {assetType && !showDocuments && (
                 <Button
                   type="button"
                   variant="outline"
@@ -482,12 +526,10 @@ export function AddAssetModal({
             <Button type="button" variant="outline" onClick={onClose}>
               Close
             </Button>
-            {!isViewMode && (
-              <Button type="submit" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Asset
-              </Button>
-            )}
+            <Button type="submit" disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Asset
+            </Button>
           </div>
         </form>
       </div>

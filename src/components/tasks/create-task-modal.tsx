@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Task, TaskStatus, TaskStatus2 } from '@/hooks/use-tasks';
+import { Task } from '@/hooks/use-tasks';
+import { TaskStatus, TaskStatus2 } from '@/lib/constants';
 import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -208,6 +209,8 @@ const sortedNonFinancialInsuranceServices = [...INSURANCE_SERVICES]
 function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmit, isSaving }: CreateTaskFormProps) {
     const { register, handleSubmit, control, setValue, watch, formState: { errors } } = form;
 
+    const errorsWithType = errors as any;
+
     const isTerminal = isEditMode && task ? ['Completed', 'Cancelled', 'Rejected'].includes(task.status) : false;
 
     const selectedCategory = watch('category');
@@ -322,10 +325,12 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                 <Controller
                 name="serviceableRM"
                 control={control}
-                render={({ field }) => (
+                render={({ field }) => {
+                  const selectedRm = allRms.find(rm => rm.label === field.value);
+                  return (
                     <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isTerminal}>
                     <SelectTrigger id="serviceableRM">
-                        <SelectValue placeholder="Select Serviceable RM" />
+                        <SelectValue placeholder={selectedRm ? selectedRm.label : "Select Serviceable RM"} />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="none">None</SelectItem>
@@ -334,7 +339,8 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         ))}
                     </SelectContent>
                     </Select>
-                )}
+                  );
+                }}
                 />
             </div>
 
@@ -359,7 +365,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                                 <SelectContent>{STOCKS_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
-                        {errors.stocksTask?.service && <p className="text-sm text-destructive">{errors.stocksTask.service.message}</p>}
+                        {errorsWithType.stocksTask?.service && <p className="text-sm text-destructive">{errorsWithType.stocksTask.service.message}</p>}
                     </div>
                     <div className="space-y-1">
                         <Label>DPID</Label>
@@ -397,7 +403,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                                 <SelectContent>{GENERAL_INSURANCE_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
-                        {errors.generalInsuranceTask?.serviceCategory && <p className="text-sm text-destructive">{errors.generalInsuranceTask.serviceCategory.message}</p>}
+                        {errorsWithType.generalInsuranceTask?.serviceCategory && <p className="text-sm text-destructive">{errorsWithType.generalInsuranceTask.serviceCategory.message}</p>}
                     </div>
                     <div className="space-y-1">
                         <Label>Sub Category</Label>
@@ -443,7 +449,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                                 <SelectContent>{FD_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
-                        {errors.fdTask?.serviceCategory && <p className="text-sm text-destructive">{errors.fdTask.serviceCategory.message}</p>}
+                        {errorsWithType.fdTask?.serviceCategory && <p className="text-sm text-destructive">{errorsWithType.fdTask.serviceCategory.message}</p>}
                     </div>
                     <div className="space-y-1">
                         <Label>Folio Number</Label>
@@ -481,7 +487,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                                 <SelectContent>{BONDS_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
-                        {errors.bondsTask?.serviceCategory && <p className="text-sm text-destructive">{errors.bondsTask.serviceCategory.message}</p>}
+                        {errorsWithType.bondsTask?.serviceCategory && <p className="text-sm text-destructive">{errorsWithType.bondsTask.serviceCategory.message}</p>}
                     </div>
                     <div className="space-y-1">
                         <Label>ISIN Number</Label>
@@ -532,7 +538,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         </Select>
                     )}
                     />
-                    {errors.ppfTask?.serviceCategory && <p className="text-sm text-destructive">{errors.ppfTask.serviceCategory.message}</p>}
+                    {errorsWithType.ppfTask?.serviceCategory && <p className="text-sm text-destructive">{errorsWithType.ppfTask.serviceCategory.message}</p>}
                 </div>
                 <div className="space-y-1">
                     <Label>Policy Number</Label>
@@ -589,7 +595,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                                 <SelectContent>{PHYSICAL_TO_DEMAT_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                         )} />
-                        {errors.physicalToDematTask?.serviceCategory && <p className="text-sm text-destructive">{errors.physicalToDematTask.serviceCategory.message}</p>}
+                        {errorsWithType.physicalToDematTask?.serviceCategory && <p className="text-sm text-destructive">{errorsWithType.physicalToDematTask.serviceCategory.message}</p>}
                     </div>
                     <div className="space-y-1">
                         <Label>Folio Number</Label>
@@ -662,7 +668,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         </Select>
                     )}
                     />
-                    {errors.mutualFund?.service && <p className="text-sm text-destructive">{errors.mutualFund.service.message}</p>}
+                    {errorsWithType.mutualFund?.service && <p className="text-sm text-destructive">{errorsWithType.mutualFund.service.message}</p>}
                 </div>
 
                 <div className="space-y-1">
@@ -683,7 +689,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         </Select>
                     )}
                     />
-                    {errors.mutualFund?.folioNo && <p className="text-sm text-destructive">{errors.mutualFund.folioNo.message}</p>}
+                    {errorsWithType.mutualFund?.folioNo && <p className="text-sm text-destructive">{errorsWithType.mutualFund.folioNo.message}</p>}
                 </div>
 
                 <div className="space-y-1">
@@ -700,13 +706,13 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         />
                     )}
                     />
-                    {errors.mutualFund?.nameOfAMC && <p className="text-sm text-destructive">{errors.mutualFund.nameOfAMC.message}</p>}
+                    {errorsWithType.mutualFund?.nameOfAMC && <p className="text-sm text-destructive">{errorsWithType.mutualFund.nameOfAMC.message}</p>}
                 </div>
 
                 <div className="space-y-1">
                     <Label>Amount</Label>
                     <Input type="number" min="0" {...register('mutualFund.amount', { valueAsNumber: true })} />
-                    {errors.mutualFund?.amount && <p className="text-sm text-destructive">{errors.mutualFund.amount.message}</p>}
+                    {errorsWithType.mutualFund?.amount && <p className="text-sm text-destructive">{errorsWithType.mutualFund.amount.message}</p>}
                 </div>
 
                 <div className="space-y-1">
@@ -798,7 +804,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         </Select>
                     )}
                     />
-                    {errors.insurance?.policyNo && <p className="text-sm text-destructive">{errors.insurance.policyNo.message}</p>}
+                    {errorsWithType.insurance?.policyNo && <p className="text-sm text-destructive">{errorsWithType.insurance.policyNo.message}</p>}
                 </div>
                 <div className="space-y-1">
                     <Label>Company</Label>
@@ -814,7 +820,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         />
                     )}
                     />
-                    {errors.insurance?.company && <p className="text-sm text-destructive">{errors.insurance.company.message}</p>}
+                    {errorsWithType.insurance?.company && <p className="text-sm text-destructive">{errorsWithType.insurance.company.message}</p>}
                 </div>
 
                 {/* Type Switcher */}
@@ -861,12 +867,12 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                             </Select>
                         )}
                         />
-                        {errors.insurance?.typeOfService && <p className="text-sm text-destructive">{errors.insurance.typeOfService.message}</p>}
+                        {errorsWithType.insurance?.typeOfService && <p className="text-sm text-destructive">{errorsWithType.insurance.typeOfService.message}</p>}
                     </div>
                     <div className="space-y-1">
                         <Label>Date</Label>
                         <Input type="date" {...register('insurance.nonFinancialDate')} />
-                        {errors.insurance?.nonFinancialDate && <p className="text-sm text-destructive">{errors.insurance.nonFinancialDate.message}</p>}
+                        {errorsWithType.insurance?.nonFinancialDate && <p className="text-sm text-destructive">{errorsWithType.insurance.nonFinancialDate.message}</p>}
                     </div>
                     </>
                 )}
@@ -888,7 +894,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                             </Select>
                         )}
                         />
-                        {errors.insurance?.financialService && <p className="text-sm text-destructive">{errors.insurance.financialService.message}</p>}
+                        {errorsWithType.insurance?.financialService && <p className="text-sm text-destructive">{errorsWithType.insurance.financialService.message}</p>}
                     </div>
                     
                     {/* Financial Service: Maturity */}
@@ -897,12 +903,12 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         <div className="space-y-1">
                             <Label>Maturity Due Date</Label>
                             <Input type="date" {...register('insurance.maturityDueDate')} />
-                            {errors.insurance?.maturityDueDate && <p className="text-sm text-destructive">{errors.insurance.maturityDueDate.message}</p>}
+                            {errorsWithType.insurance?.maturityDueDate && <p className="text-sm text-destructive">{errorsWithType.insurance.maturityDueDate.message}</p>}
                         </div>
                         <div className="space-y-1">
                             <Label>Maturity Amount</Label>
                             <Input type="number" min="0" {...register('insurance.maturityAmount', { valueAsNumber: true })} />
-                            {errors.insurance?.maturityAmount && <p className="text-sm text-destructive">{errors.insurance.maturityAmount.message}</p>}
+                            {errorsWithType.insurance?.maturityAmount && <p className="text-sm text-destructive">{errorsWithType.insurance.maturityAmount.message}</p>}
                         </div>
                         </>
                     )}
@@ -912,7 +918,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         <div className="space-y-1">
                             <Label>Death Claim Process Date</Label>
                             <Input type="date" {...register('insurance.deathClaimProcessDate')} />
-                            {errors.insurance?.deathClaimProcessDate && <p className="text-sm text-destructive">{errors.insurance.deathClaimProcessDate.message}</p>}
+                            {errorsWithType.insurance?.deathClaimProcessDate && <p className="text-sm text-destructive">{errorsWithType.insurance.deathClaimProcessDate.message}</p>}
                         </div>
                     )}
 
@@ -921,7 +927,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                         <div className="space-y-1">
                             <Label>Surrender Process Date</Label>
                             <Input type="date" {...register('insurance.surrenderProcessDate')} />
-                            {errors.insurance?.surrenderProcessDate && <p className="text-sm text-destructive">{errors.insurance.surrenderProcessDate.message}</p>}
+                            {errorsWithType.insurance?.surrenderProcessDate && <p className="text-sm text-destructive">{errorsWithType.insurance.surrenderProcessDate.message}</p>}
                         </div>
                     )}
 
@@ -946,12 +952,12 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                             <div className="space-y-1">
                             <Label>Received Date</Label>
                             <Input type="date" {...register('insurance.receivedDate')} />
-                            {errors.insurance?.receivedDate && <p className="text-sm text-destructive">{errors.insurance.receivedDate.message}</p>}
+                            {errorsWithType.insurance?.receivedDate && <p className="text-sm text-destructive">{errorsWithType.insurance.receivedDate.message}</p>}
                             </div>
                             <div className="space-y-1">
                             <Label>Received Amount</Label>
                             <Input type="number" min="0" {...register('insurance.receivedAmount', { valueAsNumber: true })} />
-                            {errors.insurance?.receivedAmount && <p className="text-sm text-destructive">{errors.insurance.receivedAmount.message}</p>}
+                            {errorsWithType.insurance?.receivedAmount && <p className="text-sm text-destructive">{errorsWithType.insurance.receivedAmount.message}</p>}
                             </div>
                             <div className="space-y-1 md:col-span-2">
                             <Label>Re-Investment Status</Label>
@@ -969,14 +975,14 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                                 </Select>
                                 )}
                             />
-                            {errors.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errors.insurance.reinvestmentStatus.message}</p>}
+                            {errorsWithType.insurance?.reinvestmentStatus && <p className="text-sm text-destructive">{errorsWithType.insurance.reinvestmentStatus.message}</p>}
                             </div>
                             
                             {reinvestmentStatus === 'Pending' && (
                             <div className="space-y-1">
                                 <Label>Approx Date</Label>
                                 <Input type="date" {...register('insurance.reinvestmentApproxDate')} />
-                                {errors.insurance?.reinvestmentApproxDate && <p className="text-sm text-destructive">{errors.insurance.reinvestmentApproxDate.message}</p>}
+                                {errorsWithType.insurance?.reinvestmentApproxDate && <p className="text-sm text-destructive">{errorsWithType.insurance.reinvestmentApproxDate.message}</p>}
                             </div>
                             )}
                             {reinvestmentStatus === 'No' && (
@@ -994,7 +1000,7 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
                                     </Select>
                                     )}
                                 />
-                                {errors.insurance?.reinvestmentReason && <p className="text-sm text-destructive">{errors.insurance.reinvestmentReason.message}</p>}
+                                {errorsWithType.insurance?.reinvestmentReason && <p className="text-sm text-destructive">{errorsWithType.insurance.reinvestmentReason.message}</p>}
                             </div>
                             )}
                             </div>
@@ -1133,6 +1139,16 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
       ...getCategoryPayload(task),
     });
 
+    // Use setTimeout to ensure Select components update after reset
+    setTimeout(() => {
+      if (task.category) {
+        form.setValue('category', task.category as any, { shouldValidate: false, shouldDirty: false });
+      }
+      if (task.serviceableRM) {
+        form.setValue('serviceableRM', task.serviceableRM, { shouldValidate: false, shouldDirty: false });
+      }
+    }, 50);
+
   }, [task, form]);
   
   const processSave = (data: TaskFormData) => {
@@ -1175,3 +1191,4 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 }
 
 CreateTaskModal.Form = CreateTaskForm;
+

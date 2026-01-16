@@ -4,7 +4,8 @@
 
 import React, { createContext, useContext, useState, useMemo, ReactNode, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { users, permissions as mockPermissions, User, Client, Associate, Admin, SuperAdmin, RelationshipManager, getRMsForAdmin, getAssociatesForRM, getClientsForAssociate, getAllRMs, getAllAssociates as allAssociatesData } from '@/lib/mock-data';
+import { users, permissions as mockPermissions, getRMsForAdmin, getAssociatesForRM, getClientsForAssociate, getAllRMs, getAllAssociates as allAssociatesData } from '@/lib/mock-data';
+import { User, Client, Associate, Admin, SuperAdmin, RelationshipManager } from '@/lib/types';
 import { HIERARCHY, Role, Permission, PermissionModule } from '@/lib/constants';
 import { AppLayout } from '@/components/layout/app-layout';
 
@@ -29,9 +30,9 @@ const canImpersonate = (actor: User, target: User): boolean => {
     const targetAdminId = (target as RelationshipManager | Associate | Client).role === 'RM'
       ? (target as RelationshipManager).adminId
       : (target as Associate).role === 'ASSOCIATE'
-      ? allRMs.find(rm => rm.id === (target as Associate).rmId)?.adminId
+      ? allRMs.find((rm: RelationshipManager) => rm.id === (target as Associate).rmId)?.adminId
       : (target as Client).role === 'CUSTOMER'
-      ? allRMs.find(rm => rm.id === allAssociates.find(a => a.id === (target as Client).associateId)?.rmId)?.adminId
+      ? allRMs.find((rm: RelationshipManager) => rm.id === allAssociates.find((a: Associate) => a.id === (target as Client).associateId)?.rmId)?.adminId
       : undefined;
     return targetAdminId === actor.id;
   }
@@ -41,7 +42,7 @@ const canImpersonate = (actor: User, target: User): boolean => {
       const targetRmId = (target as Associate | Client).role === 'ASSOCIATE'
         ? (target as Associate).rmId
         : (target as Client).role === 'CUSTOMER'
-        ? allAssociates.find(a => a.id === (target as Client).associateId)?.rmId
+        ? allAssociates.find((a: Associate) => a.id === (target as Client).associateId)?.rmId
         : undefined;
       return targetRmId === actor.id;
   }

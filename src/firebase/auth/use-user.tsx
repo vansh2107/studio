@@ -15,7 +15,7 @@ export function useUser() {
       return;
     }
     const unsubscribe = auth.onAuthStateChanged(
-      (user) => {
+      (user: FirebaseUser | null) => {
         setUser(user);
         setLoading(false);
       },

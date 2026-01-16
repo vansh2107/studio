@@ -1,7 +1,8 @@
 'use client';
 
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { getFamilyMembersForClient, getDocumentsForClient, Document, clients } from '@/lib/mock-data';
+import { getFamilyMembersForClient, getDocumentsForClient, clients } from '@/lib/mock-data';
+import type { Document } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Folder } from 'lucide-react';
 import { useMemo, useState } from 'react';
