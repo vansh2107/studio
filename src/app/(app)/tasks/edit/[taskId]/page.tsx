@@ -80,7 +80,7 @@ export default function EditTaskPage() {
     shouldUnregister: false,
   });
 
-  const { reset, setValue } = form;
+  const { reset } = form;
 
   useEffect(() => {
     if (!task) return;

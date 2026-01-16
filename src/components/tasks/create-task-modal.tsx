@@ -1150,7 +1150,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         </p>
       </div>
 
-      <CreateTaskForm
+      <CreateTaskModal.Form
         isEditMode={isEditMode}
         task={task}
         form={form}
