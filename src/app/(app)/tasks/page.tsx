@@ -538,13 +538,11 @@ export default function TasksPage() {
             onClose={handleCloseModal}
             onSave={(formData) => {
               if (editingTask) {
-                // Pass only the changed form data
                 updateTask(editingTask.id, {
                   ...formData,
                   dueDate: new Date(formData.dueDate).toISOString(),
                 });
               } else {
-                // Build the full task object for creation
                 addTask({
                   ...formData,
                   dueDate: new Date(formData.dueDate).toISOString(),

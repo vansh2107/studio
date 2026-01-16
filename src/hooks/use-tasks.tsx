@@ -49,19 +49,15 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
   const addTask = (taskDetails: Partial<Omit<Task, 'id'>>) => {
     const newTask: Task = {
-      // --- Base task structure with defaults ---
       id: `task-${Date.now()}`,
       status: 'Pending',
       createDate: new Date().toISOString(),
-      startDate: null,
-      completeDate: null,
-      clientId: '', 
-      clientName: 'N/A',
-      category: 'N/A',
-      dueDate: new Date().toISOString(),
-      
-      // --- Spread the provided details to overwrite defaults ---
       ...taskDetails,
+      // Ensure required fields have defaults if not provided
+      clientId: taskDetails.clientId || '',
+      clientName: taskDetails.clientName || 'N/A',
+      category: taskDetails.category || 'N/A',
+      dueDate: taskDetails.dueDate || new Date().toISOString(),
     };
     setTasks(prevTasks => [...prevTasks, newTask]);
   };
@@ -73,14 +69,17 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
           const combined: Task = {
             ...task,
             ...updatedTask,
+            // PRESERVE ALL NESTED CATEGORY DATA
             mutualFund: updatedTask.mutualFund ?? task.mutualFund,
             insurance: updatedTask.insurance ?? task.insurance,
+            generalInsuranceTask:
+              updatedTask.generalInsuranceTask ?? task.generalInsuranceTask,
             stocksTask: updatedTask.stocksTask ?? task.stocksTask,
-            ppfTask: updatedTask.ppfTask ?? task.ppfTask,
             fdTask: updatedTask.fdTask ?? task.fdTask,
             bondsTask: updatedTask.bondsTask ?? task.bondsTask,
-            generalInsuranceTask: updatedTask.generalInsuranceTask ?? task.generalInsuranceTask,
-            physicalToDematTask: updatedTask.physicalToDematTask ?? task.physicalToDematTask,
+            ppfTask: updatedTask.ppfTask ?? task.ppfTask,
+            physicalToDematTask:
+              updatedTask.physicalToDematTask ?? task.physicalToDematTask,
           };
           
           const now = new Date().toISOString();
