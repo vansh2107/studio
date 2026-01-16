@@ -300,11 +300,15 @@ export function AddAssetModal({
 
   useEffect(() => {
     if (assetToEdit) {
+      // Deconstruct the asset to separate form-data from other properties
+      const { id, familyHeadId, familyHeadName, ...restOfAsset } = assetToEdit;
+
       const defaultVals: Partial<FormData> = {
-        familyHead: assetToEdit.familyHeadId,
-        ...assetToEdit,
+        // Map the storage ID to the form field name
+        familyHead: familyHeadId,
+        // The rest of the properties (assetType, bonds, etc.) should match the form structure
+        ...restOfAsset,
       };
-      
       reset(defaultVals as any);
     } else {
       reset({ familyHead: '', assetType: undefined });
