@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { DashboardAsset, AssetCategory, FamilyMember, Document } from '@/lib/types';
-import { X, User as UserIcon, FileText, ArrowLeft } from 'lucide-react';
+import { X, User as UserIcon, FileText, ArrowLeft, Download } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const formatter = new Intl.NumberFormat('en-IN', {
@@ -17,6 +17,22 @@ const formatter = new Intl.NumberFormat('en-IN', {
 
 // This will be the view that shows the document list for a member
 function DocumentDetailView({ memberData, category, onBack }: { memberData: any; category: AssetCategory; onBack: () => void; }) {
+  
+  const handleDownload = (doc: Document) => {
+    if (!doc.url || doc.url === '#') {
+      // In a real app, you'd show a toast notification.
+      // For this prototype, an alert is sufficient.
+      alert('Download URL is not available for this document.');
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = doc.url;
+    link.download = doc.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div>
       <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
@@ -40,6 +56,7 @@ function DocumentDetailView({ memberData, category, onBack }: { memberData: any;
             <TableHeader>
               <TableRow>
                 <TableHead>Document Name</TableHead>
+                <TableHead className="text-right w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -52,11 +69,25 @@ function DocumentDetailView({ memberData, category, onBack }: { memberData: any;
                         <span className="font-medium">{doc.name}</span>
                       </div>
                     </TableCell>
+                    <TableCell className="text-right">
+                       <TooltipProvider>
+                         <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => handleDownload(doc)}>
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Download Document</p>
+                            </TooltipContent>
+                        </Tooltip>
+                       </TooltipProvider>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={1} className="h-24 text-center">
+                  <TableCell colSpan={2} className="h-24 text-center">
                     No documents available for this member in this category.
                   </TableCell>
                 </TableRow>
@@ -76,12 +107,14 @@ function AssetBreakdownView({
   familyMembers,
   documents,
   onViewDocs,
+  onClose,
 }: {
   category: AssetCategory;
   assets: DashboardAsset[];
   familyMembers: FamilyMember[];
   documents: Document[];
   onViewDocs: (memberData: any) => void;
+  onClose: () => void;
 }) {
   const breakdown = useMemo(() => {
     const categoryAssets = assets.filter(asset => asset.category === category);
@@ -182,7 +215,7 @@ function AssetBreakdownView({
       </Card>
       
       <div className="flex justify-end mt-6">
-         <Button variant="outline" onClick={onViewDocs.bind(null, null)}>Close</Button>
+         <Button variant="outline" onClick={onClose}>Close</Button>
       </div>
     </TooltipProvider>
   );
@@ -233,6 +266,7 @@ export function AssetBreakdownModal({
           familyMembers={familyMembers}
           documents={documents}
           onViewDocs={setViewingMemberDocs}
+          onClose={handleClose}
         />
       )}
     </div>
