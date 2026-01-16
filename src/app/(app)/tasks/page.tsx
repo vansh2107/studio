@@ -43,6 +43,7 @@ import { cn } from '@/lib/utils';
 import { isOverdue } from '@/lib/is-overdue';
 import { getAllRMs, getAllAssociates, getAllAdmins } from '@/lib/mock-data';
 import type { User } from '@/lib/types';
+import Link from 'next/link';
 
 
 const ExpandedTaskDetails = ({ task }: { task: Task }) => {
@@ -234,7 +235,6 @@ export default function TasksPage() {
   const { toast } = useToast();
   const { tasks, addTask, updateTask, deleteTask } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
@@ -290,22 +290,11 @@ export default function TasksPage() {
         toast({ title: 'Permission Denied', description: 'You do not have permission to create tasks.', variant: 'destructive' });
         return;
     }
-    setEditingTask(null);
-    setIsModalOpen(true);
-  };
-  
-  const handleOpenEditModal = (task: Task) => {
-    if (!canUpdate) {
-        toast({ title: 'Permission Denied', description: 'You do not have permission to edit tasks.', variant: 'destructive' });
-        return;
-    }
-    setEditingTask(task);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setEditingTask(null);
   };
 
   const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
@@ -484,8 +473,10 @@ export default function TasksPage() {
                                         {canUpdate && (
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button variant="ghost" size="icon" onClick={() => handleOpenEditModal(task)} disabled={!canEditTask}>
+                                                    <Button variant="ghost" size="icon" asChild>
+                                                      <Link href={`/tasks/edit/${task.id}`}>
                                                         <Edit className="h-4 w-4" />
+                                                      </Link>
                                                     </Button>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
@@ -534,20 +525,13 @@ export default function TasksPage() {
       {isModalOpen && (
         <Modal open={isModalOpen} onClose={handleCloseModal}>
           <CreateTaskModal
-            task={editingTask}
+            task={null}
             onClose={handleCloseModal}
             onSave={(formData) => {
-              if (editingTask) {
-                updateTask(editingTask.id, {
-                  ...formData,
-                  dueDate: new Date(formData.dueDate).toISOString(),
-                });
-              } else {
-                addTask({
-                  ...formData,
-                  dueDate: new Date(formData.dueDate).toISOString(),
-                });
-              }
+              addTask({
+                ...formData,
+                dueDate: new Date(formData.dueDate).toISOString(),
+              });
               handleCloseModal();
             }}
           />
