@@ -54,6 +54,7 @@ const numberField = z.preprocess(
 
 const baseTaskSchema = z.object({
   clientId: z.string().min(1, 'Client is required'),
+  clientName: z.string().optional(),
   rmName: z.string().optional(),
   serviceableRM: z.string().optional(),
   dueDate: z.string().min(1, 'Due date and time are required'),
@@ -245,7 +246,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
   const selectedCategory = watch('category');
   const clientIdValue = watch('clientId');
-  const descriptionValue = watch('description') || '';
+  const descriptionValue = watch('description') ?? '';
   const insuranceType = watch('insurance.insuranceType');
   const financialService = watch('insurance.financialService');
   const amountStatus = watch('insurance.amountStatus');
@@ -371,8 +372,16 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   const processSave = (data: TaskFormData) => {
     setIsSaving(true);
     
+    const selectedClientOption = clientOptions.find(opt => opt.value === data.clientId);
+    const derivedClientName = selectedClientOption ? selectedClientOption.label : 'N/A';
+
+    const enrichedFormData = {
+      ...data,
+      clientName: derivedClientName,
+    };
+
     setTimeout(() => {
-      onSave(data);
+      onSave(enrichedFormData);
 
       toast({
         title: isEditMode ? 'Task Updated' : 'Task Created',
@@ -435,7 +444,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               render={({ field }) => (
                 <Select
                   onValueChange={field.onChange}
-                  value={field.value || ''}
+                  value={field.value ?? ''}
                   disabled={isEditMode || isTerminal}
                 >
                   <SelectTrigger id="category">
@@ -463,7 +472,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               name="serviceableRM"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value || ''} disabled={isTerminal}>
+                <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isTerminal}>
                   <SelectTrigger id="serviceableRM">
                     <SelectValue placeholder="Select Serviceable RM" />
                   </SelectTrigger>
@@ -495,7 +504,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>SERVICE</Label>
                     <Controller name="stocksTask.service" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                             <SelectContent>{STOCKS_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
@@ -507,7 +516,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="stocksTask.dpid"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select DPID" />
                           </SelectTrigger>
@@ -533,7 +542,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>Service Category</Label>
                     <Controller name="generalInsuranceTask.serviceCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                             <SelectContent>{GENERAL_INSURANCE_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
@@ -542,7 +551,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>Sub Category</Label>
                     <Controller name="generalInsuranceTask.subCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Sub Category..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Sub Category..." /></SelectTrigger>
                             <SelectContent>{GENERAL_INSURANCE_TASK_SUB_CATEGORIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
@@ -553,7 +562,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="generalInsuranceTask.policyNumber"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select Policy Number" />
                           </SelectTrigger>
@@ -579,7 +588,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>Service Category</Label>
                     <Controller name="fdTask.serviceCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                             <SelectContent>{FD_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
@@ -591,7 +600,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="fdTask.folioNumber"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select Folio Number" />
                           </SelectTrigger>
@@ -617,7 +626,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>Service Category</Label>
                     <Controller name="bondsTask.serviceCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                             <SelectContent>{BONDS_TASK_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
@@ -629,7 +638,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="bondsTask.isinNumber"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select ISIN" />
                           </SelectTrigger>
@@ -658,7 +667,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="ppfTask.serviceCategory"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Service..." />
                       </SelectTrigger>
@@ -680,7 +689,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="ppfTask.policyNumber"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Policy Number" />
                       </SelectTrigger>
@@ -699,7 +708,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="ppfTask.bankAccountNumber"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Bank Account Number" />
                       </SelectTrigger>
@@ -725,7 +734,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 <div className="space-y-1">
                     <Label>Service Category</Label>
                     <Controller name="physicalToDematTask.serviceCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}><SelectTrigger><SelectValue placeholder="Select Service..." /></SelectTrigger>
                             <SelectContent>{PHYSICAL_TO_DEMAT_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                         </Select>
                     )} />
@@ -737,7 +746,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="physicalToDematTask.folioNumber"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select Folio Number" />
                           </SelectTrigger>
@@ -756,7 +765,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     name="status2"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <SelectTrigger id="status2">
                             <SelectValue placeholder="Select Status 2" />
                         </SelectTrigger>
@@ -792,7 +801,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="mutualFund.service"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                       <SelectContent>
                         {sortedMutualFundServices.map(service => (
@@ -811,7 +820,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="mutualFund.folioNo"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Folio Number" />
                       </SelectTrigger>
@@ -926,7 +935,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   name="insurance.policyNo"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Policy Number" />
                       </SelectTrigger>
@@ -991,7 +1000,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="insurance.typeOfService"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                           <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                           <SelectContent>
                             {sortedNonFinancialInsuranceServices.map(service => (
@@ -1020,7 +1029,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                       name="insurance.financialService"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <Select onValueChange={field.onChange} value={field.value ?? ''}>
                           <SelectTrigger><SelectValue placeholder="Select Financial Service" /></SelectTrigger>
                           <SelectContent>
                             {FINANCIAL_SERVICES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -1072,7 +1081,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                           name="insurance.amountStatus"
                           control={control}
                           render={({ field }) => (
-                            <RadioGroup onValueChange={field.onChange} value={field.value || 'Pending'} className="flex space-x-4 mt-2">
+                            <RadioGroup onValueChange={field.onChange} value={field.value ?? 'Pending'} className="flex space-x-4 mt-2">
                                 <div className="flex items-center space-x-2"><RadioGroupItem value="Pending" id="pending" /><Label htmlFor="pending">Pending</Label></div>
                                 <div className="flex items-center space-x-2"><RadioGroupItem value="Credited" id="credited" /><Label htmlFor="credited">Received</Label></div>
                             </RadioGroup>
@@ -1099,7 +1108,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                             name="insurance.reinvestmentStatus"
                             control={control}
                             render={({ field }) => (
-                              <Select onValueChange={field.onChange} value={field.value || ''}>
+                              <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                 <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="Pending">Pending</SelectItem>
@@ -1126,7 +1135,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                                 name="insurance.reinvestmentReason"
                                 control={control}
                                 render={({ field }) => (
-                                <Select onValueChange={field.onChange} value={field.value || ''}>
+                                <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                     <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
                                     <SelectContent>
                                     {REINVESTMENT_REASONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}

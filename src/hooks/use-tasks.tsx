@@ -52,12 +52,11 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
       id: `task-${Date.now()}`,
       status: 'Pending',
       createDate: new Date().toISOString(),
-      ...taskDetails,
-      // Ensure required fields have defaults if not provided
-      clientId: taskDetails.clientId || '',
-      clientName: taskDetails.clientName || 'N/A',
-      category: taskDetails.category || 'N/A',
-      dueDate: taskDetails.dueDate || new Date().toISOString(),
+      clientName: 'N/A', // Default to be overwritten
+      category: 'N/A', // Default to be overwritten
+      dueDate: new Date().toISOString(), // Default to be overwritten
+      clientId: '', // Default to be overwritten
+      ...taskDetails, // Spread the form data last
     };
     setTasks(prevTasks => [...prevTasks, newTask]);
   };
