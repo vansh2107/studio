@@ -308,15 +308,6 @@ export default function TasksPage() {
     setEditingTask(null);
   };
 
-  const handleSaveTask = (task: Task) => {
-    if (editingTask) {
-      updateTask(editingTask.id, task);
-    } else {
-      addTask(task);
-    }
-    handleCloseModal();
-  };
-
   const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
     updateTask(taskId, { status: newStatus });
     toast({
@@ -545,11 +536,19 @@ export default function TasksPage() {
           <CreateTaskModal
             task={editingTask}
             onClose={handleCloseModal}
-            onSave={(taskData) => {
+            onSave={(formData) => {
               if (editingTask) {
-                updateTask(editingTask.id, taskData);
+                // Pass only the changed form data
+                updateTask(editingTask.id, {
+                  ...formData,
+                  dueDate: new Date(formData.dueDate).toISOString(),
+                });
               } else {
-                addTask(taskData);
+                // Build the full task object for creation
+                addTask({
+                  ...formData,
+                  dueDate: new Date(formData.dueDate).toISOString(),
+                });
               }
               handleCloseModal();
             }}

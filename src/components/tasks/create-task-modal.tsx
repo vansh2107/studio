@@ -182,7 +182,7 @@ type TaskFormData = z.infer<typeof taskSchema>;
 
 interface CreateTaskModalProps {
   onClose: () => void;
-  onSave: (task: Task) => void;
+  onSave: (task: TaskFormData) => void;
   task?: Task | null;
 }
 
@@ -293,7 +293,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   /* ---------- LOAD EXISTING TASK ---------- */
 
   useEffect(() => {
-    if (!isEditMode || !task) return;
+    if (!task) return;
 
     const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date'): string => {
         if (!dateString) return '';
@@ -363,7 +363,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
           break;
       }
     }, 0);
-  }, [task, isEditMode, reset, setValue]);
+  }, [task, reset, setValue]);
 
 
   /* ---------- SAVE ---------- */
@@ -372,29 +372,11 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     setIsSaving(true);
     
     setTimeout(() => {
-      const selectedClient = clientOptions.find(c => c.value === data.clientId);
-
-      const submissionData: Task = {
-        ...(task || {}), 
-        ...data,
-        id: task?.id || `task-${Date.now()}`,
-        createDate: task?.createDate || new Date().toISOString(),
-        status: task?.status || 'Pending',
-        status2: data.status2 as TaskStatus2 | undefined,
-        clientId: data.clientId,
-        clientName: selectedClient?.label || 'N/A',
-        familyHeadId: familyHead?.id,
-        associateId: assignedAssociate?.id,
-        rmId: assignedRM?.id,
-        adminId: assignedAdmin?.id,
-        dueDate: new Date(data.dueDate).toISOString(),
-      };
-
-      onSave(submissionData);
+      onSave(data);
 
       toast({
         title: isEditMode ? 'Task Updated' : 'Task Created',
-        description: `The task for "${submissionData.clientName}" has been successfully saved.`,
+        description: `The task has been successfully saved.`,
       });
 
       setIsSaving(false);
@@ -452,9 +434,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               control={control}
               render={({ field }) => (
                 <Select
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                  }}
+                  onValueChange={field.onChange}
                   value={field.value || ''}
                   disabled={isEditMode || isTerminal}
                 >

@@ -70,7 +70,19 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     setTasks(prevTasks =>
       prevTasks.map(task => {
         if (task.id === taskId) {
-          const combined = { ...task, ...updatedTask };
+          const combined: Task = {
+            ...task,
+            ...updatedTask,
+            mutualFund: updatedTask.mutualFund ?? task.mutualFund,
+            insurance: updatedTask.insurance ?? task.insurance,
+            stocksTask: updatedTask.stocksTask ?? task.stocksTask,
+            ppfTask: updatedTask.ppfTask ?? task.ppfTask,
+            fdTask: updatedTask.fdTask ?? task.fdTask,
+            bondsTask: updatedTask.bondsTask ?? task.bondsTask,
+            generalInsuranceTask: updatedTask.generalInsuranceTask ?? task.generalInsuranceTask,
+            physicalToDematTask: updatedTask.physicalToDematTask ?? task.physicalToDematTask,
+          };
+          
           const now = new Date().toISOString();
 
           // Auto-populate startDate
