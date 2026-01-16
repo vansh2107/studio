@@ -293,85 +293,78 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   /* ---------- LOAD EXISTING TASK ---------- */
 
   useEffect(() => {
-    if (isEditMode && task) {
-      const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date'): string => {
-          if (!dateString) return '';
-          let date: Date | null = null;
-          try {
-              date = parseISO(dateString);
-          } catch {
-              try {
-                  date = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
-              } catch {
-                  return dateString; // Return original if all parsing fails
-              }
-          }
-          if (date && !isNaN(date.getTime())) {
-              return type === 'datetime' ? format(date, "yyyy-MM-dd'T'HH:mm") : format(date, "yyyy-MM-dd");
-          }
-          return dateString;
-      };
+    if (!isEditMode || !task) return;
 
-      const taskDataForForm: Partial<TaskFormData> = {
-          clientId: task.clientId,
-          category: task.category as any,
-          rmName: task.rmName,
-          serviceableRM: task.serviceableRM,
-          dueDate: formatDateForInput(task.dueDate, 'datetime'),
-          description: task.description,
-          status2: task.status2,
-      };
+    const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date'): string => {
+        if (!dateString) return '';
+        let date: Date | null = null;
+        try {
+            date = parseISO(dateString);
+        } catch {
+            try {
+                date = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
+            } catch {
+                return dateString; // Return original if all parsing fails
+            }
+        }
+        if (date && !isNaN(date.getTime())) {
+            return type === 'datetime' ? format(date, "yyyy-MM-dd'T'HH:mm") : format(date, "yyyy-MM-dd");
+        }
+        return dateString;
+    };
 
+    // Phase 1: Reset base fields
+    reset({
+      clientId: task.clientId,
+      category: task.category as any,
+      rmName: task.rmName,
+      serviceableRM: task.serviceableRM,
+      dueDate: formatDateForInput(task.dueDate, 'datetime'),
+      description: task.description,
+      status2: task.status2,
+    });
+
+    // Phase 2: Use setTimeout to inject category-specific data after the UI has re-rendered
+    setTimeout(() => {
       switch (task.category) {
-          case 'Mutual Funds':
-              taskDataForForm.mutualFund = task.mutualFund;
-              break;
-          case 'Life Insurance':
-              if (task.insurance) {
-                  taskDataForForm.insurance = {
-                      ...task.insurance,
-                      nonFinancialDate: formatDateForInput(task.insurance.nonFinancialDate, 'date'),
-                      maturityDueDate: formatDateForInput(task.insurance.maturityDueDate, 'date'),
-                      deathClaimProcessDate: formatDateForInput(task.insurance.deathClaimProcessDate, 'date'),
-                      surrenderProcessDate: formatDateForInput(task.insurance.surrenderProcessDate, 'date'),
-                      receivedDate: formatDateForInput(task.insurance.receivedDate, 'date'),
-                      reinvestmentApproxDate: formatDateForInput(task.insurance.reinvestmentApproxDate, 'date'),
-                  };
-              }
-              break;
-          case 'General Insurance':
-              taskDataForForm.generalInsuranceTask = task.generalInsuranceTask;
-              break;
-          case 'Stocks':
-              taskDataForForm.stocksTask = task.stocksTask;
-              break;
-          case 'Physical to Demat':
-              taskDataForForm.physicalToDematTask = task.physicalToDematTask;
-              break;
-          case 'Bonds':
-              taskDataForForm.bondsTask = task.bondsTask;
-              break;
-          case 'PPF':
-              taskDataForForm.ppfTask = task.ppfTask;
-              break;
-          case 'FDs':
-              taskDataForForm.fdTask = task.fdTask;
-              break;
+        case 'Mutual Funds':
+          if (task.mutualFund) setValue('mutualFund', task.mutualFund);
+          break;
+        case 'Life Insurance':
+          if (task.insurance) {
+            setValue('insurance', {
+              ...task.insurance,
+              nonFinancialDate: formatDateForInput(task.insurance.nonFinancialDate, 'date'),
+              maturityDueDate: formatDateForInput(task.insurance.maturityDueDate, 'date'),
+              deathClaimProcessDate: formatDateForInput(task.insurance.deathClaimProcessDate, 'date'),
+              surrenderProcessDate: formatDateForInput(task.insurance.surrenderProcessDate, 'date'),
+              receivedDate: formatDateForInput(task.insurance.receivedDate, 'date'),
+              reinvestmentApproxDate: formatDateForInput(task.insurance.reinvestmentApproxDate, 'date'),
+            });
+          }
+          break;
+        case 'General Insurance':
+          if (task.generalInsuranceTask) setValue('generalInsuranceTask', task.generalInsuranceTask);
+          break;
+        case 'Stocks':
+          if (task.stocksTask) setValue('stocksTask', task.stocksTask);
+          break;
+        case 'Physical to Demat':
+          if (task.physicalToDematTask) setValue('physicalToDematTask', task.physicalToDematTask);
+          break;
+        case 'Bonds':
+          if (task.bondsTask) setValue('bondsTask', task.bondsTask);
+          break;
+        case 'PPF':
+          if (task.ppfTask) setValue('ppfTask', task.ppfTask);
+          break;
+        case 'FDs':
+          if (task.fdTask) setValue('fdTask', task.fdTask);
+          break;
       }
-      
-      reset(taskDataForForm as TaskFormData);
-    } else if (!isEditMode) {
-      reset({
-        clientId: '',
-        category: undefined,
-        rmName: '',
-        serviceableRM: '',
-        dueDate: '',
-        description: '',
-        status2: undefined,
-      });
-    }
-  }, [task, isEditMode, reset]);
+    }, 0);
+  }, [task, isEditMode, reset, setValue]);
+
 
   /* ---------- SAVE ---------- */
 
@@ -459,9 +452,11 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               control={control}
               render={({ field }) => (
                 <Select
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                  }}
                   value={field.value || ''}
-                  disabled={isTerminal}
+                  disabled={isEditMode || isTerminal}
                 >
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select a category" />

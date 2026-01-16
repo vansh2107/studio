@@ -540,13 +540,22 @@ export default function TasksPage() {
         </Card>
       </div>
 
-      <Modal open={isModalOpen} onClose={handleCloseModal}>
-        <CreateTaskModal
-          task={editingTask}
-          onClose={handleCloseModal}
-          onSave={handleSaveTask}
-        />
-      </Modal>
+      {isModalOpen && (
+        <Modal open={isModalOpen} onClose={handleCloseModal}>
+          <CreateTaskModal
+            task={editingTask}
+            onClose={handleCloseModal}
+            onSave={(taskData) => {
+              if (editingTask) {
+                updateTask(editingTask.id, taskData);
+              } else {
+                addTask(taskData);
+              }
+              handleCloseModal();
+            }}
+          />
+        </Modal>
+      )}
 
       <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
         <AlertDialogContent>
