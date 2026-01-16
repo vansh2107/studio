@@ -81,6 +81,7 @@ const insuranceSchema = z.object({
   company: z.string().min(1, "Company is required"),
   
   insuranceType: z.enum(['Financial', 'Non-Financial']),
+  typeOfService: z.string().optional(),
   financialService: z.string().optional(),
   nonFinancialDate: z.string().optional(),
 
