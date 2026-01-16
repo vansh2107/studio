@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { dashboardAssets as allDashboardAssets, getFamilyMembersForClient, clients } from '@/lib/mock-data';
-import type { User, AssetCategory, DashboardAsset } from '@/lib/types';
+import type { User, AssetCategory, DashboardAsset, FamilyMember } from '@/lib/types';
 import { ASSET_CATEGORIES } from '@/lib/constants';
 import { useMemo, useState } from 'react';
 import {
@@ -45,7 +45,15 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState('all');
 
-  const familyMembers = useMemo(() => user.role === 'CUSTOMER' ? getFamilyMembersForClient(user.id): [], [user]);
+  const familyMembers = useMemo(() => {
+    if (user.role !== 'CUSTOMER') return [];
+    const head = clients.find(c => c.id === user.id);
+    if (!head) return [];
+    return [
+        head as unknown as FamilyMember,
+        ...getFamilyMembersForClient(user.id)
+    ];
+  }, [user]);
 
   const familyMembersForDropdown = useMemo(() => {
     if (user.role !== 'CUSTOMER') return [];
@@ -88,10 +96,8 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
     }
   }, [tasks, user, isFamilyHead]);
 
-  const totalPoliciesValue = useMemo(() => {
-    return assets
-      .filter(asset => asset.category === 'Life Insurance' || asset.category === 'Term Insurance')
-      .reduce((sum, asset) => sum + asset.value, 0);
+  const totalAssetValue = useMemo(() => {
+    return assets.reduce((sum, asset) => sum + asset.value, 0);
   }, [assets]);
   
   const assetsByCategory = useMemo(() => {
@@ -146,12 +152,12 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Total Policy Value</CardTitle>
-          <CardDescription>Sum of all Life and Term Insurance policies across the family.</CardDescription>
+          <CardTitle>Total Asset Value</CardTitle>
+          <CardDescription>The total value of all assets held by the selected family member(s).</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-4xl font-bold text-primary">
-            {formatter.format(totalPoliciesValue)}
+            {formatter.format(totalAssetValue)}
           </div>
         </CardContent>
       </Card>
