@@ -322,17 +322,12 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
   useEffect(() => {
     if (task) {
-      const taskDataForForm: Partial<TaskFormData> = {
-        ...task,
-        clientId: task.clientId, // Ensure clientId is correctly mapped for the form
-      };
-
       const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date') => {
         if (!dateString) return '';
         try {
           const date = parseISO(dateString);
           if (isNaN(date.getTime())) { 
-             const parsed = new Date(dateString.replace(/-/g, '/'));
+             const parsed = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
              if (isNaN(parsed.getTime())) return dateString; 
              return type === 'datetime' ? format(parsed, "yyyy-MM-dd'T'HH:mm") : format(parsed, "yyyy-MM-dd");
           }
@@ -342,17 +337,21 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         }
       };
 
-      taskDataForForm.dueDate = formatDateForInput(task.dueDate, 'datetime');
-      if (taskDataForForm.insurance) {
-          taskDataForForm.insurance.nonFinancialDate = formatDateForInput(task.insurance.nonFinancialDate);
-          taskDataForForm.insurance.maturityDueDate = formatDateForInput(task.insurance.maturityDueDate);
-          taskDataForForm.insurance.deathClaimProcessDate = formatDateForInput(task.insurance.deathClaimProcessDate);
-          taskDataForForm.insurance.surrenderProcessDate = formatDateForInput(task.insurance.surrenderProcessDate);
-          taskDataForForm.insurance.receivedDate = formatDateForInput(task.insurance.receivedDate);
-          taskDataForForm.insurance.reinvestmentApproxDate = formatDateForInput(task.insurance.reinvestmentApproxDate);
-      }
+      const taskDataForForm = {
+        ...task,
+        dueDate: formatDateForInput(task.dueDate, 'datetime'),
+        insurance: task.insurance ? {
+          ...task.insurance,
+          nonFinancialDate: formatDateForInput(task.insurance.nonFinancialDate),
+          maturityDueDate: formatDateForInput(task.insurance.maturityDueDate),
+          deathClaimProcessDate: formatDateForInput(task.insurance.deathClaimProcessDate),
+          surrenderProcessDate: formatDateForInput(task.insurance.surrenderProcessDate),
+          receivedDate: formatDateForInput(task.insurance.receivedDate),
+          reinvestmentApproxDate: formatDateForInput(task.insurance.reinvestmentApproxDate),
+        } : undefined,
+      };
       
-      reset(taskDataForForm as TaskFormData);
+      reset(taskDataForForm as unknown as TaskFormData);
     } else {
       reset({
         clientId: '',
@@ -390,14 +389,14 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         dueDate: new Date(data.dueDate).toISOString(),
       };
 
-      if (submissionData.category !== 'Mutual Funds') delete submissionData.mutualFund;
-      if (submissionData.category !== 'Life Insurance') delete submissionData.insurance;
-      if (submissionData.category !== 'General Insurance') delete submissionData.generalInsuranceTask;
-      if (submissionData.category !== 'FDs') delete submissionData.fdTask;
-      if (submissionData.category !== 'Bonds') delete submissionData.bondsTask;
-      if (submissionData.category !== 'PPF') delete submissionData.ppfTask;
-      if (submissionData.category !== 'Physical to Demat') delete submissionData.physicalToDematTask;
-      if (submissionData.category !== 'Stocks') delete submissionData.stocksTask;
+      if (submissionData.category !== 'Mutual Funds') delete (submissionData as Partial<Task>).mutualFund;
+      if (submissionData.category !== 'Life Insurance') delete (submissionData as Partial<Task>).insurance;
+      if (submissionData.category !== 'General Insurance') delete (submissionData as Partial<Task>).generalInsuranceTask;
+      if (submissionData.category !== 'FDs') delete (submissionData as Partial<Task>).fdTask;
+      if (submissionData.category !== 'Bonds') delete (submissionData as Partial<Task>).bondsTask;
+      if (submissionData.category !== 'PPF') delete (submissionData as Partial<Task>).ppfTask;
+      if (submissionData.category !== 'Physical to Demat') delete (submissionData as Partial<Task>).physicalToDematTask;
+      if (submissionData.category !== 'Stocks') delete (submissionData as Partial<Task>).stocksTask;
 
 
       onSave(submissionData);
@@ -470,7 +469,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     })
                   }} 
                   value={field.value || ''} 
-                  disabled={isTerminal || isEditMode}>
+                  disabled={isTerminal}>
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -1204,6 +1203,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
+
+    
 
     
 
