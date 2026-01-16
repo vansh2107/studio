@@ -109,9 +109,8 @@ export function AssetBreakdownModal({
                             <Button
                               variant="ghost"
                               size="icon"
-                              disabled={item.docCount === 0}
                               onClick={() => {
-                                if (item.docCount > 0 && item.clientId) {
+                                if (item.clientId) {
                                   router.push(`/documents/${item.memberId}?clientId=${item.clientId}`);
                                 }
                               }}
@@ -121,7 +120,7 @@ export function AssetBreakdownModal({
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>{item.docCount > 0 ? `View ${item.docCount} document(s)` : 'No documents available'}</p>
+                            <p>View Documents</p>
                           </TooltipContent>
                         </Tooltip>
                       </TableCell>
