@@ -41,7 +41,7 @@ import { TASK_STATUSES } from '@/lib/constants';
 import { format, parse, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { isOverdue } from '@/lib/is-overdue';
-import { getAllRMs, getAllAssociates, getAllAdmins } from '@/lib/mock-data';
+import { getAllRMs, getAllAssociates, getAllAdmins, getAllClients, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import type { User } from '@/lib/types';
 import Link from 'next/link';
 
@@ -264,6 +264,23 @@ export default function TasksPage() {
   const canUpdate = hasPermission('TASK', 'edit');
   const canDelete = hasPermission('TASK', 'delete');
   const isSuperAdmin = effectiveUser?.role === 'SUPER_ADMIN';
+
+  const clientOptions = useMemo(() => {
+    const heads = getAllClients().map(c => ({
+      label: `${c.firstName} ${c.lastName} (Head)`,
+      value: c.id,
+      relation: 'Head'
+    }));
+
+    const members = mockFamilyMembers.map(m => ({
+      label: `${m.firstName} ${m.lastName} (${m.relation})`,
+      value: m.id,
+      clientId: m.clientId,
+      relation: m.relation,
+    }));
+
+    return [...heads, ...members].sort((a, b) => a.label.localeCompare(b.label));
+  }, []);
 
   const canViewTask = (user: User | null, task: Task): boolean => {
     if (!user) return false;
@@ -549,8 +566,11 @@ export default function TasksPage() {
             task={null}
             onClose={handleCloseModal}
             onSave={(formData) => {
+              const selectedClientOption = clientOptions.find(opt => opt.value === formData.clientId);
+              const derivedClientName = selectedClientOption ? selectedClientOption.label : 'N/A';
               addTask({
                 ...formData,
+                clientName: derivedClientName,
                 dueDate: new Date(formData.dueDate).toISOString(),
               });
               handleCloseModal();

@@ -1054,7 +1054,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
-    shouldUnregister: true,
+    shouldUnregister: false,
   });
 
   useEffect(() => {

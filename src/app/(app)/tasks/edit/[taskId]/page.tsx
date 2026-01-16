@@ -77,7 +77,7 @@ export default function EditTaskPage() {
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
-    shouldUnregister: true,
+    shouldUnregister: false,
   });
 
   const { reset, setValue } = form;
