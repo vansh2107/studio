@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -54,7 +53,7 @@ const numberField = z.preprocess(
 );
 
 const baseTaskSchema = z.object({
-  clientName: z.string().min(1, 'Client name is required'),
+  clientId: z.string().min(1, 'Client is required'),
   category: z.string().min(1, 'Category is required'),
   rmName: z.string().optional(),
   serviceableRM: z.string().optional(),
@@ -316,7 +315,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      clientName: '',
+      clientId: '',
       category: '',
       rmName: '',
       serviceableRM: '',
@@ -331,7 +330,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   });
 
   const selectedCategory = watch('category');
-  const clientNameValue = watch('clientName');
+  const clientIdValue = watch('clientId');
   const descriptionValue = watch('description') || '';
   const insuranceType = watch('insurance.insuranceType');
   const financialService = watch('insurance.financialService');
@@ -342,9 +341,9 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
   /* ---------- AUTO-CALCULATION & POPULATION ---------- */
   
   const { familyHead, assignedAssociate, assignedRM, assignedAdmin } = useMemo(() => {
-    if (!clientNameValue) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
+    if (!clientIdValue) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
 
-    const selectedOption = clientOptions.find(opt => opt.value === clientNameValue);
+    const selectedOption = clientOptions.find(opt => opt.value === clientIdValue);
     if (!selectedOption) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
 
     const headId = 'clientId' in selectedOption ? selectedOption.clientId : selectedOption.value;
@@ -356,7 +355,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     const admin = rm ? getAllAdmins().find(adm => adm.id === rm.adminId) : undefined;
 
     return { familyHead: head, assignedAssociate: associate, assignedRM: rm, assignedAdmin: admin };
-  }, [clientNameValue, clientOptions]);
+  }, [clientIdValue, clientOptions]);
 
   const familyHeadName = familyHead ? `${familyHead.firstName} ${familyHead.lastName}` : '';
   const associateName = assignedAssociate?.name || 'N/A';
@@ -408,7 +407,10 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 
   useEffect(() => {
     if (task) {
-      const taskData: Partial<TaskFormData> = { ...task };
+      const taskDataForForm: Partial<TaskFormData> = {
+        ...task,
+        clientId: task.clientId, // Ensure clientId is correctly mapped for the form
+      };
 
       const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date') => {
         if (!dateString) return '';
@@ -425,20 +427,20 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         }
       };
 
-      taskData.dueDate = formatDateForInput(task.dueDate, 'datetime');
-      if (taskData.insurance) {
-          taskData.insurance.nonFinancialDate = formatDateForInput(task.insurance.nonFinancialDate);
-          taskData.insurance.maturityDueDate = formatDateForInput(task.insurance.maturityDueDate);
-          taskData.insurance.deathClaimProcessDate = formatDateForInput(task.insurance.deathClaimProcessDate);
-          taskData.insurance.surrenderProcessDate = formatDateForInput(task.insurance.surrenderProcessDate);
-          taskData.insurance.receivedDate = formatDateForInput(task.insurance.receivedDate);
-          taskData.insurance.reinvestmentApproxDate = formatDateForInput(task.insurance.reinvestmentApproxDate);
+      taskDataForForm.dueDate = formatDateForInput(task.dueDate, 'datetime');
+      if (taskDataForForm.insurance) {
+          taskDataForForm.insurance.nonFinancialDate = formatDateForInput(task.insurance.nonFinancialDate);
+          taskDataForForm.insurance.maturityDueDate = formatDateForInput(task.insurance.maturityDueDate);
+          taskDataForForm.insurance.deathClaimProcessDate = formatDateForInput(task.insurance.deathClaimProcessDate);
+          taskDataForForm.insurance.surrenderProcessDate = formatDateForInput(task.insurance.surrenderProcessDate);
+          taskDataForForm.insurance.receivedDate = formatDateForInput(task.insurance.receivedDate);
+          taskDataForForm.insurance.reinvestmentApproxDate = formatDateForInput(task.insurance.reinvestmentApproxDate);
       }
       
-      reset(taskData as TaskFormData);
+      reset(taskDataForForm as TaskFormData);
     } else {
       reset({
-        clientName: '',
+        clientId: '',
         category: '',
         rmName: '',
         serviceableRM: '',
@@ -457,7 +459,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     setIsSaving(true);
     
     setTimeout(() => {
-      const selectedClient = clientOptions.find(c => c.value === data.clientName);
+      const selectedClient = clientOptions.find(c => c.value === data.clientId);
 
       const submissionData: Task = {
         ...(task || {}), 
@@ -466,8 +468,8 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         createDate: task?.createDate || new Date().toISOString(),
         status: task?.status || 'Pending',
         status2: data.status2 as TaskStatus2 | undefined,
-        clientId: selectedClient?.value || 'N/A',
-        clientName: selectedClient?.label || data.clientName,
+        clientId: data.clientId,
+        clientName: selectedClient?.label || 'N/A',
         familyHeadId: familyHead?.id,
         associateId: assignedAssociate?.id,
         rmId: assignedRM?.id,
@@ -521,15 +523,15 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <div className="space-y-1">
-            <Label htmlFor="clientName">Client Name</Label>
+            <Label htmlFor="clientId">Client</Label>
             <Controller
-              name="clientName"
+              name="clientId"
               control={control}
               render={({ field }) => (
                 <Combobox
                   options={clientOptions}
                   value={field.value}
-                  onChange={(value) => setValue('clientName', value, { shouldValidate: true })}
+                  onChange={(value) => setValue('clientId', value, { shouldValidate: true })}
                   placeholder="Select Client"
                   searchPlaceholder="Search clients..."
                   emptyText="No matching clients."
@@ -537,7 +539,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                 />
               )}
             />
-            {errors.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
+            {errors.clientId && <p className="text-sm text-destructive">{errors.clientId.message}</p>}
           </div>
 
           <div className="space-y-1">
@@ -1275,3 +1277,5 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
+
+    
