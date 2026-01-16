@@ -14,7 +14,7 @@ import {
 import { useTasks } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash2, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, ChevronRight } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import { Task, TaskStatus } from '@/hooks/use-tasks';
@@ -43,7 +43,6 @@ import { cn } from '@/lib/utils';
 import { isOverdue } from '@/lib/is-overdue';
 import { getAllRMs, getAllAssociates, getAllAdmins, getAllClients, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import type { User } from '@/lib/types';
-import Link from 'next/link';
 
 
 const ExpandedTaskDetails = ({ task, canUpdate, canEditTask }: { task: Task; canUpdate: boolean; canEditTask: boolean }) => {
