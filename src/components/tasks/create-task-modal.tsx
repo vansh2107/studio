@@ -1130,7 +1130,10 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     setIsSaving(true);
     
     setTimeout(() => {
-      onSave(data);
+      const selectedClientOption = clientOptions.find(opt => opt.value === data.clientId);
+      const clientName = selectedClientOption ? selectedClientOption.label : 'N/A';
+
+      onSave({ ...data, clientName });
       setIsSaving(false);
     }, 400);
   };
@@ -1163,5 +1166,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
 }
 
 CreateTaskModal.Form = CreateTaskForm;
+
+    
 
     
