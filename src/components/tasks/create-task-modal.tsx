@@ -387,6 +387,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         associate: associateName,
         policyNo: '',
         company: '',
+        typeOfService: '',
       });
     } else if (selectedCategory === 'Mutual Funds' && !currentData.mutualFund) {
         setValue('mutualFund', {
@@ -548,7 +549,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               name="category"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal || isEditMode}>
+                <Select onValueChange={field.onChange} value={field.value || ''} disabled={isTerminal || isEditMode}>
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -574,7 +575,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
               name="serviceableRM"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value ?? undefined} disabled={isTerminal}>
+                <Select onValueChange={field.onChange} value={field.value || ''} disabled={isTerminal}>
                   <SelectTrigger id="serviceableRM">
                     <SelectValue placeholder="Select Serviceable RM" />
                   </SelectTrigger>
@@ -862,7 +863,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                     name="status2"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isTerminal}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger id="status2">
                             <SelectValue placeholder="Select Status 2" />
                         </SelectTrigger>
@@ -1277,5 +1278,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     </div>
   );
 }
+
+    
 
     
