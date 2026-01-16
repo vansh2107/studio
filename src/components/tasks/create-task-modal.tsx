@@ -865,7 +865,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   control={control}
                   defaultValue="Pending"
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Received">Received</SelectItem>
@@ -883,7 +883,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   control={control}
                   defaultValue="Pending"
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Done">Done</SelectItem>
@@ -901,7 +901,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
                   control={control}
                   defaultValue="Pending"
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Done">Done</SelectItem>

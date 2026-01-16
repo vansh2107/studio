@@ -52,11 +52,12 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
       id: `task-${Date.now()}`,
       status: 'Pending',
       createDate: new Date().toISOString(),
-      clientName: 'N/A', // Default to be overwritten
-      category: 'N/A', // Default to be overwritten
-      dueDate: new Date().toISOString(), // Default to be overwritten
-      clientId: '', // Default to be overwritten
-      ...taskDetails, // Spread the form data last
+      // The modal now provides these, but have fallbacks just in case.
+      clientName: 'N/A', 
+      category: 'N/A',
+      dueDate: new Date().toISOString(),
+      clientId: '',
+      ...taskDetails,
     };
     setTasks(prevTasks => [...prevTasks, newTask]);
   };
