@@ -289,89 +289,78 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
     
   }, [familyHeadName, associateName, rmName, selectedCategory, setValue, clientOptions]);
 
-  /* ---------- CATEGORY CHANGE HANDLING ---------- */
-
-  useEffect(() => {
-    const currentData = watch();
-    if (selectedCategory === 'Life Insurance' && !currentData.insurance) {
-      setValue('insurance', {
-        insuranceType: 'Non-Financial',
-        amountStatus: 'Pending',
-        familyHead: familyHeadName,
-        associate: associateName,
-        policyNo: '',
-        company: '',
-        typeOfService: '',
-      });
-    } else if (selectedCategory === 'Mutual Funds' && !currentData.mutualFund) {
-        setValue('mutualFund', {
-            familyHead: familyHeadName,
-            service: '',
-            folioNo: '',
-            nameOfAMC: '',
-            amount: 0,
-            documentStatus: 'Pending',
-            signatureStatus: 'Pending',
-            amcSubmissionStatus: 'Pending',
-        });
-    }
-  }, [selectedCategory, setValue, watch, familyHeadName, associateName]);
-
-
+  
   /* ---------- LOAD EXISTING TASK ---------- */
 
   useEffect(() => {
-    if (task) {
-      const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date') => {
-        if (!dateString) return '';
-        try {
-          const date = parseISO(dateString);
-          if (!isNaN(date.getTime())) { 
-             return type === 'datetime' ? format(date, "yyyy-MM-dd'T'HH:mm") : format(date, "yyyy-MM-dd");
+    if (isEditMode && task) {
+      const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date'): string => {
+          if (!dateString) return '';
+          let date: Date | null = null;
+          try {
+              date = parseISO(dateString);
+          } catch {
+              try {
+                  date = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
+              } catch {
+                  return dateString; // Return original if all parsing fails
+              }
           }
-        } catch {}
+          if (date && !isNaN(date.getTime())) {
+              return type === 'datetime' ? format(date, "yyyy-MM-dd'T'HH:mm") : format(date, "yyyy-MM-dd");
+          }
+          return dateString;
+      };
 
-        try {
-           const parsed = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
-           if (!isNaN(parsed.getTime())) {
-             return type === 'datetime' ? format(parsed, "yyyy-MM-dd'T'HH:mm") : format(parsed, "yyyy-MM-dd");
-           }
-        } catch {}
-        
-        return dateString;
-      };
-      
       const taskDataForForm: Partial<TaskFormData> = {
-        // Base fields
-        clientId: task.clientId,
-        category: task.category as any,
-        rmName: task.rmName,
-        serviceableRM: task.serviceableRM,
-        dueDate: formatDateForInput(task.dueDate, 'datetime'),
-        description: task.description,
-        status2: task.status2,
-        
-        // Nested, category-specific fields - crucial for discriminatedUnion
-        mutualFund: task.category === 'Mutual Funds' ? task.mutualFund : undefined,
-        insurance: task.category === 'Life Insurance' ? {
-          ...task.insurance,
-          nonFinancialDate: formatDateForInput(task.insurance?.nonFinancialDate),
-          maturityDueDate: formatDateForInput(task.insurance?.maturityDueDate),
-          deathClaimProcessDate: formatDateForInput(task.insurance?.deathClaimProcessDate),
-          surrenderProcessDate: formatDateForInput(task.insurance?.surrenderProcessDate),
-          receivedDate: formatDateForInput(task.insurance?.receivedDate),
-          reinvestmentApproxDate: formatDateForInput(task.insurance?.reinvestmentApproxDate),
-        } : undefined,
-        generalInsuranceTask: task.category === 'General Insurance' ? task.generalInsuranceTask : undefined,
-        stocksTask: task.category === 'Stocks' ? task.stocksTask : undefined,
-        physicalToDematTask: task.category === 'Physical to Demat' ? task.physicalToDematTask : undefined,
-        bondsTask: task.category === 'Bonds' ? task.bondsTask : undefined,
-        ppfTask: task.category === 'PPF' ? task.ppfTask : undefined,
-        fdTask: task.category === 'FDs' ? task.fdTask : undefined,
+          clientId: task.clientId,
+          category: task.category as any,
+          rmName: task.rmName,
+          serviceableRM: task.serviceableRM,
+          dueDate: formatDateForInput(task.dueDate, 'datetime'),
+          description: task.description,
+          status2: task.status2,
       };
+
+      switch (task.category) {
+          case 'Mutual Funds':
+              taskDataForForm.mutualFund = task.mutualFund;
+              break;
+          case 'Life Insurance':
+              if (task.insurance) {
+                  taskDataForForm.insurance = {
+                      ...task.insurance,
+                      nonFinancialDate: formatDateForInput(task.insurance.nonFinancialDate, 'date'),
+                      maturityDueDate: formatDateForInput(task.insurance.maturityDueDate, 'date'),
+                      deathClaimProcessDate: formatDateForInput(task.insurance.deathClaimProcessDate, 'date'),
+                      surrenderProcessDate: formatDateForInput(task.insurance.surrenderProcessDate, 'date'),
+                      receivedDate: formatDateForInput(task.insurance.receivedDate, 'date'),
+                      reinvestmentApproxDate: formatDateForInput(task.insurance.reinvestmentApproxDate, 'date'),
+                  };
+              }
+              break;
+          case 'General Insurance':
+              taskDataForForm.generalInsuranceTask = task.generalInsuranceTask;
+              break;
+          case 'Stocks':
+              taskDataForForm.stocksTask = task.stocksTask;
+              break;
+          case 'Physical to Demat':
+              taskDataForForm.physicalToDematTask = task.physicalToDematTask;
+              break;
+          case 'Bonds':
+              taskDataForForm.bondsTask = task.bondsTask;
+              break;
+          case 'PPF':
+              taskDataForForm.ppfTask = task.ppfTask;
+              break;
+          case 'FDs':
+              taskDataForForm.fdTask = task.fdTask;
+              break;
+      }
       
       reset(taskDataForForm as TaskFormData);
-    } else {
+    } else if (!isEditMode) {
       reset({
         clientId: '',
         category: undefined,
@@ -382,7 +371,7 @@ export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps)
         status2: undefined,
       });
     }
-  }, [task, reset]);
+  }, [task, isEditMode, reset]);
 
   /* ---------- SAVE ---------- */
 

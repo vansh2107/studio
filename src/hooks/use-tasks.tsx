@@ -1,13 +1,28 @@
 
-
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { TaskStatus, TaskCategory } from '@/lib/constants';
 import { useCurrentUser } from './use-current-user';
 import type { Task } from '@/lib/types';
 
 export type { TaskStatus, TaskCategory, Task };
+
+const TASKS_STORAGE_KEY = 'finarray-tasks';
+
+// Function to safely get tasks from localStorage
+const getInitialTasks = (): Task[] => {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+  try {
+    const storedTasks = localStorage.getItem(TASKS_STORAGE_KEY);
+    return storedTasks ? JSON.parse(storedTasks) : [];
+  } catch (error) {
+    console.error("Failed to parse tasks from localStorage", error);
+    return [];
+  }
+};
 
 
 interface TaskContextType {
@@ -21,7 +36,16 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const { effectiveUser } = useCurrentUser();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(getInitialTasks);
+
+  // Effect to save tasks to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+    } catch (error) {
+      console.error("Failed to save tasks to localStorage", error);
+    }
+  }, [tasks]);
 
   const addTask = (taskDetails: Partial<Omit<Task, 'id'>>) => {
     const newTask: Task = {
