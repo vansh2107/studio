@@ -1,15 +1,13 @@
 
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Users, Briefcase, FileText, ClipboardList, UserSquare } from 'lucide-react';
+import { Users, Briefcase, UserSquare } from 'lucide-react';
 import { getRMsForAdmin, getAssociatesForRM, getClientsForAssociate } from '@/lib/mock-data';
 import type { User } from '@/lib/types';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTasks } from '@/hooks/use-tasks';
-import { isPast, parseISO } from 'date-fns';
-import TaskOverview from './task-overview';
 import { StatCard } from '@/components/ui/stat-card';
+import { TaskSummaryCard } from './task-summary-card';
 
 interface AdminDashboardProps {
   user: User;
@@ -33,23 +31,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     return { mappedRMs: [], mappedAssociates: [], mappedClients: [] };
   }, [user]);
 
-  const totalFamilies = mappedClients.length;
-
-  const relevantTasks = useMemo(() => {
-    if (!user) return [];
-    switch (user.role) {
-      case 'ADMIN':
-        const adminAssociateNames = mappedAssociates.map(a => a.name);
-        return tasks.filter(task => adminAssociateNames.includes(task.clientName.split('(')[0].trim()));
-      case 'RM':
-        const rmAssociateNames = mappedAssociates.map(a => a.name);
-        return tasks.filter(task => rmAssociateNames.includes(task.clientName.split('(')[0].trim()));
-      default:
-        return [];
-    }
-  }, [tasks, user, mappedAssociates]);
-
-
   if (user.role === 'RM') {
       return (
           <>
@@ -57,9 +38,9 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <StatCard label="Total Associates" value={mappedAssociates.length} href="/associates" icon={Briefcase} />
                 <StatCard label="Total Clients" value={mappedClients.length} href="/customers" icon={Users} />
-                <StatCard label="Total Tasks" value={relevantTasks.length} href="/tasks" icon={ClipboardList} />
+                <StatCard label="Total Tasks" value={tasks.length} href="/tasks" icon={UserSquare} />
              </div>
-             <TaskOverview tasks={relevantTasks} />
+             <TaskSummaryCard allTasks={tasks} />
           </>
       )
   }
@@ -72,7 +53,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         <StatCard label="Mapped Associates" value={mappedAssociates.length} href="/associates" icon={Briefcase} />
         <StatCard label="Total Mapped Clients" value={mappedClients.length} href="/customers" icon={Users} />
       </div>
-      <TaskOverview tasks={relevantTasks} />
+      <TaskSummaryCard allTasks={tasks} />
     </>
   );
 }
