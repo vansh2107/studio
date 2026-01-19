@@ -22,6 +22,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { format, parseISO } from 'date-fns';
 
 const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset: Asset) => void }) => {
   const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -46,6 +47,17 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
     if (isNaN(numAmount)) return '—';
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(numAmount);
   };
+  
+  const details: any =
+    asset.assetType === 'STOCKS' ? asset.stocks :
+    asset.assetType === 'FIXED DEPOSITS' ? asset.fixedDeposits :
+    asset.assetType === 'BONDS' ? asset.bonds :
+    asset.assetType === 'PPF' ? asset.ppf :
+    asset.assetType === 'MUTUAL FUNDS' ? asset.mutualFunds :
+    asset.assetType === 'LIFE INSURANCE' ? asset.lifeInsurance :
+    asset.assetType === 'GENERAL INSURANCE' ? asset.generalInsurance :
+    asset.assetType === 'PHYSICAL TO DEMAT' ? asset.physicalToDemat :
+    null;
 
   return (
     <div className="bg-muted/30 p-6 space-y-6 relative">
@@ -156,6 +168,44 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
           <DetailItem label="Quantity">{asset.physicalToDemat.quantity}</DetailItem>
           <DetailItem label="Market Price">{formatCurrency(asset.physicalToDemat.marketPrice)}</DetailItem>
           <DetailItem label="Total Value">{formatCurrency(asset.physicalToDemat.totalValue)}</DetailItem>
+        </Section>
+      )}
+
+      {details && (details.jointHolders?.length > 0 || details.nominees?.length > 0) && (
+        <Section title="Ownership Details" className="md:grid-cols-1">
+            {details.jointHolders?.length > 0 && (
+                <DetailItem label="Joint Holders">
+                    <ul className="list-disc pl-5 space-y-1">
+                        {details.jointHolders.map((holder: { name: string }, index: number) => (
+                            <li key={index}>{holder.name}</li>
+                        ))}
+                    </ul>
+                </DetailItem>
+            )}
+            {details.nominees?.length > 0 && (
+                <DetailItem label="Nominees">
+                    <div className="overflow-hidden rounded-md border mt-2">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Date of Birth</TableHead>
+                                    <TableHead className="text-right">Allocation</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {details.nominees.map((nominee: { name: string, dateOfBirth?: string, allocation?: number }, index: number) => (
+                                    <TableRow key={index}>
+                                        <TableCell className="font-medium">{nominee.name}</TableCell>
+                                        <TableCell>{nominee.dateOfBirth ? format(parseISO(nominee.dateOfBirth), 'dd MMM yyyy') : '—'}</TableCell>
+                                        <TableCell className="text-right">{nominee.allocation != null ? `${nominee.allocation}%` : '—'}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </DetailItem>
+            )}
         </Section>
       )}
     </div>
