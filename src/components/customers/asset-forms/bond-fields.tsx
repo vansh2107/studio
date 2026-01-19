@@ -36,7 +36,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Bond Details</h3>
       
-      <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+      <JointHolderFields control={control} register={register} errors={errors?.bonds?.jointHolders} fieldPath="bonds.jointHolders" />
 
       <div className="space-y-4 pt-4">
         {/* Row 1 */}
@@ -136,7 +136,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
           </div>
         </div>
         
-        <NomineeFields control={control} errors={errors?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+        <NomineeFields control={control} errors={errors?.bonds?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="bonds.nominees" />
       </div>
     </div>
   );

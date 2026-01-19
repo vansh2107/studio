@@ -34,7 +34,7 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">PPF Details</h3>
       
-      <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+      <JointHolderFields control={control} register={register} errors={errors?.ppf?.jointHolders} fieldPath="ppf.jointHolders" />
 
       <div className="space-y-4 pt-4">
         {/* ROW 1 */}
@@ -96,7 +96,7 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
         </div>
       </div>
 
-      <NomineeFields control={control} errors={errors?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+      <NomineeFields control={control} errors={errors?.ppf?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="ppf.nominees" />
     </div>
   );
 }

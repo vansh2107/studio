@@ -36,7 +36,7 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
     <div className="space-y-4">
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Fixed Deposit Details</h3>
         
-        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+        <JointHolderFields control={control} register={register} errors={errors?.fixedDeposits?.jointHolders} fieldPath="fixedDeposits.jointHolders" />
 
         {/* ROW 1 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
@@ -129,7 +129,7 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
                 <Controller name="fixedDeposits.maturityDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+        <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="fixedDeposits.nominees" />
     </div>
   );
 }

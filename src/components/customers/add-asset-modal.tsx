@@ -337,7 +337,8 @@ export function AddAssetModal({
   } = useForm<FormData>({
     resolver: zodResolver(assetFormSchema),
     defaultValues: defaultFormValues,
-    shouldUnregister: true,
+    shouldUnregister: false,
+    mode: 'onSubmit',
   });
 
   const assetType = watch('assetType');
@@ -432,9 +433,22 @@ export function AddAssetModal({
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="font-semibold text-sm text-destructive mb-2">Please fix the following errors:</p>
                 <ul className="text-sm text-destructive space-y-1">
-                  {Object.entries(errors).map(([key, value]: any) => (
-                    <li key={key}>• {value?.message || `${key} is invalid`}</li>
-                  ))}
+                  {Object.entries(errors).map(([key, value]: any) => {
+                    const renderError = (err: any, fieldName: string = ''): React.ReactNode => {
+                      if (!err) return null;
+                      if (err.message) {
+                        return <li key={fieldName}>{fieldName ? `• ${fieldName}: ${err.message}` : `• ${err.message}`}</li>;
+                      }
+                      if (typeof err === 'object') {
+                        return Object.entries(err).map(([nestedKey, nestedValue]: any) => {
+                          const fullFieldName = fieldName ? `${fieldName}.${nestedKey}` : nestedKey;
+                          return renderError(nestedValue, fullFieldName);
+                        });
+                      }
+                      return null;
+                    };
+                    return renderError(value, key);
+                  })}
                 </ul>
               </div>
             )}

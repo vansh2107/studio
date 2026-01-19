@@ -36,7 +36,7 @@ export function MutualFundsFields({ control, errors, familyMembers, register, wa
     <div className="space-y-4">
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Mutual Funds Details</h3>
 
-        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+        <JointHolderFields control={control} register={register} errors={errors?.mutualFunds?.jointHolders} fieldPath="mutualFunds.jointHolders" />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             <div>
@@ -93,7 +93,7 @@ export function MutualFundsFields({ control, errors, familyMembers, register, wa
                 <Controller name="mutualFunds.investedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+        <NomineeFields control={control} errors={errors?.mutualFunds?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="mutualFunds.nominees" />
     </div>
   );
 }

@@ -10,19 +10,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FamilyMember } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
-export function NomineeFields({ control, errors, familyMembers, watch, getValues, setValue, maxNominees = 3 }: { control: any; errors: any; familyMembers: FamilyMember[], watch: any, getValues: any, setValue: any, maxNominees?: number }) {
+export function NomineeFields({ control, errors, familyMembers, watch, getValues, setValue, maxNominees = 3, fieldPath = 'nominees' }: { control: any; errors: any; familyMembers: FamilyMember[], watch: any, getValues: any, setValue: any, maxNominees?: number, fieldPath?: string }) {
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'nominees',
+    name: fieldPath as any,
   });
   
   const [totalAllocation, setTotalAllocation] = useState(0);
-  const watchedNominees = watch('nominees');
+  const watchedNominees = watch(fieldPath);
   
   useEffect(() => {
     const currentAllocation = watchedNominees?.reduce((acc: number, nominee: any) => acc + (parseFloat(nominee.allocation) || 0), 0) || 0;
     setTotalAllocation(currentAllocation);
-  }, [watchedNominees]);
+  }, [watchedNominees, fieldPath]);
 
   const handleAddNominee = () => {
     if (fields.length < maxNominees) {
@@ -41,15 +41,15 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
     if (isNaN(value) || value < 0) value = 0;
     if (value > 100) value = 100;
     
-    const tempNominees = [...(getValues('nominees') || [])];
+    const tempNominees = [...(getValues(fieldPath) || [])];
     tempNominees[index] = { ...tempNominees[index], allocation: value };
     const tempTotal = tempNominees.reduce((acc, n) => acc + (n.allocation || 0), 0);
 
     if (tempTotal <= 100) {
-        setValue(`nominees.${index}.allocation`, value, { shouldValidate: true });
+        setValue(`${fieldPath}.${index}.allocation`, value);
     } else {
         const clampedValue = value - (tempTotal - 100);
-        setValue(`nominees.${index}.allocation`, clampedValue < 0 ? 0 : clampedValue, { shouldValidate: true });
+        setValue(`${fieldPath}.${index}.allocation`, clampedValue < 0 ? 0 : clampedValue);
     }
   };
   
@@ -67,7 +67,7 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
             <div>
               <Label>Nominee Name {index + 1}</Label>
               <Controller
-                name={`nominees.${index}.name`}
+                name={`${fieldPath}.${index}.name`}
                 control={control}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value || ''}>
@@ -89,7 +89,7 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
             <div>
               <Label>Allocation %</Label>
               <Controller
-                name={`nominees.${index}.allocation`}
+                name={`${fieldPath}.${index}.allocation`}
                 control={control}
                 render={({ field }) => (
                   <Input
@@ -108,7 +108,7 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
              <div>
               <Label>Date of Birth</Label>
               <Controller
-                name={`nominees.${index}.dateOfBirth`}
+                name={`${fieldPath}.${index}.dateOfBirth`}
                 control={control}
                 render={({ field }) => (
                   <Input

@@ -39,9 +39,9 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     const q = parseFloat(quantity);
     const mp = parseFloat(marketPrice);
     if (!isNaN(q) && !isNaN(mp)) {
-      setValue('physicalToDemat.totalValue', q * mp, { shouldValidate: true });
+      setValue('physicalToDemat.totalValue', q * mp);
     } else {
-        setValue('physicalToDemat.totalValue', undefined, { shouldValidate: true });
+        setValue('physicalToDemat.totalValue', undefined);
     }
   }, [quantity, marketPrice, setValue]);
 
@@ -50,7 +50,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Physical to Demat Details</h3>
       
-      <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+      <JointHolderFields control={control} register={register} errors={errors?.physicalToDemat?.jointHolders} fieldPath="physicalToDemat.jointHolders" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
         <div>
@@ -73,7 +73,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
                 </Select>
                 )}
             />
-            {errors?.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
+            {errors?.physicalToDemat?.clientName && <p className="text-sm text-destructive">{errors.physicalToDemat.clientName.message}</p>}
         </div>
         <div>
           <Label>Mobile Number</Label>
@@ -90,7 +90,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
               />
             )}
           />
-          {errors?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.mobileNumber.message}</p>}
+          {errors?.physicalToDemat?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.mobileNumber.message}</p>}
         </div>
         <div>
           <Label>Email Address</Label>
@@ -99,7 +99,7 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
             control={control}
             render={({ field }) => <Input type="email" {...field} value={field.value || ''} />}
           />
-          {errors?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.emailAddress.message}</p>}
+          {errors?.physicalToDemat?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.emailAddress.message}</p>}
         </div>
       </div>
       
@@ -130,17 +130,17 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         <div>
           <Label>Quantity</Label>
           <Controller name="physicalToDemat.quantity" control={control} render={({ field }) => <Input type="number" min="0" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-          {errors?.quantity && <p className="text-sm text-destructive mt-1">{errors.quantity.message}</p>}
+          {errors?.physicalToDemat?.quantity && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.quantity.message}</p>}
         </div>
         <div>
           <Label>Market Price</Label>
           <Controller name="physicalToDemat.marketPrice" control={control} render={({ field }) => <Input type="number" min="0" step="any" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-          {errors?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.marketPrice.message}</p>}
+          {errors?.physicalToDemat?.marketPrice && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.marketPrice.message}</p>}
         </div>
         <div>
           <Label>Total Value</Label>
           <Input readOnly {...register('physicalToDemat.totalValue')} />
-          {errors?.totalValue && <p className="text-sm text-destructive mt-1">{errors.totalValue.message}</p>}
+          {errors?.physicalToDemat?.totalValue && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.totalValue.message}</p>}
         </div>
       </div>
       

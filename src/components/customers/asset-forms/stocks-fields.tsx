@@ -23,7 +23,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
       <div>
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Holder Details</h3>
         
-        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+        <JointHolderFields control={control} register={register} errors={errors?.stocks?.jointHolders} fieldPath="stocks.jointHolders" />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
           <div>
@@ -105,7 +105,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
 
       <Separator />
 
-      <NomineeFields control={control} errors={errors?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+      <NomineeFields control={control} errors={errors?.stocks?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="stocks.nominees" />
     </div>
   );
 }

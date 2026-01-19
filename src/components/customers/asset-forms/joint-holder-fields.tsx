@@ -6,10 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 
-export function JointHolderFields({ control, register, errors }: { control: any, register: any, errors: any }) {
+export function JointHolderFields({ control, register, errors, fieldPath = 'jointHolders' }: { control: any, register: any, errors: any, fieldPath?: string }) {
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'jointHolders',
+    name: fieldPath as any,
   });
 
   return (
@@ -19,7 +19,7 @@ export function JointHolderFields({ control, register, errors }: { control: any,
         {fields.map((item, index) => (
           <div key={item.id} className="relative">
             <Input
-              {...register(`jointHolders.${index}.name`)}
+              {...register(`${fieldPath}.${index}.name`)}
               placeholder={`Joint Holder ${index + 1}`}
               className="pr-8"
             />

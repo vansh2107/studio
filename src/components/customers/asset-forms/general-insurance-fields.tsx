@@ -43,7 +43,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
     <div className="space-y-4">
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">General Insurance Details</h3>
 
-        <JointHolderFields control={control} register={register} errors={errors?.jointHolders} />
+        <JointHolderFields control={control} register={register} errors={errors?.generalInsurance?.jointHolders} fieldPath="generalInsurance.jointHolders" />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             <div>
@@ -175,7 +175,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
               </div>
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />
+        <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="generalInsurance.nominees" />
     </div>
   );
 }
