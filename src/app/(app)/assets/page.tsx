@@ -59,8 +59,10 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
     asset.assetType === 'PHYSICAL TO DEMAT' ? asset.physicalToDemat :
     null;
 
+  const hasAssetSpecificDetails = (details !== null) || (asset.assetType === 'STOCKS' && asset.stocks);
+
   return (
-    <div className="bg-muted/30 p-6 space-y-6 relative">
+    <div className="bg-muted/30 p-6 relative">
       <Button 
         variant="outline" 
         size="sm" 
@@ -75,6 +77,8 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
         <DetailItem label="Asset Type">{asset.assetType}</DetailItem>
         <DetailItem label="Family Head">{asset.familyHeadName}</DetailItem>
       </Section>
+
+      <div className="my-6 border-t border-gray-200" />
 
       {asset.assetType === 'STOCKS' && asset.stocks && (
         <Section title="Stocks Details">
@@ -171,42 +175,44 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
         </Section>
       )}
 
+      {hasAssetSpecificDetails && <div className="my-6 border-t border-gray-200" />}
+
       {details && (details.jointHolders?.length > 0 || details.nominees?.length > 0) && (
-        <Section title="Ownership Details" className="md:grid-cols-1">
-            {details.jointHolders?.length > 0 && (
-                <DetailItem label="Joint Holders">
-                    <ul className="list-disc pl-5 space-y-1">
-                        {details.jointHolders.map((holder: { name: string }, index: number) => (
-                            <li key={index}>{holder.name}</li>
-                        ))}
-                    </ul>
-                </DetailItem>
-            )}
-            {details.nominees?.length > 0 && (
-                <DetailItem label="Nominees">
-                    <div className="overflow-hidden rounded-md border mt-2">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Date of Birth</TableHead>
-                                    <TableHead className="text-right">Allocation</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {details.nominees.map((nominee: { name: string, dateOfBirth?: string, allocation?: number }, index: number) => (
-                                    <TableRow key={index}>
-                                        <TableCell className="font-medium">{nominee.name}</TableCell>
-                                        <TableCell>{nominee.dateOfBirth ? format(parseISO(nominee.dateOfBirth), 'dd MMM yyyy') : '—'}</TableCell>
-                                        <TableCell className="text-right">{nominee.allocation != null ? `${nominee.allocation}%` : '—'}</TableCell>
-                                    </TableRow>
+        <>
+            <div className="mt-6">
+                <h4 className="text-md font-semibold text-primary mb-4">Ownership Details</h4>
+                <div className="grid grid-cols-2 gap-8">
+                    <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Joint Holders</p>
+                        {details.jointHolders?.length > 0 ? (
+                            <ul className="mt-2 list-disc pl-5 space-y-1 text-sm">
+                                {details.jointHolders.map((holder: { name: string }, index: number) => (
+                                    <li key={index}>{holder.name}</li>
                                 ))}
-                            </TableBody>
-                        </Table>
+                            </ul>
+                        ) : (
+                            <p className="mt-2 text-sm text-muted-foreground">—</p>
+                        )}
                     </div>
-                </DetailItem>
-            )}
-        </Section>
+                    <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nominees</p>
+                        {details.nominees?.length > 0 ? (
+                             <ul className="mt-2 list-disc pl-5 space-y-1 text-sm">
+                                {details.nominees.map((nominee: { name: string; allocation?: number }, index: number) => (
+                                    <li key={index}>
+                                        {nominee.name}
+                                        {nominee.allocation != null ? ` (${nominee.allocation}%)` : ''}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="mt-2 text-sm text-muted-foreground">—</p>
+                        )}
+                    </div>
+                </div>
+            </div>
+            <div className="my-6 border-t border-gray-200" />
+        </>
       )}
     </div>
   );
