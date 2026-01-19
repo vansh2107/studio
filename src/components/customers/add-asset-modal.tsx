@@ -376,7 +376,7 @@ export function AddAssetModal({
       }
 
       const newAsset: Asset = {
-        id: assetToEdit?.id ?? `asset-${Date.now()}`,
+        id: assetToEdit?.id ?? crypto.randomUUID(),
         familyHeadId: head.id,
         familyHeadName: `${head.firstName} ${head.lastName}`,
         ...data

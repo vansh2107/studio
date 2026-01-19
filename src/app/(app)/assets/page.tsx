@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { AddAssetModal } from '@/components/customers/add-asset-modal';
 import { PlusCircle, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import { getAllClients } from '@/lib/mock-data';
-import type { Asset } from '@/lib/types';
+import { useAssets, type Asset } from '@/hooks/use-assets';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   AlertDialog,
@@ -164,7 +164,7 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
 
 export default function AssetsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [assets, setAssets] = useState<Asset[]>([]);
+  const { assets, addAsset, updateAsset, deleteAsset } = useAssets();
   const familyHeads = getAllClients();
   const { toast } = useToast();
 
@@ -174,10 +174,10 @@ export default function AssetsPage() {
 
   const handleSaveAsset = (asset: Asset) => {
     if (editingAsset) {
-      setAssets(prev => prev.map(a => (a.id === asset.id ? asset : a)));
+      updateAsset(asset);
       toast({ title: 'Success', description: 'Asset has been updated.' });
     } else {
-      setAssets(prev => [...prev, asset]);
+      addAsset(asset);
       toast({ title: 'Success', description: 'Asset has been created.' });
     }
     closeModal();
@@ -190,7 +190,7 @@ export default function AssetsPage() {
 
   const handleDelete = () => {
     if (!deletingAsset) return;
-    setAssets(prev => prev.filter(a => a.id !== deletingAsset.id));
+    deleteAsset(deletingAsset.id);
     toast({ title: 'Success', description: 'Asset has been deleted.', variant: 'destructive' });
     setDeletingAsset(null);
   };

@@ -3,6 +3,7 @@
 import { AppLayout } from '@/components/layout/app-layout';
 import { Chatbot } from '@/components/tasks/chatbot';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import { AssetsProvider } from '@/hooks/use-assets';
 import { TaskProvider } from '@/hooks/use-tasks';
 
 export default function DashboardLayout({
@@ -12,9 +13,11 @@ export default function DashboardLayout({
 }) {
   const { isLoading } = useCurrentUser();
   return (
-    <TaskProvider>
-      <AppLayout isLoading={isLoading}>{children}</AppLayout>
-      <Chatbot />
-    </TaskProvider>
+    <AssetsProvider>
+      <TaskProvider>
+        <AppLayout isLoading={isLoading}>{children}</AppLayout>
+        <Chatbot />
+      </TaskProvider>
+    </AssetsProvider>
   );
 }
