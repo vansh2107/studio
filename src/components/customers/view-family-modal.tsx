@@ -155,8 +155,8 @@ export function ViewFamilyModal({
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <Button variant="ghost" size="icon" className="text-primary hover:text-white">
-                              <Folder className="h-5 w-5" />
+                          <Button variant="ghost" size="icon" className="group">
+                              <Folder className="h-5 w-5 text-primary group-hover:text-white" />
                           </Button>
                         </Link>
                       </TableCell>
