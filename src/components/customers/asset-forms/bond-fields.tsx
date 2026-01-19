@@ -12,6 +12,19 @@ import { NomineeFields } from './nominee-fields';
 
 export function BondFields({ control, errors, familyMembers, watch, register, getValues, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], watch: any, register: any, getValues: any, setValue: any }) {
 
+  const bondPrice = watch('bonds.bondPrice');
+  const bondUnit = watch('bonds.bondUnit');
+
+  useEffect(() => {
+    const price = parseFloat(bondPrice);
+    const unit = parseInt(bondUnit, 10);
+    if (!isNaN(price) && !isNaN(unit)) {
+      setValue('bonds.bondAmount', price * unit, { shouldValidate: true });
+    } else {
+      setValue('bonds.bondAmount', undefined, { shouldValidate: true });
+    }
+  }, [bondPrice, bondUnit, setValue]);
+
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
       e.preventDefault();
