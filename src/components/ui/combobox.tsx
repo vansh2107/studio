@@ -59,7 +59,11 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full justify-between font-normal", !value && "text-muted-foreground", className)}
+          className={cn(
+            "w-full justify-between font-normal border-input hover:bg-background",
+            value ? "text-foreground" : "text-muted-foreground",
+            className
+          )}
           disabled={disabled}
         >
           <span className="block truncate">{value ? selectedLabel : placeholder}</span>
