@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -156,8 +155,8 @@ export function ViewFamilyModal({
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <Button variant="ghost" size="icon">
-                              <Folder className="h-5 w-5 text-primary" />
+                          <Button variant="ghost" size="icon" className="text-primary hover:text-white">
+                              <Folder className="h-5 w-5" />
                           </Button>
                         </Link>
                       </TableCell>
