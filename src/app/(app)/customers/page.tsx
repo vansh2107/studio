@@ -22,7 +22,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Client, FamilyMember, User, DisplayClient } from '@/lib/types';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { getAllClients, familyMembers as mockFamilyMembers, users as mockUsers, getClientsForAssociate, getAssociatesForRM, getRMsForAdmin, associates as allAssociates, relationshipManagers as allRMs } from '@/lib/mock-data';
-import Modal from '@/components/ui/Modal';
 import {
   AlertDialog,
   AlertDialogHeader,
@@ -470,44 +469,44 @@ export default function ClientsPage() {
           </CardContent>
         </Card>
 
-        <Modal open={!!activeModal} onClose={handleCloseModal}>
-          <>
-            {activeModal === 'form' && (
-              <FamilyFormModal
-                onClose={handleCloseModal}
-                family={selectedClient}
-                onSave={handleSave}
-              />
-            )}
-            
-            {activeModal === 'view-family' && selectedClient && (
-              <ViewFamilyModal
-                onClose={handleCloseModal}
-                client={selectedClient}
-                familyMembers={familyMembers.filter(m => m.clientId === selectedClient.id)}
-                onAddMember={() => handleAddMember(selectedClient)}
-                onEditMember={(m) => handleEditItem(m)}
-                onDeleteMember={handleDeleteMember}
-              />
-            )}
+        {activeModal === 'form' && (
+          <FamilyFormModal
+            isOpen={activeModal === 'form'}
+            onClose={handleCloseModal}
+            family={selectedClient}
+            onSave={handleSave}
+          />
+        )}
+        
+        {activeModal === 'view-family' && selectedClient && (
+          <ViewFamilyModal
+            isOpen={activeModal === 'view-family'}
+            onClose={handleCloseModal}
+            client={selectedClient}
+            familyMembers={familyMembers.filter(m => m.clientId === selectedClient.id)}
+            onAddMember={() => handleAddMember(selectedClient)}
+            onEditMember={(m) => handleEditItem(m)}
+            onDeleteMember={handleDeleteMember}
+          />
+        )}
 
-            {activeModal === 'view-member' && selectedMember && (
-              <ViewFamilyMemberModal
-                onClose={handleCloseModal}
-                member={selectedMember}
-              />
-            )}
+        {activeModal === 'view-member' && selectedMember && (
+          <ViewFamilyMemberModal
+            isOpen={activeModal === 'view-member'}
+            onClose={handleCloseModal}
+            member={selectedMember}
+          />
+        )}
 
-            {activeModal === 'member-form' && selectedClient && (
-              <FamilyMemberFormModal
-                onClose={handleCloseModal}
-                client={selectedClient}
-                member={selectedMember}
-                onSave={handleSaveMember}
-              />
-            )}
-          </>
-        </Modal>
+        {activeModal === 'member-form' && selectedClient && (
+          <FamilyMemberFormModal
+            isOpen={activeModal === 'member-form'}
+            onClose={handleCloseModal}
+            client={selectedClient}
+            member={selectedMember}
+            onSave={handleSaveMember}
+          />
+        )}
         
       </div>
     </TooltipProvider>

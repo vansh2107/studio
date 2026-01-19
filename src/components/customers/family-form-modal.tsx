@@ -35,12 +35,14 @@ type ClientFormData = z.infer<typeof clientSchema>;
 const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
 interface FamilyFormModalProps {
+  isOpen: boolean;
   onClose: () => void;
-  family?: Client | null; // Changed from Family to Client
-  onSave: (family: Client) => void; // Changed from Family to Client
+  family?: Client | null;
+  onSave: (family: Client) => void;
 }
 
 export function FamilyFormModal({
+  isOpen,
   onClose,
   family,
   onSave,
@@ -195,162 +197,173 @@ export function FamilyFormModal({
     </div>
   );
 
+  if (!isOpen) return null;
+
   return (
-    <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 -mr-4 relative">
-        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 close-icon">
-            <X className="h-4 w-4" />
-        </Button>
-        <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
-          <h2 className="text-lg font-semibold leading-none tracking-tight">
-            {family ? 'Edit Family Head' : 'Create New Family Head'} - Step {step} / 2
-          </h2>
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div 
+        className="bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh] overflow-hidden w-full max-w-4xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 border-b relative">
+            <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-4 right-4 close-icon">
+                <X className="h-4 w-4" />
+            </Button>
+            <div className="flex flex-col space-y-1.5">
+              <h2 className="text-lg font-semibold leading-none tracking-tight">
+                {family ? 'Edit Family Head' : 'Create New Family Head'} - Step {step} / 2
+              </h2>
+            </div>
         </div>
 
         <form
           onSubmit={handleSubmit(processSave)}
-          className="space-y-4"
+          className="flex flex-col h-full flex-1 min-h-0"
         >
-          {step === 1 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  {...register('firstName')}
-                  disabled={isSaving}
-                />
-                {errors.firstName && (
-                  <p className="text-sm text-destructive">
-                    {errors.firstName.message}
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  {...register('lastName')}
-                  disabled={isSaving}
-                />
-                {errors.lastName && (
-                  <p className="text-sm text-destructive">
-                    {errors.lastName.message}
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input
-                  id="phoneNumber"
-                  type="tel"
-                  {...register('phoneNumber')}
-                  disabled={isSaving}
-                />
-                {errors.phoneNumber && (
-                  <p className="text-sm text-destructive">
-                    {errors.phoneNumber.message}
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="emailId">Email ID</Label>
-                <Input
-                  id="emailId"
-                  type="email"
-                  {...register('email')}
-                  disabled={isSaving}
-                />
-                {errors.email && (
-                  <p className="text-sm text-destructive">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                <Input
-                    id="dateOfBirth"
-                    type="date"
-                    {...register('dateOfBirth')}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {step === 1 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    {...register('firstName')}
                     disabled={isSaving}
-                />
-                 {errors.dateOfBirth && (
-                  <p className="text-sm text-destructive">
-                    {errors.dateOfBirth.message}
-                  </p>
-                )}
-              </div>
-               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="anniversaryDate">Anniversary Date (Optional)</Label>
-                <Input
-                    id="anniversaryDate"
-                    type="date"
-                    {...register('anniversaryDate')}
+                  />
+                  {errors.firstName && (
+                    <p className="text-sm text-destructive">
+                      {errors.firstName.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    {...register('lastName')}
                     disabled={isSaving}
-                />
-                {errors.anniversaryDate && (
-                  <p className="text-sm text-destructive">
-                    {errors.anniversaryDate.message}
-                  </p>
-                )}
+                  />
+                  {errors.lastName && (
+                    <p className="text-sm text-destructive">
+                      {errors.lastName.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    {...register('phoneNumber')}
+                    disabled={isSaving}
+                  />
+                  {errors.phoneNumber && (
+                    <p className="text-sm text-destructive">
+                      {errors.phoneNumber.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="emailId">Email ID</Label>
+                  <Input
+                    id="emailId"
+                    type="email"
+                    {...register('email')}
+                    disabled={isSaving}
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-destructive">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                  <Input
+                      id="dateOfBirth"
+                      type="date"
+                      {...register('dateOfBirth')}
+                      disabled={isSaving}
+                  />
+                  {errors.dateOfBirth && (
+                    <p className="text-sm text-destructive">
+                      {errors.dateOfBirth.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="anniversaryDate">Anniversary Date (Optional)</Label>
+                  <Input
+                      id="anniversaryDate"
+                      type="date"
+                      {...register('anniversaryDate')}
+                      disabled={isSaving}
+                  />
+                  {errors.anniversaryDate && (
+                    <p className="text-sm text-destructive">
+                      {errors.anniversaryDate.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1.5 md:col-span-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Textarea
+                    id="address"
+                    {...register('address')}
+                    disabled={isSaving}
+                  />
+                  {errors.address && (
+                    <p className="text-sm text-destructive">
+                      {errors.address.message}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col gap-1.5 md:col-span-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea
-                  id="address"
-                  {...register('address')}
-                  disabled={isSaving}
-                />
-                {errors.address && (
-                  <p className="text-sm text-destructive">
-                    {errors.address.message}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+            )}
 
-          {step === 2 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {renderFileUploader('PAN Photo', panFile, setPanFile, 'pan')}
-              {renderFileUploader(
-                'Aadhaar Photo',
-                aadhaarFile,
-                setAadhaarFile,
-                'aadhaar'
-              )}
-              {renderFileUploader(
-                'Other Document',
-                otherFile,
-                setOtherFile,
-                'other'
-              )}
-            </div>
-          )}
+            {step === 2 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {renderFileUploader('PAN Photo', panFile, setPanFile, 'pan')}
+                {renderFileUploader(
+                  'Aadhaar Photo',
+                  aadhaarFile,
+                  setAadhaarFile,
+                  'aadhaar'
+                )}
+                {renderFileUploader(
+                  'Other Document',
+                  otherFile,
+                  setOtherFile,
+                  'other'
+                )}
+              </div>
+            )}
+          </div>
+        
+          <div className="p-6 border-t flex justify-end space-x-2">
+            {step === 1 && (
+              <Button type="button" onClick={handleSubmit(() => handleNext(), () => {})}>Next</Button>
+            )}
+            {step === 2 && (
+              <>
+                <Button variant="outline" onClick={handleBack} disabled={isSaving}>
+                  Back
+                </Button>
+                <Button onClick={handleSubmit(processSave)} disabled={isSaving}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Client'
+                  )}
+                </Button>
+              </>
+            )}
+          </div>
         </form>
-
-        <div className="flex justify-end space-x-2 mt-6">
-          {step === 1 && (
-            <Button onClick={handleSubmit(() => handleNext(), () => {})}>Next</Button>
-          )}
-          {step === 2 && (
-            <>
-              <Button variant="outline" onClick={handleBack} disabled={isSaving}>
-                Back
-              </Button>
-              <Button onClick={handleSubmit(processSave)} disabled={isSaving}>
-                {isSaving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Client'
-                )}
-              </Button>
-            </>
-          )}
-        </div>
+      </div>
     </div>
   );
 }

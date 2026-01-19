@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
 interface ViewFamilyModalProps {
+  isOpen: boolean;
   onClose: () => void;
   client: Client;
   familyMembers: FamilyMember[];
@@ -45,6 +47,7 @@ interface ViewFamilyModalProps {
 }
 
 export function ViewFamilyModal({
+  isOpen,
   onClose,
   client,
   familyMembers,
@@ -61,6 +64,10 @@ export function ViewFamilyModal({
   const canCreateMember = hasPermission('CUSTOMER_ACTIONS', 'create');
   const canUpdateMember = hasPermission('CUSTOMER_ACTIONS', 'edit');
   const canDeleteMember = hasPermission('CUSTOMER_ACTIONS', 'delete');
+
+  if (!isOpen) {
+    return null;
+  }
 
   const handleAdd = () => {
     if (!canCreateMember) {
@@ -104,30 +111,30 @@ export function ViewFamilyModal({
 
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto pr-2 -mr-2">
-      <div className="flex justify-between items-center mb-4 border-b pb-2 gap-4">
-        <div className="flex flex-col space-y-1.5">
-          <h2 className="text-lg font-semibold leading-none tracking-tight">
-            Family Members
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Manage members of the {client.lastName} family.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {canCreateMember && (
-            <Button variant="outline" size="sm" onClick={handleAdd}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Member
-            </Button>
-          )}
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 close-icon">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div 
+        className="bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh] overflow-hidden w-full max-w-4xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 border-b relative flex justify-between items-center">
+          <div className="flex flex-col space-y-1.5">
+            <h2 className="text-lg font-semibold leading-none tracking-tight">
+              Family Members
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Manage members of the {client.lastName} family.
+            </p>
+          </div>
+           {canCreateMember && (
+              <Button variant="outline" size="sm" onClick={handleAdd}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Member
+              </Button>
+            )}
+           <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-4 right-4 close-icon">
             <X className="h-4 w-4" />
           </Button>
         </div>
-      </div>
-      <div className="grid gap-6 py-4">
-        <div>
+        <div className="flex-1 overflow-y-auto p-6">
            <Table>
               <TableHeader>
                 <TableRow>
@@ -156,7 +163,7 @@ export function ViewFamilyModal({
                           rel="noopener noreferrer"
                         >
                           <Button variant="ghost" size="icon" className="group">
-                              <Folder className="h-5 w-5 text-primary group-hover:text-white" />
+                              <Folder className="h-5 w-5 text-primary group-hover:text-primary-foreground" />
                           </Button>
                         </Link>
                       </TableCell>

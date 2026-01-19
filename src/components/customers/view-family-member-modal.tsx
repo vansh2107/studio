@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Separator } from '../ui/separator';
 
 interface ViewFamilyMemberModalProps {
+  isOpen: boolean;
   onClose: () => void;
   member: FamilyMember;
 }
@@ -34,47 +35,58 @@ const formatDate = (dateString?: string) => {
 };
 
 export function ViewFamilyMemberModal({
+  isOpen,
   onClose,
   member,
 }: ViewFamilyMemberModalProps) {
+
+  if (!isOpen) return null;
+
   return (
-    <div className="relative p-1">
-      <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 close-icon">
-        <X className="h-4 w-4" />
-      </Button>
-      <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
-        <h2 className="text-lg font-semibold leading-none tracking-tight">
-          Member Details: {member.firstName} {member.lastName}
-        </h2>
-        <p className="text-sm text-muted-foreground">Read-only view of the family member's details.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 py-4">
-        <DetailItem label="First Name" value={member.firstName} />
-        <DetailItem label="Last Name" value={member.lastName} />
-        <DetailItem label="Relation" value={member.relation} />
-        <DetailItem label="Date of Birth" value={formatDate(member.dateOfBirth)} />
-        <DetailItem label="Phone Number" value={member.phoneNumber} />
-        <DetailItem label="Email ID" value={member.emailId} />
-        <div className="md:col-span-2">
-            <DetailItem label="Address" value={member.address} />
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="bg-card rounded-xl shadow-lg border w-full max-w-2xl"
+           onClick={(e) => e.stopPropagation()}>
+        <div className="p-6 border-b relative">
+          <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-4 right-4 close-icon">
+            <X className="h-4 w-4" />
+          </Button>
+          <div className="flex flex-col space-y-1.5">
+            <h2 className="text-lg font-semibold leading-none tracking-tight">
+              Member Details: {member.firstName} {member.lastName}
+            </h2>
+            <p className="text-sm text-muted-foreground">Read-only view of the family member's details.</p>
+          </div>
         </div>
-      </div>
 
-      <Separator className="my-4" />
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+            <DetailItem label="First Name" value={member.firstName} />
+            <DetailItem label="Last Name" value={member.lastName} />
+            <DetailItem label="Relation" value={member.relation} />
+            <DetailItem label="Date of Birth" value={formatDate(member.dateOfBirth)} />
+            <DetailItem label="Phone Number" value={member.phoneNumber} />
+            <DetailItem label="Email ID" value={member.emailId} />
+            <div className="md:col-span-2">
+                <DetailItem label="Address" value={member.address} />
+            </div>
+          </div>
 
-      <div className="flex items-center justify-between">
-          <p className="text-sm font-medium">Documents</p>
-          <Link
-            href={`/documents/${member.id}?clientId=${member.clientId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button variant="outline" size="sm">
-              <Folder className="mr-2 h-4 w-4" />
-              View Documents
-            </Button>
-          </Link>
+          <Separator />
+
+          <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">Documents</p>
+              <Link
+                href={`/documents/${member.id}?clientId=${member.clientId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" size="sm">
+                  <Folder className="mr-2 h-4 w-4" />
+                  View Documents
+                </Button>
+              </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
