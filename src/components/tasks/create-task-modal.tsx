@@ -41,6 +41,7 @@ import { Combobox } from '@/components/ui/combobox';
 import { format, parse, parseISO } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 
 /* ---------- VALIDATION ---------- */
 
@@ -186,14 +187,10 @@ export const taskSchema = z.discriminatedUnion('category', [
 
 export type TaskFormData = z.infer<typeof taskSchema>;
 
-interface CreateTaskFormProps {
-    isEditMode: boolean;
-    task?: Task | null;
-    form: UseFormReturn<TaskFormData>;
-    clientOptions: { label: string; value: string; }[];
-    allRms: { label: string; value: string; }[];
-    onSubmit: (data: TaskFormData) => void;
-    isSaving: boolean;
+interface CreateTaskModalProps {
+  onClose: () => void;
+  onSave: (task: TaskFormData) => void;
+  task?: Task | null;
 }
 
 const sortedMutualFundServices = [...MUTUAL_FUND_SERVICES]
@@ -206,70 +203,197 @@ const sortedNonFinancialInsuranceServices = [...INSURANCE_SERVICES]
   .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
 
-function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmit, isSaving }: CreateTaskFormProps) {
-    const { register, handleSubmit, control, setValue, watch, formState: { errors } } = form;
+export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps) {
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
+  const isEditMode = !!task;
 
-    const errorsWithType = errors as any;
+  const clientOptions = useMemo(() => {
+    const heads = getAllClients().map(c => ({
+      label: `${c.firstName} ${c.lastName} (Head)`,
+      value: c.id,
+      relation: 'Head'
+    }));
 
-    const isTerminal = isEditMode && task ? ['Completed', 'Cancelled', 'Rejected'].includes(task.status) : false;
+    const members = mockFamilyMembers.map(m => ({
+      label: `${m.firstName} ${m.lastName} (${m.relation})`,
+      value: m.id,
+      clientId: m.clientId,
+      relation: m.relation,
+    }));
 
-    const selectedCategory = watch('category');
-    const clientIdValue = watch('clientId');
-    const descriptionValue = watch('description') ?? '';
-    const insuranceType = watch('insurance.insuranceType');
-    const financialService = watch('insurance.financialService');
-    const amountStatus = watch('insurance.amountStatus');
-    const reinvestmentStatus = watch('insurance.reinvestmentStatus');
+    return [...heads, ...members].sort((a, b) => a.label.localeCompare(b.label));
+  }, []);
+
+  const allRms = useMemo(() => getAllRMs().map(rm => ({ label: `${rm.name} (RM)`, value: rm.id })), []);
+
+  const form = useForm<TaskFormData>({
+    resolver: zodResolver(taskSchema),
+    shouldUnregister: false,
+  });
+
+  const { register, handleSubmit, control, setValue, watch, formState: { errors } } = form;
+  const errorsWithType = errors as any;
+  const isTerminal = isEditMode && task ? ['Completed', 'Cancelled', 'Rejected'].includes(task.status) : false;
+  const selectedCategory = watch('category');
+  const clientIdValue = watch('clientId');
+  const descriptionValue = watch('description') ?? '';
+  const insuranceType = watch('insurance.insuranceType');
+  const financialService = watch('insurance.financialService');
+  const amountStatus = watch('insurance.amountStatus');
+  const reinvestmentStatus = watch('insurance.reinvestmentStatus');
+
+  const { familyHead, assignedAssociate, assignedRM, assignedAdmin } = useMemo(() => {
+    if (!clientIdValue) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
+    const selectedOption = clientOptions.find(opt => opt.value === clientIdValue);
+    if (!selectedOption) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
+    const headId = 'clientId' in selectedOption ? (selectedOption as any).clientId : selectedOption.value;
+    const head = getAllClients().find(c => c.id === headId);
+    if (!head) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
+    const associate = getAllAssociates().find(a => a.id === head.associateId);
+    const rm = associate ? getAllRMs().find(r => r.id === associate.rmId) : undefined;
+    const admin = rm ? getAllAdmins().find(adm => adm.id === rm.adminId) : undefined;
+    return { familyHead: head, assignedAssociate: associate, assignedRM: rm, assignedAdmin: admin };
+  }, [clientIdValue, clientOptions]);
+
+  const familyHeadName = familyHead ? `${familyHead.firstName} ${familyHead.lastName}` : '';
+  const associateName = assignedAssociate?.name || 'N/A';
+  const rmName = assignedRM?.name || 'No RM assigned';
+
+  useEffect(() => {
+    if (!isEditMode) {
+        setValue('rmName', rmName, { shouldValidate: true });
+        
+        if (familyHeadName && selectedCategory === 'Mutual Funds')
+        setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
+
+        if (familyHeadName && selectedCategory === 'Life Insurance')
+        setValue('insurance.familyHead', familyHeadName, { shouldValidate: true });
+
+        if (associateName && selectedCategory === 'Life Insurance')
+        setValue('insurance.associate', associateName, { shouldValidate: true });
+
+        setValue('familyHeadId', familyHead?.id);
+        setValue('associateId', assignedAssociate?.id);
+        setValue('rmId', assignedRM?.id);
+        setValue('adminId', assignedAdmin?.id);
+    }
+  }, [familyHeadName, associateName, rmName, selectedCategory, setValue, isEditMode, familyHead, assignedAssociate, assignedRM, assignedAdmin]);
 
 
-    /* ---------- AUTO-CALCULATION & POPULATION ---------- */
+  useEffect(() => {
+    if (!task) {
+        form.reset({
+            clientId: undefined,
+            category: undefined,
+            rmName: undefined,
+            serviceableRM: undefined,
+            dueDate: '',
+            description: '',
+            status2: undefined,
+        });
+        return;
+    }
+
+    const getCategoryPayload = (task: Task) => {
+      switch (task.category) {
+        case 'Stocks':
+          return { stocksTask: task.stocksTask };
+        case 'Mutual Funds':
+          return { mutualFund: task.mutualFund };
+        case 'Life Insurance':
+          return { insurance: task.insurance };
+        case 'General Insurance':
+            return { generalInsuranceTask: task.generalInsuranceTask };
+        case 'FDs':
+            return { fdTask: task.fdTask };
+        case 'Bonds':
+            return { bondsTask: task.bondsTask };
+        case 'PPF':
+            return { ppfTask: task.ppfTask };
+        case 'Physical to Demat':
+            return { physicalToDematTask: task.physicalToDematTask };
+        default:
+          return {};
+      }
+    };
     
-    const { familyHead, assignedAssociate, assignedRM, assignedAdmin } = useMemo(() => {
-        if (!clientIdValue) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
-
-        const selectedOption = clientOptions.find(opt => opt.value === clientIdValue);
-        if (!selectedOption) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
-
-        const headId = 'clientId' in selectedOption ? (selectedOption as any).clientId : selectedOption.value;
-        const head = getAllClients().find(c => c.id === headId);
-        if (!head) return { familyHead: null, assignedAssociate: null, assignedRM: null, assignedAdmin: null };
-
-        const associate = getAllAssociates().find(a => a.id === head.associateId);
-        const rm = associate ? getAllRMs().find(r => r.id === associate.rmId) : undefined;
-        const admin = rm ? getAllAdmins().find(adm => adm.id === rm.adminId) : undefined;
-
-        return { familyHead: head, assignedAssociate: associate, assignedRM: rm, assignedAdmin: admin };
-    }, [clientIdValue, clientOptions]);
-
-    const familyHeadName = familyHead ? `${familyHead.firstName} ${familyHead.lastName}` : '';
-    const associateName = assignedAssociate?.name || 'N/A';
-    const rmName = assignedRM?.name || 'No RM assigned';
-
-    useEffect(() => {
-        if (!isEditMode) {
-            setValue('rmName', rmName, { shouldValidate: true });
-            
-            if (familyHeadName && selectedCategory === 'Mutual Funds')
-            setValue('mutualFund.familyHead', familyHeadName, { shouldValidate: true });
-
-            if (familyHeadName && selectedCategory === 'Life Insurance')
-            setValue('insurance.familyHead', familyHeadName, { shouldValidate: true });
-
-            if (associateName && selectedCategory === 'Life Insurance')
-            setValue('insurance.associate', associateName, { shouldValidate: true });
-
-            setValue('familyHeadId', familyHead?.id);
-            setValue('associateId', assignedAssociate?.id);
-            setValue('rmId', assignedRM?.id);
-            setValue('adminId', assignedAdmin?.id);
+    const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date'): string => {
+        if (!dateString) return '';
+        let date: Date | null = null;
+        try {
+            date = parseISO(dateString);
+        } catch {
+            try {
+                date = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
+            } catch {
+                return dateString;
+            }
         }
-    }, [familyHeadName, associateName, rmName, selectedCategory, setValue, isEditMode, familyHead, assignedAssociate, assignedRM, assignedAdmin]);
+        if (date && !isNaN(date.getTime())) {
+            return type === 'datetime' ? format(date, "yyyy-MM-dd'T'HH:mm") : format(date, "yyyy-MM-dd");
+        }
+        return dateString;
+    };
 
 
-    return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    form.reset({
+      clientId: task.clientId,
+      category: task.category as any,
+      rmName: task.rmName ?? '',
+      serviceableRM: task.serviceableRM ?? undefined,
+      dueDate: formatDateForInput(task.dueDate, 'datetime'),
+      description: task.description ?? '',
+      status2: task.status2 ?? undefined,
+      ...getCategoryPayload(task),
+    });
 
+    // Use setTimeout to ensure Select components update after reset
+    setTimeout(() => {
+      if (task.category) {
+        form.setValue('category', task.category as any, { shouldValidate: false, shouldDirty: false });
+      }
+      if (task.serviceableRM) {
+        form.setValue('serviceableRM', task.serviceableRM, { shouldValidate: false, shouldDirty: false });
+      }
+    }, 50);
+
+  }, [task, form]);
+  
+  const processSave = (data: TaskFormData) => {
+    setIsSaving(true);
+    
+    setTimeout(() => {
+      const selectedClientOption = clientOptions.find(opt => opt.value === data.clientId);
+      const clientName = selectedClientOption ? selectedClientOption.label : 'N/A';
+
+      onSave({ ...data, clientName });
+      setIsSaving(false);
+    }, 400);
+  };
+  
+  return (
+    <>
+      <div className="p-6 border-b relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 close-icon"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+        <DialogHeader>
+          <DialogTitle>{isEditMode ? 'Edit Task' : 'Create Task Manually'}</DialogTitle>
+          <DialogDescription>
+            {isEditMode ? 'Update the details for this task.' : 'Fill in the details to create a new task.'}
+          </DialogDescription>
+        </DialogHeader>
+      </div>
+      
+      <form onSubmit={handleSubmit(processSave)} className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
                 <Label htmlFor="clientId">Client</Label>
                 <Controller
@@ -1012,183 +1136,32 @@ function CreateTaskForm({ isEditMode, task, form, clientOptions, allRms, onSubmi
             )}
 
             <div className="space-y-1">
-            <Label>Description (Optional)</Label>
-            <Textarea {...register('description')} maxLength={300} disabled={isTerminal}/>
-            <div className="flex justify-between text-sm text-muted-foreground">
-                <span>{errors.description?.message}</span>
-                <span>{descriptionValue.length} / 300</span>
+              <Label>Description (Optional)</Label>
+              <Textarea {...register('description')} maxLength={300} disabled={isTerminal}/>
+              <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{errors.description?.message}</span>
+                  <span>{descriptionValue.length} / 300</span>
+              </div>
             </div>
-            </div>
+        </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-                {!isTerminal && (
-                    <Button type="submit" disabled={isSaving}>
-                    {isSaving ? (
-                        <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-                        </>
-                    ) : (
-                        isEditMode ? 'Save Changes' : 'Save Task'
-                    )}
-                    </Button>
+        <div className="p-6 border-t flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
+              Cancel
+            </Button>
+            {!isTerminal && (
+                <Button type="submit" disabled={isSaving}>
+                {isSaving ? (
+                    <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                    </>
+                ) : (
+                    isEditMode ? 'Save Changes' : 'Save Task'
                 )}
-            </div>
-        </form>
-    )
-}
-
-interface CreateTaskModalProps {
-  onClose: () => void;
-  onSave: (task: TaskFormData) => void;
-  task?: Task | null;
-}
-
-export function CreateTaskModal({ onClose, onSave, task }: CreateTaskModalProps) {
-  const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
-  const isEditMode = !!task;
-
-  const clientOptions = useMemo(() => {
-    const heads = getAllClients().map(c => ({
-      label: `${c.firstName} ${c.lastName} (Head)`,
-      value: c.id,
-      relation: 'Head'
-    }));
-
-    const members = mockFamilyMembers.map(m => ({
-      label: `${m.firstName} ${m.lastName} (${m.relation})`,
-      value: m.id,
-      clientId: m.clientId,
-      relation: m.relation,
-    }));
-
-    return [...heads, ...members].sort((a, b) => a.label.localeCompare(b.label));
-  }, []);
-
-  const allRms = useMemo(() => getAllRMs().map(rm => ({ label: `${rm.name} (RM)`, value: rm.id })), []);
-
-  const form = useForm<TaskFormData>({
-    resolver: zodResolver(taskSchema),
-    shouldUnregister: false,
-  });
-
-  useEffect(() => {
-    if (!task) {
-        form.reset({
-            clientId: undefined,
-            category: undefined,
-            rmName: undefined,
-            serviceableRM: undefined,
-            dueDate: '',
-            description: '',
-            status2: undefined,
-        });
-        return;
-    }
-
-    const getCategoryPayload = (task: Task) => {
-      switch (task.category) {
-        case 'Stocks':
-          return { stocksTask: task.stocksTask };
-        case 'Mutual Funds':
-          return { mutualFund: task.mutualFund };
-        case 'Life Insurance':
-          return { insurance: task.insurance };
-        case 'General Insurance':
-            return { generalInsuranceTask: task.generalInsuranceTask };
-        case 'FDs':
-            return { fdTask: task.fdTask };
-        case 'Bonds':
-            return { bondsTask: task.bondsTask };
-        case 'PPF':
-            return { ppfTask: task.ppfTask };
-        case 'Physical to Demat':
-            return { physicalToDematTask: task.physicalToDematTask };
-        default:
-          return {};
-      }
-    };
-    
-    const formatDateForInput = (dateString?: string | null, type: 'datetime' | 'date' = 'date'): string => {
-        if (!dateString) return '';
-        let date: Date | null = null;
-        try {
-            date = parseISO(dateString);
-        } catch {
-            try {
-                date = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
-            } catch {
-                return dateString;
-            }
-        }
-        if (date && !isNaN(date.getTime())) {
-            return type === 'datetime' ? format(date, "yyyy-MM-dd'T'HH:mm") : format(date, "yyyy-MM-dd");
-        }
-        return dateString;
-    };
-
-
-    form.reset({
-      clientId: task.clientId,
-      category: task.category as any,
-      rmName: task.rmName ?? '',
-      serviceableRM: task.serviceableRM ?? undefined,
-      dueDate: formatDateForInput(task.dueDate, 'datetime'),
-      description: task.description ?? '',
-      status2: task.status2 ?? undefined,
-      ...getCategoryPayload(task),
-    });
-
-    // Use setTimeout to ensure Select components update after reset
-    setTimeout(() => {
-      if (task.category) {
-        form.setValue('category', task.category as any, { shouldValidate: false, shouldDirty: false });
-      }
-      if (task.serviceableRM) {
-        form.setValue('serviceableRM', task.serviceableRM, { shouldValidate: false, shouldDirty: false });
-      }
-    }, 50);
-
-  }, [task, form]);
-  
-  const processSave = (data: TaskFormData) => {
-    setIsSaving(true);
-    
-    setTimeout(() => {
-      const selectedClientOption = clientOptions.find(opt => opt.value === data.clientId);
-      const clientName = selectedClientOption ? selectedClientOption.label : 'N/A';
-
-      onSave({ ...data, clientName });
-      setIsSaving(false);
-    }, 400);
-  };
-  
-  return (
-    <div className="relative p-1 max-h-[80vh] overflow-y-auto pr-4 -mr-4">
-      <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 z-[1002] close-icon">
-        <X className="h-4 w-4" />
-      </Button>
-       <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
-        <h2 className="text-lg font-semibold">
-          {isEditMode ? 'Edit Task' : 'Create Task Manually'}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {isEditMode ? 'Update the details for this task.' : 'Fill in the details to create a new task.'}
-        </p>
-      </div>
-
-      <CreateTaskModal.Form
-        isEditMode={isEditMode}
-        task={task}
-        form={form}
-        clientOptions={clientOptions}
-        allRms={allRms}
-        onSubmit={processSave}
-        isSaving={isSaving}
-      />
-    </div>
+                </Button>
+            )}
+        </div>
+      </form>
+    </>
   );
 }
-
-CreateTaskModal.Form = CreateTaskForm;
-

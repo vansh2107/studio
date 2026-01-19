@@ -15,7 +15,6 @@ import { useTasks } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, ChevronRight, Edit } from 'lucide-react';
-import Modal from '@/components/ui/Modal';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import type { TaskFormData } from '@/components/tasks/create-task-modal';
 import { Task, TaskStatus } from '@/hooks/use-tasks';
@@ -38,6 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { TASK_STATUSES } from '@/lib/constants';
 import { format, parse, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -561,15 +561,15 @@ export default function TasksPage() {
         </Card>
       </div>
 
-      {(isModalOpen || !!editingTask) && (
-        <Modal open={isModalOpen || !!editingTask} onClose={handleCloseModal}>
+      <Dialog open={isModalOpen || !!editingTask} onOpenChange={handleCloseModal}>
+        <DialogContent className="p-0 flex flex-col max-h-[90vh] overflow-hidden w-full max-w-4xl">
           <CreateTaskModal
             task={editingTask}
             onClose={handleCloseModal}
             onSave={handleSaveTask}
           />
-        </Modal>
-      )}
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
         <AlertDialogContent>
