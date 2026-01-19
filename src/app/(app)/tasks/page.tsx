@@ -37,7 +37,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { TASK_STATUSES } from '@/lib/constants';
 import { format, parse, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -561,15 +560,14 @@ export default function TasksPage() {
         </Card>
       </div>
 
-      <Dialog open={isModalOpen || !!editingTask} onOpenChange={handleCloseModal}>
-        <DialogContent className="p-0 flex flex-col max-h-[90vh] overflow-hidden w-full max-w-4xl">
-          <CreateTaskModal
-            task={editingTask}
-            onClose={handleCloseModal}
-            onSave={handleSaveTask}
-          />
-        </DialogContent>
-      </Dialog>
+      {(isModalOpen || !!editingTask) && (
+        <CreateTaskModal
+          isOpen={isModalOpen || !!editingTask}
+          task={editingTask}
+          onClose={handleCloseModal}
+          onSave={handleSaveTask}
+        />
+      )}
 
       <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
         <AlertDialogContent>
