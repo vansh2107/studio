@@ -94,6 +94,8 @@ export function AssetBreakdownModal({
   }, [category, categoryAssets]);
 
   const renderContent = () => {
+    const totalValue = categoryAssets.reduce((sum, asset) => sum + asset.value, 0);
+
     switch (category) {
       case 'Stocks':
         return (
@@ -123,6 +125,12 @@ export function AssetBreakdownModal({
                 );
               })}
             </TableBody>
+            <TableFooter>
+                <TableRow>
+                    <TableCell colSpan={3} className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
+                </TableRow>
+            </TableFooter>
           </Table>
         );
       case 'PPF':
@@ -149,6 +157,12 @@ export function AssetBreakdownModal({
                 );
               })}
             </TableBody>
+            <TableFooter>
+                <TableRow>
+                    <TableCell colSpan={3} className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
+                </TableRow>
+            </TableFooter>
           </Table>
         );
       case 'Mutual Funds':
@@ -173,6 +187,12 @@ export function AssetBreakdownModal({
                 );
               })}
             </TableBody>
+            <TableFooter>
+                <TableRow>
+                    <TableCell colSpan={2} className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
+                </TableRow>
+            </TableFooter>
           </Table>
         );
       case 'Life Insurance':
@@ -217,6 +237,7 @@ export function AssetBreakdownModal({
                 <TableHead>Holder Name</TableHead>
                 <TableHead>Policy Name</TableHead>
                 <TableHead>Type of Policy</TableHead>
+                <TableHead className="text-right">Premium</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -227,13 +248,22 @@ export function AssetBreakdownModal({
                     <TableCell>{member?.name || 'Unknown'}</TableCell>
                     <TableCell>{asset.policyName || 'N/A'}</TableCell>
                     <TableCell>{asset.policyType || 'N/A'}</TableCell>
+                    <TableCell className="text-right">{formatter.format(asset.value)}</TableCell>
                   </TableRow>
                 );
               })}
             </TableBody>
+            <TableFooter>
+                <TableRow>
+                    <TableCell colSpan={3} className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
+                </TableRow>
+            </TableFooter>
           </Table>
         );
       case 'Fixed Deposits':
+        const totalFDs = memberData.reduce((sum, item) => sum + (item.fdCount || 0), 0);
+        const totalFDValue = memberData.reduce((sum, item) => sum + item.totalValue, 0);
         return (
           <Table>
             <TableHeader>
@@ -252,6 +282,13 @@ export function AssetBreakdownModal({
                 </TableRow>
               ))}
             </TableBody>
+             <TableFooter>
+                <TableRow>
+                    <TableCell className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{totalFDs}</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(totalFDValue)}</TableCell>
+                </TableRow>
+            </TableFooter>
           </Table>
         );
       case 'Bonds':
@@ -276,6 +313,12 @@ export function AssetBreakdownModal({
                 );
               })}
             </TableBody>
+            <TableFooter>
+                <TableRow>
+                    <TableCell colSpan={2} className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
+                </TableRow>
+            </TableFooter>
           </Table>
         );
       default:
@@ -284,8 +327,8 @@ export function AssetBreakdownModal({
   };
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto p-1 pr-4 -mr-4 relative">
-       <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-0 right-0 close-icon z-10">
+    <div className="relative p-6 bg-card rounded-lg shadow-lg border w-full max-w-4xl max-h-[90vh] flex flex-col">
+       <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-4 right-4 z-10 close-icon">
             <X className="h-4 w-4" />
         </Button>
       
@@ -299,13 +342,15 @@ export function AssetBreakdownModal({
             </p>
           </div>
 
-          <Card>
-            <CardContent className="p-0">
-              {renderContent()}
-            </CardContent>
-          </Card>
+          <div className="flex-grow overflow-y-auto pr-4 -mr-4">
+            <Card>
+                <CardContent className="p-0">
+                {renderContent()}
+                </CardContent>
+            </Card>
+          </div>
           
-          <div className="flex justify-end mt-6">
+          <div className="flex justify-end mt-6 pt-6 border-t">
              <Button variant="outline" onClick={onClose}>Close</Button>
           </div>
         </TooltipProvider>
