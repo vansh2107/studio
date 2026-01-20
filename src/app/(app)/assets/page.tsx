@@ -1,12 +1,13 @@
 
+
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AddAssetModal } from '@/components/customers/add-asset-modal';
 import { PlusCircle, ChevronRight, Edit, Trash2 } from 'lucide-react';
-import { getAllClients } from '@/lib/mock-data';
+import { getAllClients, getClientsForAssociate, getAssociatesForRM, getRMsForAdmin } from '@/lib/mock-data';
 import { useAssets, type Asset } from '@/hooks/use-assets';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -22,7 +23,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { format, parseISO } from 'date-fns';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset: Asset) => void }) => {
   const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -221,12 +222,45 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
 export default function AssetsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { assets, addAsset, updateAsset, deleteAsset } = useAssets();
-  const familyHeads = getAllClients();
+  const { effectiveUser, hasPermission } = useCurrentUser();
   const { toast } = useToast();
 
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+
+  const canCreate = hasPermission('ASSETS', 'create');
+
+  const familyHeads = useMemo(() => {
+    if (!effectiveUser) return [];
+    
+    switch(effectiveUser.role) {
+      case 'SUPER_ADMIN':
+        return getAllClients();
+      case 'ADMIN': {
+        const rms = getRMsForAdmin(effectiveUser.id);
+        const associates = rms.flatMap(rm => getAssociatesForRM(rm.id));
+        return associates.flatMap(assoc => getClientsForAssociate(assoc.id));
+      }
+      case 'RM': {
+        const associates = getAssociatesForRM(effectiveUser.id);
+        return associates.flatMap(assoc => getClientsForAssociate(assoc.id));
+      }
+      case 'ASSOCIATE':
+        return getClientsForAssociate(effectiveUser.id);
+      case 'CUSTOMER':
+        return getAllClients().filter(c => c.id === effectiveUser.id);
+      default:
+        return [];
+    }
+  }, [effectiveUser]);
+
+  const filteredAssets = useMemo(() => {
+    if (!effectiveUser) return [];
+    
+    const scopedClientIds = new Set(familyHeads.map(c => c.id));
+    return assets.filter(asset => scopedClientIds.has(asset.familyHeadId));
+  }, [assets, familyHeads, effectiveUser]);
 
   const handleSaveAsset = (asset: Asset) => {
     if (editingAsset) {
@@ -316,10 +350,12 @@ export default function AssetsPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold font-headline">Asset Management</h1>
-          <Button onClick={openModal}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Asset
-          </Button>
+          {canCreate && (
+            <Button onClick={openModal}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Asset
+            </Button>
+          )}
         </div>
         
         <Card>
@@ -328,7 +364,7 @@ export default function AssetsPage() {
             <CardDescription>A list of all assets created for clients.</CardDescription>
           </CardHeader>
           <CardContent>
-            {assets.length > 0 ? (
+            {filteredAssets.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -341,7 +377,7 @@ export default function AssetsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {assets.map((asset) => {
+                  {filteredAssets.map((asset) => {
                     const isExpanded = expandedRow === asset.id;
                     
                     return (
@@ -392,7 +428,7 @@ export default function AssetsPage() {
             ) : (
               <div className="text-center py-10 text-muted-foreground">
                 <p>No assets created yet.</p>
-                <p className="text-sm">Click "Add Asset" to get started.</p>
+                {canCreate && <p className="text-sm">Click "Add Asset" to get started.</p>}
               </div>
             )}
           </CardContent>

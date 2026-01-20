@@ -12,7 +12,8 @@ export const PERMISSION_MODULES = [
   'DOC_VAULT',
   'TASK',
   'CHATBOT',
-  'CUSTOMER_ACTIONS'
+  'CUSTOMER_ACTIONS',
+  'ASSETS'
 ] as const;
 export type PermissionModule = typeof PERMISSION_MODULES[number];
 
@@ -34,7 +35,7 @@ export const ASSET_CATEGORIES = [
   'PPF',
   'Mutual Funds',
   'Life Insurance',
-  'Term Insurance',
+  'General Insurance',
   'Fixed Deposits',
   'Bonds',
 ] as const;
@@ -45,7 +46,7 @@ export type AssetCategory = typeof ASSET_CATEGORIES[number];
 export const DOC_CATEGORIES = [
   'Mutual Funds',
   'Life Insurance',
-  'Term Insurance',
+  'General Insurance',
 ];
 
 // New constant for the task categories in the specified order

@@ -1,4 +1,5 @@
 
+
 import { SuperAdmin, Admin, RelationshipManager, Associate, Client, FamilyMember, Asset, Document, User, DashboardAsset } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 import { Permissions } from './constants';
@@ -260,7 +261,7 @@ export const dashboardAssets: DashboardAsset[] = [
   { id: 'd-asset-3', ownerMemberId: 'fm-4-1', familyHeadId: 'client-3', category: 'PPF', value: 450000 },
   { id: 'd-asset-4', ownerMemberId: 'fm-4-2', familyHeadId: 'client-3', category: 'Stocks', value: 600000 },
   { id: 'd-asset-5', ownerMemberId: 'fm-4-2', familyHeadId: 'client-3', category: 'Mutual Funds', value: 900000 },
-  { id: 'd-asset-6', ownerMemberId: 'fm-4-4', familyHeadId: 'client-3', category: 'Term Insurance', value: 1500000 },
+  { id: 'd-asset-6', ownerMemberId: 'fm-4-4', familyHeadId: 'client-3', category: 'General Insurance', value: 1500000 },
   { id: 'd-asset-7', ownerMemberId: 'fm-4-3', familyHeadId: 'client-3', category: 'Fixed Deposits', value: 300000 },
   { id: 'd-asset-8', ownerMemberId: 'fm-4-5', familyHeadId: 'client-3', category: 'Mutual Funds', value: 500000 },
 
@@ -269,18 +270,21 @@ export const dashboardAssets: DashboardAsset[] = [
   { id: 'd-asset-10', ownerMemberId: 'fm-1-1', familyHeadId: 'client-1', category: 'Mutual Funds', value: 1250000 },
   { id: 'd-asset-11', ownerMemberId: 'client-1', familyHeadId: 'client-1', category: 'Fixed Deposits', value: 1000000 },
   { id: 'd-asset-12', ownerMemberId: 'fm-1-2', familyHeadId: 'client-1', category: 'Life Insurance', value: 1800000 },
+  { id: 'd-asset-21', ownerMemberId: 'fm-1-2', familyHeadId: 'client-1', category: 'General Insurance', value: 500000 },
 
   // Jitendra Hirpara (client-2) - New Data
   { id: 'd-asset-13', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'Mutual Funds', value: 850000 },
   { id: 'd-asset-14', ownerMemberId: 'fm-2-1', familyHeadId: 'client-2', category: 'Bonds', value: 500000 },
-  { id: 'd-asset-15', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'Term Insurance', value: 2000000 },
+  { id: 'd-asset-15', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'General Insurance', value: 2000000 },
   { id: 'd-asset-16', ownerMemberId: 'fm-2-2', familyHeadId: 'client-2', category: 'PPF', value: 250000 },
+  { id: 'd-asset-22', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'Stocks', value: 400000 },
 
   // Jivraj Hirpara (client-4) - New Data
   { id: 'd-asset-17', ownerMemberId: 'client-4', familyHeadId: 'client-4', category: 'Stocks', value: 1500000 },
   { id: 'd-asset-18', ownerMemberId: 'fm-3-2', familyHeadId: 'client-4', category: 'Stocks', value: 900000 },
   { id: 'd-asset-19', ownerMemberId: 'fm-3-3', familyHeadId: 'client-4', category: 'Mutual Funds', value: 2200000 },
   { id: 'd-asset-20', ownerMemberId: 'fm-3-1', familyHeadId: 'client-4', category: 'Fixed Deposits', value: 1200000 },
+  { id: 'd-asset-23', ownerMemberId: 'fm-3-1', familyHeadId: 'client-4', category: 'Life Insurance', value: 3000000 },
 ];
 
 
@@ -299,7 +303,7 @@ export const documents: Document[] = [
   { id: 'doc-1', clientId: 'client-1', memberId: 'fm-1-2', category: 'Mutual Funds', name: 'Axis_Bluechip_Statement.pdf', url: '#' },
   { id: 'doc-2', clientId: 'client-1', memberId: 'fm-1-1', category: 'Life Insurance', name: 'LIC_Policy_Bond.pdf', url: '#' },
   { id: 'doc-4', clientId: 'client-4', memberId: 'fm-4-1', category: 'Stocks', name: 'Tata_Motors_Shares.pdf', url: '#' },
-  { id: 'doc-3', clientId: 'client-3', memberId: 'fm-3-1', category: 'Term Insurance', name: 'HDFC_Term_Policy.pdf', url: '#' },
+  { id: 'doc-3', clientId: 'client-3', memberId: 'fm-3-1', category: 'General Insurance', name: 'HDFC_Term_Policy.pdf', url: '#' },
   { id: 'doc-5', clientId: 'client-3', memberId: 'fm-4-1', category: 'PPF', name: 'PPF_Statement.pdf', url: 'https://picsum.photos/seed/doc/400/300' },
 ];
 
@@ -357,9 +361,10 @@ export const permissions: Record<string, Permissions> = {
     ASSOCIATE: { view: false, create: false, edit: false, delete: false, export: false },
     CUSTOMER: { view: true, create: false, edit: false, delete: false, export: true },
     DOC_VAULT: { view: true, create: true, edit: true, delete: true, export: true },
-    TASK: { view: false, create: false, edit: false, delete: false, export: false },
+    TASK: { view: true, create: false, edit: false, delete: false, export: false },
     CHATBOT: { view: false, create: false, edit: false, delete: false, export: false },
     CUSTOMER_ACTIONS: { view: true, create: true, edit: true, delete: true, export: false },
+    ASSETS: { view: true, create: true, edit: true, delete: true, export: false },
   },
 };
 

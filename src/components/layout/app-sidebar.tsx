@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -27,8 +28,8 @@ import { useSidebar } from '@/components/ui/sidebar';
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'] },
   { href: '/customers', label: 'Clients', icon: Users, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE'] },
-  { href: '/tasks', label: 'Tasks', icon: ClipboardList, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE'] },
-  { href: '/assets', label: 'Asset Management', icon: Archive, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE'] },
+  { href: '/tasks', label: 'Tasks', icon: ClipboardList, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'] },
+  { href: '/assets', label: 'Asset Management', icon: Archive, roles: ['SUPER_ADMIN', 'ADMIN', 'RM', 'ASSOCIATE', 'CUSTOMER'] },
   { href: '/doc-vault', label: 'Doc Vault', icon: FolderOpen, roles: ['CUSTOMER'] },
 ];
 

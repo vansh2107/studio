@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +24,7 @@ import {
   ShieldCheck,
   TrendingUp,
   FileText,
+  HelpCircle
 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { AssetBreakdownModal } from './asset-breakdown-modal';
@@ -42,7 +44,7 @@ const categoryIcons: Record<AssetCategory, React.ElementType> = {
   'PPF': PiggyBank,
   'Mutual Funds': Landmark,
   'Life Insurance': HeartHandshake,
-  'Term Insurance': ShieldCheck,
+  'General Insurance': ShieldCheck,
   'Fixed Deposits': Banknote,
   'Bonds': FileText,
 };
@@ -145,8 +147,10 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
       }
   }, [user, selectedId]);
 
-  const totalAssetValue = useMemo(() => {
-    return assets.reduce((sum, asset) => sum + asset.value, 0);
+  const totalNetWorth = useMemo(() => {
+    return assets
+        .filter(asset => asset.category !== 'General Insurance')
+        .reduce((sum, asset) => sum + asset.value, 0);
   }, [assets]);
   
   const assetsByCategory = useMemo(() => {
@@ -218,12 +222,12 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Total Asset Value</CardTitle>
-          <CardDescription>The total value of all assets for the selected scope.</CardDescription>
+          <CardTitle>Total Net Worth</CardTitle>
+          <CardDescription>The total net worth of all assets for the selected scope, excluding General Insurance.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-4xl font-bold text-primary">
-            {formatter.format(totalAssetValue)}
+            {formatter.format(totalNetWorth)}
           </div>
         </CardContent>
       </Card>
@@ -266,6 +270,19 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
             </button>
           );
         })}
+        <Card className="flex flex-col h-full">
+            <CardHeader className="flex-row items-center gap-4 space-y-0">
+                <div className="p-3 rounded-full bg-primary/10 text-primary">
+                    <HelpCircle className="h-6 w-6" />
+                </div>
+                <div>
+                    <CardTitle>Others</CardTitle>
+                </div>
+            </CardHeader>
+            <CardContent className="mt-auto">
+                <p className="text-sm text-muted-foreground">This section will be available in future updates.</p>
+            </CardContent>
+        </Card>
       </div>
 
        {user.role === 'SUPER_ADMIN' && (
