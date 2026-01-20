@@ -59,11 +59,18 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
                     </Select>
                     )}
                 />
-                {errors?.holderName && <p className="text-sm text-destructive">{errors.holderName.message}</p>}
+                {errors?.lifeInsurance?.holderName && <p className="text-sm text-destructive">{errors.lifeInsurance.holderName.message}</p>}
             </div>
         </div>
         
-        <JointHolderFields control={control} register={register} errors={errors?.lifeInsurance?.jointHolders} fieldPath="lifeInsurance.jointHolders" />
+        <JointHolderFields 
+            control={control} 
+            errors={errors?.lifeInsurance?.jointHolders} 
+            fieldPath="lifeInsurance.jointHolders"
+            familyMembers={familyMembers}
+            watch={watch}
+            holderNamePath="lifeInsurance.holderName"
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             <div>
@@ -81,12 +88,12 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
                     />
                   )}
                 />
-                {errors?.company && <p className="text-sm text-destructive">{errors.company.message}</p>}
+                {errors?.lifeInsurance?.company && <p className="text-sm text-destructive">{errors.lifeInsurance.company.message}</p>}
             </div>
             <div>
                 <Label>Policy Number</Label>
                 <Controller name="lifeInsurance.policyNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} placeholder="Enter Policy Number"/>} />
-                 {errors?.policyNumber && <p className="text-sm text-destructive">{errors.policyNumber.message}</p>}
+                 {errors?.lifeInsurance?.policyNumber && <p className="text-sm text-destructive">{errors.lifeInsurance.policyNumber.message}</p>}
             </div>
              <div>
                 <Label>Plan Name</Label>
@@ -103,12 +110,12 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
             <div>
                 <Label>Policy Start Date</Label>
                 <Controller name="lifeInsurance.policyStartDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
-                {errors?.policyStartDate && <p className="text-sm text-destructive mt-1">{errors.policyStartDate.message}</p>}
+                {errors?.lifeInsurance?.policyStartDate && <p className="text-sm text-destructive mt-1">{errors.lifeInsurance.policyStartDate.message}</p>}
             </div>
             <div>
                 <Label>Policy End Date</Label>
                 <Controller name="lifeInsurance.policyEndDate" control={control} render={({ field }) => <Input type="date" min={getToday()} {...field} value={field.value || ''} />} />
-                {errors?.policyEndDate && <p className="text-sm text-destructive mt-1">{errors.policyEndDate.message}</p>}
+                {errors?.lifeInsurance?.policyEndDate && <p className="text-sm text-destructive mt-1">{errors.lifeInsurance.policyEndDate.message}</p>}
             </div>
         </div>
         <NomineeFields control={control} errors={errors?.lifeInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="lifeInsurance.nominees" />

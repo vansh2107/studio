@@ -59,18 +59,25 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
                     </Select>
                     )}
                 />
-                {errors?.holderName && <p className="text-sm text-destructive mt-1">{errors.holderName.message}</p>}
+                {errors?.fixedDeposits?.holderName && <p className="text-sm text-destructive mt-1">{errors.fixedDeposits.holderName.message}</p>}
             </div>
         </div>
 
-        <JointHolderFields control={control} register={register} errors={errors?.fixedDeposits?.jointHolders} fieldPath="fixedDeposits.jointHolders" />
+        <JointHolderFields 
+            control={control} 
+            errors={errors?.fixedDeposits?.jointHolders} 
+            fieldPath="fixedDeposits.jointHolders"
+            familyMembers={familyMembers}
+            watch={watch}
+            holderNamePath="fixedDeposits.holderName"
+        />
 
         {/* ROW 1 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
             <div>
                 <Label>Company/Bank Name</Label>
                 <Controller name="fixedDeposits.companyName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
-                 {errors?.companyName && <p className="text-sm text-destructive mt-1">{errors.companyName.message}</p>}
+                 {errors?.fixedDeposits?.companyName && <p className="text-sm text-destructive mt-1">{errors.fixedDeposits.companyName.message}</p>}
             </div>
             <div>
                 <Label>FD Name</Label>
@@ -102,7 +109,7 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
                         />
                     )}
                 />
-                 {errors?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.mobileNumber.message}</p>}
+                 {errors?.fixedDeposits?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.fixedDeposits.mobileNumber.message}</p>}
             </div>
             <div>
                 <Label>Email Address</Label>
@@ -113,7 +120,7 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
                         <Input type="email" {...field} value={field.value || ''} />
                     )}
                 />
-                 {errors?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.emailAddress.message}</p>}
+                 {errors?.fixedDeposits?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.fixedDeposits.emailAddress.message}</p>}
             </div>
         </div>
 
@@ -154,12 +161,12 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
             <div>
                 <Label>Date of Purchase</Label>
                 <Controller name="fixedDeposits.purchaseDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
-                {errors?.purchaseDate && <p className="text-sm text-destructive mt-1">{errors.purchaseDate.message}</p>}
+                {errors?.fixedDeposits?.purchaseDate && <p className="text-sm text-destructive mt-1">{errors.fixedDeposits.purchaseDate.message}</p>}
             </div>
             <div>
                 <Label>Date of Maturity</Label>
                 <Controller name="fixedDeposits.maturityDate" control={control} render={({ field }) => <Input type="date" min={getToday()} {...field} value={field.value || ''} />} />
-                {errors?.maturityDate && <p className="text-sm text-destructive mt-1">{errors.maturityDate.message}</p>}
+                {errors?.fixedDeposits?.maturityDate && <p className="text-sm text-destructive mt-1">{errors.fixedDeposits.maturityDate.message}</p>}
             </div>
         </div>
         <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="fixedDeposits.nominees" />

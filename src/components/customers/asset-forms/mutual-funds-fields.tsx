@@ -57,17 +57,24 @@ export function MutualFundsFields({ control, errors, familyMembers, register, wa
                   </Select>
                 )}
               />
-               {errors?.holderName && <p className="text-sm text-destructive">{errors.holderName.message}</p>}
+               {errors?.mutualFunds?.holderName && <p className="text-sm text-destructive">{errors.mutualFunds.holderName.message}</p>}
             </div>
         </div>
 
-        <JointHolderFields control={control} register={register} errors={errors?.mutualFunds?.jointHolders} fieldPath="mutualFunds.jointHolders" />
+        <JointHolderFields 
+            control={control} 
+            errors={errors?.mutualFunds?.jointHolders} 
+            fieldPath="mutualFunds.jointHolders"
+            familyMembers={familyMembers}
+            watch={watch}
+            holderNamePath="mutualFunds.holderName"
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             <div>
                 <Label>Folio Number</Label>
                 <Controller name="mutualFunds.folioNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
-                 {errors?.folioNumber && <p className="text-sm text-destructive">{errors.folioNumber.message}</p>}
+                 {errors?.mutualFunds?.folioNumber && <p className="text-sm text-destructive">{errors.mutualFunds.folioNumber.message}</p>}
             </div>
              <div>
                 <Label>AMC</Label>
@@ -84,12 +91,12 @@ export function MutualFundsFields({ control, errors, familyMembers, register, wa
                     />
                   )}
                 />
-                {errors?.amc && <p className="text-sm text-destructive">{errors.amc.message}</p>}
+                {errors?.mutualFunds?.amc && <p className="text-sm text-destructive">{errors.mutualFunds.amc.message}</p>}
             </div>
              <div>
                 <Label>Scheme Name</Label>
                 <Controller name="mutualFunds.schemeName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
-                {errors?.schemeName && <p className="text-sm text-destructive">{errors.schemeName.message}</p>}
+                {errors?.mutualFunds?.schemeName && <p className="text-sm text-destructive">{errors.mutualFunds.schemeName.message}</p>}
             </div>
             <div>
                 <Label>Invested Amount</Label>

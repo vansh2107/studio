@@ -38,11 +38,18 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
                     </Select>
                 )}
                 />
-                {errors?.holderName && <p className="text-sm text-destructive">{errors.holderName.message}</p>}
+                {errors?.stocks?.holderName && <p className="text-sm text-destructive">{errors.stocks.holderName.message}</p>}
             </div>
         </div>
 
-        <JointHolderFields control={control} register={register} errors={errors?.stocks?.jointHolders} fieldPath="stocks.jointHolders" />
+        <JointHolderFields 
+            control={control} 
+            errors={errors?.stocks?.jointHolders} 
+            fieldPath="stocks.jointHolders"
+            familyMembers={familyMembers}
+            watch={watch}
+            holderNamePath="stocks.holderName"
+        />
       </div>
 
       <Separator />
@@ -56,22 +63,22 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
               control={control}
               render={({ field }) => <Input {...field} value={field.value || ''} placeholder="Enter DPID" />}
             />
-           {errors?.dpId && <p className="text-sm text-destructive">{errors.dpId.message}</p>}
+           {errors?.stocks?.dpId && <p className="text-sm text-destructive">{errors.stocks.dpId.message}</p>}
         </div>
         <div>
           <Label>DP Name</Label>
           <Input {...register('stocks.dpName')} />
-           {errors?.dpName && <p className="text-sm text-destructive">{errors.dpName.message}</p>}
+           {errors?.stocks?.dpName && <p className="text-sm text-destructive">{errors.stocks.dpName.message}</p>}
         </div>
         <div>
           <Label>Bank Name</Label>
           <Input {...register('stocks.bankName')} />
-           {errors?.bankName && <p className="text-sm text-destructive">{errors.bankName.message}</p>}
+           {errors?.stocks?.bankName && <p className="text-sm text-destructive">{errors.stocks.bankName.message}</p>}
         </div>
         <div>
           <Label>Bank Account Number</Label>
           <Input {...register('stocks.bankAccountNumber')} />
-           {errors?.bankAccountNumber && <p className="text-sm text-destructive">{errors.bankAccountNumber.message}</p>}
+           {errors?.stocks?.bankAccountNumber && <p className="text-sm text-destructive">{errors.stocks.bankAccountNumber.message}</p>}
         </div>
         <div>
           <Label>Mobile Number</Label>
@@ -91,12 +98,12 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
                 />
             )}
           />
-           {errors?.mobileNumber && <p className="text-sm text-destructive">{errors.mobileNumber.message}</p>}
+           {errors?.stocks?.mobileNumber && <p className="text-sm text-destructive">{errors.stocks.mobileNumber.message}</p>}
         </div>
         <div>
           <Label>Email Address</Label>
           <Input type="email" {...register('stocks.emailAddress')} />
-           {errors?.emailAddress && <p className="text-sm text-destructive">{errors.emailAddress.message}</p>}
+           {errors?.stocks?.emailAddress && <p className="text-sm text-destructive">{errors.stocks.emailAddress.message}</p>}
         </div>
       </div>
 

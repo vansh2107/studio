@@ -61,7 +61,7 @@ const isDateInFuture = (val: string) => {
 
 
 const jointHolderSchema = z.object({
-  name: z.string().min(1, 'Joint holder name is required.'),
+  name: z.string().min(1, 'Please select a joint holder or remove this row.'),
 });
 
 const nomineeSchema = z.object({

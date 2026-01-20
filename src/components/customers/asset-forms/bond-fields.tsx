@@ -72,11 +72,18 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
               </Select>
               )}
           />
-            {errors?.holderName && <p className="text-sm text-destructive mt-1">{errors.holderName.message}</p>}
+            {errors?.bonds?.holderName && <p className="text-sm text-destructive mt-1">{errors.bonds.holderName.message}</p>}
         </div>
       </div>
       
-      <JointHolderFields control={control} register={register} errors={errors?.bonds?.jointHolders} fieldPath="bonds.jointHolders" />
+      <JointHolderFields 
+        control={control} 
+        errors={errors?.bonds?.jointHolders} 
+        fieldPath="bonds.jointHolders"
+        familyMembers={familyMembers}
+        watch={watch}
+        holderNamePath="bonds.holderName"
+      />
 
       <div className="space-y-4 pt-4">
         {/* Row 1 */}
@@ -99,7 +106,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
                 />
               )}
             />
-            {errors?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.mobileNumber.message}</p>}
+            {errors?.bonds?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.bonds.mobileNumber.message}</p>}
           </div>
           <div>
             <Label>Email Address</Label>
@@ -108,7 +115,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
               control={control}
               render={({ field }) => <Input type="email" {...field} value={field.value || ''} />}
             />
-            {errors?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.emailAddress.message}</p>}
+            {errors?.bonds?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.bonds.emailAddress.message}</p>}
           </div>
         </div>
 
@@ -116,7 +123,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
           <div>
             <Label>Issuer</Label>
             <Controller name="bonds.issuer" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
-             {errors?.issuer && <p className="text-sm text-destructive mt-1">{errors.issuer.message}</p>}
+             {errors?.bonds?.issuer && <p className="text-sm text-destructive mt-1">{errors.bonds.issuer.message}</p>}
           </div>
           <div>
             <Label>ISIN Number</Label>
@@ -132,17 +139,17 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
           <div>
             <Label>Bond Price</Label>
             <Controller name="bonds.bondPrice" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-            {errors?.bondPrice && <p className="text-sm text-destructive mt-1">{errors.bondPrice.message}</p>}
+            {errors?.bonds?.bondPrice && <p className="text-sm text-destructive mt-1">{errors.bonds.bondPrice.message}</p>}
           </div>
           <div>
             <Label>Bond Unit</Label>
             <Controller name="bonds.bondUnit" control={control} render={({ field }) => <Input type="number" min="0" step="1" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-            {errors?.bondUnit && <p className="text-sm text-destructive mt-1">{errors.bondUnit.message}</p>}
+            {errors?.bonds?.bondUnit && <p className="text-sm text-destructive mt-1">{errors.bonds.bondUnit.message}</p>}
           </div>
           <div>
             <Label>Bond Amount</Label>
             <Controller name="bonds.bondAmount" control={control} render={({ field }) => <Input readOnly {...field} value={field.value || ''} />} />
-            {errors?.bondAmount && <p className="text-sm text-destructive mt-1">{errors.bondAmount.message}</p>}
+            {errors?.bonds?.bondAmount && <p className="text-sm text-destructive mt-1">{errors.bonds.bondAmount.message}</p>}
           </div>
         </div>
         {/* Row 3 */}
@@ -150,12 +157,12 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
           <div>
             <Label>Purchase Date</Label>
             <Controller name="bonds.purchaseDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
-            {errors?.purchaseDate && <p className="text-sm text-destructive mt-1">{errors.purchaseDate.message}</p>}
+            {errors?.bonds?.purchaseDate && <p className="text-sm text-destructive mt-1">{errors.bonds.purchaseDate.message}</p>}
           </div>
           <div>
             <Label>Maturity Date</Label>
             <Controller name="bonds.maturityDate" control={control} render={({ field }) => <Input type="date" min={getToday()} {...field} value={field.value || ''} />} />
-            {errors?.maturityDate && <p className="text-sm text-destructive mt-1">{errors.maturityDate.message}</p>}
+            {errors?.bonds?.maturityDate && <p className="text-sm text-destructive mt-1">{errors.bonds.maturityDate.message}</p>}
           </div>
         </div>
         

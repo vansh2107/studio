@@ -75,7 +75,14 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
         </div>
       </div>
 
-      <JointHolderFields control={control} register={register} errors={errors?.physicalToDemat?.jointHolders} fieldPath="physicalToDemat.jointHolders" />
+      <JointHolderFields 
+        control={control} 
+        errors={errors?.physicalToDemat?.jointHolders} 
+        fieldPath="physicalToDemat.jointHolders"
+        familyMembers={familyMembers}
+        watch={watch}
+        holderNamePath="physicalToDemat.holderName"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
         <div>

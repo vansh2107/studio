@@ -66,10 +66,18 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
                     </Select>
                 )}
                 />
+                {errors?.generalInsurance?.holderName && <p className="text-sm text-destructive">{errors.generalInsurance.holderName.message}</p>}
             </div>
         </div>
         
-        <JointHolderFields control={control} register={register} errors={errors?.generalInsurance?.jointHolders} fieldPath="generalInsurance.jointHolders" />
+        <JointHolderFields 
+            control={control} 
+            errors={errors?.generalInsurance?.jointHolders} 
+            fieldPath="generalInsurance.jointHolders"
+            familyMembers={familyMembers}
+            watch={watch}
+            holderNamePath="generalInsurance.holderName"
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
              <div>
@@ -92,6 +100,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
                   </Select>
                 )}
               />
+               {errors?.generalInsurance?.category && <p className="text-sm text-destructive">{errors.generalInsurance.category.message}</p>}
             </div>
             <div>
                 <Label>Issuer</Label>
@@ -108,7 +117,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
                     />
                   )}
                 />
-                {errors?.issuer && <p className="text-sm text-destructive">{errors.issuer.message}</p>}
+                {errors?.generalInsurance?.issuer && <p className="text-sm text-destructive">{errors.generalInsurance.issuer.message}</p>}
             </div>
              <div>
                 <Label>Plan Name</Label>
@@ -142,17 +151,17 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
             <div>
                 <Label>Policy Start Date</Label>
                 <Controller name="generalInsurance.policyStartDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
-                {errors?.policyStartDate && <p className="text-sm text-destructive mt-1">{errors.policyStartDate.message}</p>}
+                {errors?.generalInsurance?.policyStartDate && <p className="text-sm text-destructive mt-1">{errors.generalInsurance.policyStartDate.message}</p>}
             </div>
             <div>
                 <Label>Policy Issue Date</Label>
                 <Controller name="generalInsurance.policyIssueDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
-                {errors?.policyIssueDate && <p className="text-sm text-destructive mt-1">{errors.policyIssueDate.message}</p>}
+                {errors?.generalInsurance?.policyIssueDate && <p className="text-sm text-destructive mt-1">{errors.generalInsurance.policyIssueDate.message}</p>}
             </div>
             <div>
                 <Label>Policy End Date</Label>
                 <Controller name="generalInsurance.policyEndDate" control={control} render={({ field }) => <Input type="date" min={getToday()} {...field} value={field.value || ''} />} />
-                {errors?.policyEndDate && <p className="text-sm text-destructive mt-1">{errors.policyEndDate.message}</p>}
+                {errors?.generalInsurance?.policyEndDate && <p className="text-sm text-destructive mt-1">{errors.generalInsurance.policyEndDate.message}</p>}
             </div>
             {(selectedCategory === 'FOUR WHEELER' || selectedCategory === 'TWO WHEELER') && (
                  <div>

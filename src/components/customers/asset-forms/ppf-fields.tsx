@@ -57,11 +57,18 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
                 </Select>
               )}
             />
-             {errors?.holderName && <p className="text-sm text-destructive mt-1">{errors.holderName.message}</p>}
+             {errors?.ppf?.holderName && <p className="text-sm text-destructive mt-1">{errors.ppf.holderName.message}</p>}
           </div>
       </div>
       
-      <JointHolderFields control={control} register={register} errors={errors?.ppf?.jointHolders} fieldPath="ppf.jointHolders" />
+      <JointHolderFields 
+        control={control} 
+        errors={errors?.ppf?.jointHolders} 
+        fieldPath="ppf.jointHolders"
+        familyMembers={familyMembers}
+        watch={watch}
+        holderNamePath="ppf.holderName"
+      />
 
       <div className="space-y-4 pt-4">
         {/* ROW 1 */}
@@ -69,12 +76,12 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
           <div>
             <Label>Bank Name</Label>
             <Controller name="ppf.bankName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
-             {errors?.bankName && <p className="text-sm text-destructive mt-1">{errors.bankName.message}</p>}
+             {errors?.ppf?.bankName && <p className="text-sm text-destructive mt-1">{errors.ppf.bankName.message}</p>}
           </div>
           <div>
             <Label>Bank Account Number</Label>
             <Controller name="ppf.bankAccountNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
-            {errors?.bankAccountNumber && <p className="text-sm text-destructive mt-1">{errors.bankAccountNumber.message}</p>}
+            {errors?.ppf?.bankAccountNumber && <p className="text-sm text-destructive mt-1">{errors.ppf.bankAccountNumber.message}</p>}
           </div>
         </div>
         
@@ -83,22 +90,22 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
           <div>
             <Label>Contributed Amount</Label>
             <Controller name="ppf.contributedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-            {errors?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.contributedAmount.message}</p>}
+            {errors?.ppf?.contributedAmount && <p className="text-sm text-destructive mt-1">{errors.ppf.contributedAmount.message}</p>}
           </div>
            <div>
             <Label>Balance</Label>
             <Controller name="ppf.balance" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
-            {errors?.balance && <p className="text-sm text-destructive mt-1">{errors.balance.message}</p>}
+            {errors?.ppf?.balance && <p className="text-sm text-destructive mt-1">{errors.ppf.balance.message}</p>}
           </div>
           <div>
             <Label>Date of Opening</Label>
             <Controller name="ppf.openingDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
-            {errors?.openingDate && <p className="text-sm text-destructive mt-1">{errors.openingDate.message}</p>}
+            {errors?.ppf?.openingDate && <p className="text-sm text-destructive mt-1">{errors.ppf.openingDate.message}</p>}
           </div>
           <div>
             <Label>Date of Mature</Label>
             <Controller name="ppf.matureDate" control={control} render={({ field }) => <Input type="date" min={getToday()} {...field} value={field.value || ''} />} />
-            {errors?.matureDate && <p className="text-sm text-destructive mt-1">{errors.matureDate.message}</p>}
+            {errors?.ppf?.matureDate && <p className="text-sm text-destructive mt-1">{errors.ppf.matureDate.message}</p>}
           </div>
         </div>
       </div>
