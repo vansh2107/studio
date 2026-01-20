@@ -254,6 +254,7 @@ export let familyMembers: FamilyMember[] = [
 ];
 
 export const dashboardAssets: DashboardAsset[] = [
+  // Ramniklal Hirpara (client-3) - Existing Data
   { id: 'd-asset-1', ownerMemberId: 'client-3', familyHeadId: 'client-3', category: 'Life Insurance', value: 2500000 },
   { id: 'd-asset-2', ownerMemberId: 'client-3', familyHeadId: 'client-3', category: 'Fixed Deposits', value: 800000 },
   { id: 'd-asset-3', ownerMemberId: 'fm-4-1', familyHeadId: 'client-3', category: 'PPF', value: 450000 },
@@ -262,6 +263,24 @@ export const dashboardAssets: DashboardAsset[] = [
   { id: 'd-asset-6', ownerMemberId: 'fm-4-4', familyHeadId: 'client-3', category: 'Term Insurance', value: 1500000 },
   { id: 'd-asset-7', ownerMemberId: 'fm-4-3', familyHeadId: 'client-3', category: 'Fixed Deposits', value: 300000 },
   { id: 'd-asset-8', ownerMemberId: 'fm-4-5', familyHeadId: 'client-3', category: 'Mutual Funds', value: 500000 },
+
+  // Bipin Hirpara (client-1) - New Data
+  { id: 'd-asset-9', ownerMemberId: 'client-1', familyHeadId: 'client-1', category: 'Stocks', value: 720000 },
+  { id: 'd-asset-10', ownerMemberId: 'fm-1-1', familyHeadId: 'client-1', category: 'Mutual Funds', value: 1250000 },
+  { id: 'd-asset-11', ownerMemberId: 'client-1', familyHeadId: 'client-1', category: 'Fixed Deposits', value: 1000000 },
+  { id: 'd-asset-12', ownerMemberId: 'fm-1-2', familyHeadId: 'client-1', category: 'Life Insurance', value: 1800000 },
+
+  // Jitendra Hirpara (client-2) - New Data
+  { id: 'd-asset-13', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'Mutual Funds', value: 850000 },
+  { id: 'd-asset-14', ownerMemberId: 'fm-2-1', familyHeadId: 'client-2', category: 'Bonds', value: 500000 },
+  { id: 'd-asset-15', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'Term Insurance', value: 2000000 },
+  { id: 'd-asset-16', ownerMemberId: 'fm-2-2', familyHeadId: 'client-2', category: 'PPF', value: 250000 },
+
+  // Jivraj Hirpara (client-4) - New Data
+  { id: 'd-asset-17', ownerMemberId: 'client-4', familyHeadId: 'client-4', category: 'Stocks', value: 1500000 },
+  { id: 'd-asset-18', ownerMemberId: 'fm-3-2', familyHeadId: 'client-4', category: 'Stocks', value: 900000 },
+  { id: 'd-asset-19', ownerMemberId: 'fm-3-3', familyHeadId: 'client-4', category: 'Mutual Funds', value: 2200000 },
+  { id: 'd-asset-20', ownerMemberId: 'fm-3-1', familyHeadId: 'client-4', category: 'Fixed Deposits', value: 1200000 },
 ];
 
 
