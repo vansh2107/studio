@@ -33,7 +33,6 @@ interface ComboboxProps {
     searchPlaceholder?: string;
     emptyText?: string;
     className?: string;
-    filter?: (value: string, search: string) => number;
     disabled?: boolean;
 }
 
@@ -45,12 +44,19 @@ export function Combobox({
     searchPlaceholder = "Search...",
     emptyText = "No results found.",
     className,
-    filter,
     disabled,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
   const selectedLabel = options.find((option) => option.value.toLowerCase() === value?.toLowerCase())?.label;
+
+  const handleFilter = (itemValue: string, search: string) => {
+    const option = options.find(opt => opt.value.toLowerCase() === itemValue.toLowerCase());
+    if (option?.label.toLowerCase().includes(search.toLowerCase())) {
+      return 1;
+    }
+    return 0;
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -71,7 +77,7 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" style={{ width: 'var(--radix-popover-trigger-width)' }}>
-        <Command filter={filter}>
+        <Command filter={handleFilter}>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
@@ -81,7 +87,7 @@ export function Combobox({
                   key={option.value}
                   value={option.value}
                   onSelect={(currentValue) => {
-                    onChange(currentValue === value ? "" : currentValue)
+                    onChange(currentValue.toLowerCase() === value?.toLowerCase() ? "" : currentValue)
                     setOpen(false)
                   }}
                   className="truncate"
@@ -89,7 +95,7 @@ export function Combobox({
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
+                      value?.toLowerCase() === option.value.toLowerCase() ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {option.label}
