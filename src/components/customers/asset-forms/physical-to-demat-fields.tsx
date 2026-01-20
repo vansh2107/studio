@@ -1,18 +1,49 @@
-
 'use client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Controller } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Client, FamilyMember } from '@/lib/types';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { JointHolderFields } from './joint-holder-fields';
+import { Button } from '@/components/ui/button';
+import { Edit } from 'lucide-react';
 
 
 export function PhysicalToDematFields({ register, errors, control, familyMembers, watch, setValue }: { register: any, errors: any, control: any, familyMembers: (Client | FamilyMember)[], watch: any, setValue: any }) {
-  
+  const [isMobileReadOnly, setIsMobileReadOnly] = useState(true);
+  const [isEmailReadOnly, setIsEmailReadOnly] = useState(true);
+
+  const mobileInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+
+  const holderName = watch('physicalToDemat.holderName');
   const quantity = watch('physicalToDemat.quantity');
   const marketPrice = watch('physicalToDemat.marketPrice');
+
+  useEffect(() => {
+    if (holderName) {
+      const member = familyMembers.find(m => m.name === holderName);
+      if (member) {
+        setValue('physicalToDemat.mobileNumber', member.phoneNumber || '', { shouldValidate: true });
+        setValue('physicalToDemat.emailAddress', (member as any).email || (member as any).emailId || '', { shouldValidate: true });
+      }
+    }
+    setIsMobileReadOnly(true);
+    setIsEmailReadOnly(true);
+  }, [holderName, familyMembers, setValue]);
+
+  useEffect(() => {
+    if (!isMobileReadOnly && mobileInputRef.current) {
+      mobileInputRef.current.focus();
+    }
+  }, [isMobileReadOnly]);
+  
+  useEffect(() => {
+    if (!isEmailReadOnly && emailInputRef.current) {
+      emailInputRef.current.focus();
+    }
+  }, [isEmailReadOnly]);
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -85,33 +116,59 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-        <div>
+        <div className="space-y-1">
           <Label>Mobile Number</Label>
-          <Controller
-            name="physicalToDemat.mobileNumber"
-            control={control}
-            render={({ field }) => (
-              <Input
-                type="tel"
-                maxLength={10}
-                {...field}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '');
-                  field.onChange(value);
-                }}
-                value={field.value || ''}
-              />
-            )}
-          />
+          <div className="relative">
+            <Controller
+              name="physicalToDemat.mobileNumber"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  type="tel"
+                  maxLength={10}
+                  {...field}
+                  ref={mobileInputRef}
+                  readOnly={isMobileReadOnly}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    field.onChange(value);
+                  }}
+                  value={field.value || ''}
+                  className="pr-10"
+                />
+              )}
+            />
+            {isMobileReadOnly && (
+                <Button type="button" variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-8 w-8" onClick={() => setIsMobileReadOnly(false)}>
+                  <Edit className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              )}
+          </div>
           {errors?.physicalToDemat?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.mobileNumber.message}</p>}
         </div>
-        <div>
+        <div className="space-y-1">
           <Label>Email Address</Label>
-          <Controller
-            name="physicalToDemat.emailAddress"
-            control={control}
-            render={({ field }) => <Input type="email" {...field} value={field.value || ''} />}
-          />
+           <div className="relative">
+            <Controller
+              name="physicalToDemat.emailAddress"
+              control={control}
+              render={({ field }) => 
+                <Input 
+                  type="email" 
+                  {...field} 
+                  ref={emailInputRef}
+                  readOnly={isEmailReadOnly}
+                  value={field.value || ''} 
+                  className="pr-10"
+                />
+              }
+            />
+             {isEmailReadOnly && (
+              <Button type="button" variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-8 w-8" onClick={() => setIsEmailReadOnly(false)}>
+                <Edit className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            )}
+          </div>
           {errors?.physicalToDemat?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.physicalToDemat.emailAddress.message}</p>}
         </div>
       </div>

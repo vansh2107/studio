@@ -1,6 +1,5 @@
-
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,12 +7,45 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Client, FamilyMember } from '@/lib/types';
 import { JointHolderFields } from './joint-holder-fields';
 import { NomineeFields } from './nominee-fields';
+import { Button } from '@/components/ui/button';
+import { Edit } from 'lucide-react';
 
 
 export function BondFields({ control, errors, familyMembers, watch, register, getValues, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], watch: any, register: any, getValues: any, setValue: any }) {
+  const [isMobileReadOnly, setIsMobileReadOnly] = useState(true);
+  const [isEmailReadOnly, setIsEmailReadOnly] = useState(true);
 
+  const mobileInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+
+  const holderName = watch('bonds.holderName');
   const bondPrice = watch('bonds.bondPrice');
   const bondUnit = watch('bonds.bondUnit');
+
+  useEffect(() => {
+    if (holderName) {
+      const member = familyMembers.find(m => m.name === holderName);
+      if (member) {
+        setValue('bonds.mobileNumber', member.phoneNumber || '', { shouldValidate: true });
+        setValue('bonds.emailAddress', (member as any).email || (member as any).emailId || '', { shouldValidate: true });
+      }
+    }
+    setIsMobileReadOnly(true);
+    setIsEmailReadOnly(true);
+  }, [holderName, familyMembers, setValue]);
+
+  useEffect(() => {
+    if (!isMobileReadOnly && mobileInputRef.current) {
+      mobileInputRef.current.focus();
+    }
+  }, [isMobileReadOnly]);
+  
+  useEffect(() => {
+    if (!isEmailReadOnly && emailInputRef.current) {
+      emailInputRef.current.focus();
+    }
+  }, [isEmailReadOnly]);
+
 
   useEffect(() => {
     const price = parseFloat(bondPrice);
@@ -88,33 +120,59 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
       <div className="space-y-4 pt-4">
         {/* Row 1 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div className="space-y-1">
             <Label>Mobile Number</Label>
-            <Controller
-              name="bonds.mobileNumber"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  type="tel"
-                  maxLength={10}
-                  {...field}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    field.onChange(value);
-                  }}
-                  value={field.value || ''}
-                />
+            <div className="relative">
+              <Controller
+                name="bonds.mobileNumber"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="tel"
+                    maxLength={10}
+                    {...field}
+                    ref={mobileInputRef}
+                    readOnly={isMobileReadOnly}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      field.onChange(value);
+                    }}
+                    value={field.value || ''}
+                    className="pr-10"
+                  />
+                )}
+              />
+              {isMobileReadOnly && (
+                <Button type="button" variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-8 w-8" onClick={() => setIsMobileReadOnly(false)}>
+                  <Edit className="h-4 w-4 text-muted-foreground" />
+                </Button>
               )}
-            />
+            </div>
             {errors?.bonds?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.bonds.mobileNumber.message}</p>}
           </div>
-          <div>
+          <div className="space-y-1">
             <Label>Email Address</Label>
-            <Controller
-              name="bonds.emailAddress"
-              control={control}
-              render={({ field }) => <Input type="email" {...field} value={field.value || ''} />}
-            />
+            <div className="relative">
+              <Controller
+                name="bonds.emailAddress"
+                control={control}
+                render={({ field }) => 
+                  <Input 
+                    type="email" 
+                    {...field} 
+                    ref={emailInputRef}
+                    readOnly={isEmailReadOnly}
+                    value={field.value || ''} 
+                    className="pr-10"
+                  />
+                }
+              />
+              {isEmailReadOnly && (
+                <Button type="button" variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-8 w-8" onClick={() => setIsEmailReadOnly(false)}>
+                  <Edit className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              )}
+            </div>
             {errors?.bonds?.emailAddress && <p className="text-sm text-destructive mt-1">{errors.bonds.emailAddress.message}</p>}
           </div>
         </div>
