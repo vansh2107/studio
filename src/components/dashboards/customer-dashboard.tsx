@@ -14,16 +14,10 @@ import {
   ShieldCheck,
   TrendingUp,
   FileText,
-  User as UserIcon,
-  ClipboardList,
-  FolderOpen
 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { AssetBreakdownModal } from './asset-breakdown-modal';
 import { cn } from '@/lib/utils';
-import { useTasks } from '@/hooks/use-tasks';
-import CustomerTaskDashboard from './customer-task-dashboard';
-import { StatCard } from '../ui/stat-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 
@@ -75,27 +69,6 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
       return userAssets.filter(a => a.ownerMemberId === selectedMemberId);
   }, [user, selectedMemberId]);
 
-
-  const { tasks } = useTasks();
-  
-  const isFamilyHead = useMemo(() => {
-    if (user.role !== 'CUSTOMER') return false;
-    const clientRecord = clients.find(c => c.id === user.id);
-    return !!clientRecord; // It's a head if they exist in the main clients array
-  }, [user]);
-
-  const customerTasks = useMemo(() => {
-    if (user.role !== 'CUSTOMER') return [];
-
-    if (isFamilyHead) {
-      // If user is a family head, show all tasks for their family
-      return tasks.filter(task => task.familyHeadId === user.id);
-    } else {
-      // If user is a family member, show only tasks assigned to them
-      return tasks.filter(task => task.clientId === user.id);
-    }
-  }, [tasks, user, isFamilyHead]);
-
   const totalAssetValue = useMemo(() => {
     return assets.reduce((sum, asset) => sum + asset.value, 0);
   }, [assets]);
@@ -144,11 +117,6 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
             </Select>
         </div>
     </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatCard label="My Tasks" value={customerTasks.length} href="/tasks" icon={ClipboardList} />
-        <StatCard label="Doc Vault" value="View" href="/doc-vault" icon={FolderOpen} />
-        <StatCard label="My Profile" value="View" href="/profile" icon={UserIcon} />
-      </div>
 
       <Card>
         <CardHeader>
@@ -202,8 +170,6 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
         })}
       </div>
       
-      <CustomerTaskDashboard tasks={customerTasks} />
-
       <Modal open={!!selectedCategory} onClose={handleCloseModal}>
         {selectedCategory && (
           <AssetBreakdownModal 
