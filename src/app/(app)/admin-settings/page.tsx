@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -27,13 +26,21 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import {
+  admins,
+  associates,
+  getAllRMs,
+  users,
+} from '@/lib/mock-data';
+import { ROLES } from '@/lib/constants';
+import { Badge } from '@/components/ui/badge';
 
 const settingsItems = [
-  { href: '/admins', label: 'Admins', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },
-  { href: '/rms', label: 'RMs', icon: UserSquare, roles: ['SUPER_ADMIN', 'ADMIN'] },
-  { href: '/associates', label: 'Associates', icon: Briefcase, roles: ['SUPER_ADMIN', 'ADMIN', 'RM'] },
-  { href: '/user-mapping', label: 'User Mapping', icon: Users, roles: ['SUPER_ADMIN'] },
-  { href: '/role-management', label: 'Role Management', icon: Shield, roles: ['SUPER_ADMIN'] },
+  { href: '/admins', label: 'Admins', icon: ShieldCheck, roles: ['SUPER_ADMIN'], count: admins.length },
+  { href: '/rms', label: 'RMs', icon: UserSquare, roles: ['SUPER_ADMIN', 'ADMIN'], count: getAllRMs().length },
+  { href: '/associates', label: 'Associates', icon: Briefcase, roles: ['SUPER_ADMIN', 'ADMIN', 'RM'], count: associates.length },
+  { href: '/user-mapping', label: 'User Mapping', icon: Users, roles: ['SUPER_ADMIN'], count: users.length },
+  { href: '/role-management', label: 'Role Management', icon: Shield, roles: ['SUPER_ADMIN'], count: ROLES.length },
 ];
 
 export default function AdminSettingsPage() {
@@ -89,6 +96,7 @@ export default function AdminSettingsPage() {
                     <item.icon className="h-6 w-6" />
                   </div>
                   <CardTitle className="text-lg">{item.label}</CardTitle>
+                  <Badge variant="outline">{item.count}</Badge>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
