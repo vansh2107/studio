@@ -29,6 +29,9 @@ import { AssetBreakdownModal } from './asset-breakdown-modal';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import { Combobox } from '../ui/combobox';
+import { Badge } from '../ui/badge';
 
 interface CustomerDashboardProps {
   user: User;
@@ -45,8 +48,11 @@ const categoryIcons: Record<AssetCategory, React.ElementType> = {
 };
 
 export default function CustomerDashboard({ user }: CustomerDashboardProps) {
+  const { impersonate } = useCurrentUser();
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
   const [selectedId, setSelectedId] = useState('all');
+
+  const allClientsForSearch = useMemo(() => getAllClients().map(c => ({ label: c.name, value: c.id })), []);
 
   const familyMembersForModal = useMemo(() => {
     if (user.role !== 'CUSTOMER') return [];
@@ -69,6 +75,7 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
             if (!head) return [];
             const members = getFamilyMembersForClient(user.id);
             return [
+                { id: 'all', name: 'All Members'},
                 { id: head.id, name: `${head.firstName} ${head.lastName} (Head)` },
                 ...members.map(m => ({ id: m.id, name: `${m.name} (${m.relation})` }))
             ];
@@ -88,10 +95,12 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
             break;
         }
         case 'SUPER_ADMIN':
-            options = getAllClients().map(c => ({ id: c.id, name: c.name }));
-            break;
+            // The main dropdown is replaced by the client search for Super Admin
+            return [];
     }
-    return options.sort((a,b) => a.name.localeCompare(b.name));
+    
+    const sortedOptions = options.sort((a,b) => a.name.localeCompare(b.name));
+    return [{ id: 'all', name: 'All Clients'}, ...sortedOptions];
   }, [user]);
 
   const assets: DashboardAsset[] = useMemo(() => {
@@ -121,7 +130,7 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
             break;
       }
       
-      const scopedAssets = allDashboardAssets.filter(a => scopedClientIds.includes(a.familyHeadId));
+      let scopedAssets = allDashboardAssets.filter(a => scopedClientIds.includes(a.familyHeadId));
 
       if (selectedId === 'all') {
           return scopedAssets;
@@ -166,12 +175,29 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   };
   
   const isCardClickable = user.role === 'CUSTOMER';
+  const showFilterDropdown = user.role !== 'SUPER_ADMIN' && dropdownOptions.length > 0;
 
   return (
     <>
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Family Dashboard</h1>
-        {dropdownOptions.length > 0 && (
+
+        {user.role === 'SUPER_ADMIN' ? (
+          <div className="flex items-center gap-2 w-full max-w-sm">
+            <Label htmlFor="client-search" className="whitespace-nowrap">Switch to Client View</Label>
+            <Combobox
+              options={allClientsForSearch}
+              onChange={(clientId) => {
+                if (clientId) {
+                  impersonate(clientId);
+                }
+              }}
+              placeholder="Search & select a client"
+              searchPlaceholder='Search client...'
+              emptyText='No client found.'
+            />
+          </div>
+        ) : showFilterDropdown && (
           <div className="flex items-center gap-2">
               <Label htmlFor="member-filter">View Assets For</Label>
               <Select value={selectedId} onValueChange={setSelectedId}>
@@ -179,7 +205,6 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
                       <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
                       {dropdownOptions.map(option => (
                           <SelectItem key={option.id} value={option.id}>
                               {option.name}
@@ -242,6 +267,42 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
           );
         })}
       </div>
+
+       {user.role === 'SUPER_ADMIN' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Compliance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ul className="space-y-3">
+                        {['Address Update', 'Email Update', 'Mobile Number Update', 'Nominee Update', 'PAN Card Update', 'Name Change'].map(item => (
+                            <li key={item} className="flex justify-between items-center text-sm font-medium">
+                                <span>{item}</span>
+                                <Badge variant="secondary" className="cursor-pointer">{Math.floor(Math.random() * 15) + 1}</Badge>
+                            </li>
+                        ))}
+                    </ul>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Alerts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ul className="space-y-3">
+                         {['FD Maturity', 'Insurance Renewal', 'Insurance Maturity', 'Bond Maturity', 'Upcoming Birthday', 'Minor to Major'].map(item => (
+                            <li key={item} className="flex justify-between items-center text-sm font-medium">
+                                <span>{item}</span>
+                                 <Badge variant="destructive" className="cursor-pointer">{Math.floor(Math.random() * 8)}</Badge>
+                            </li>
+                        ))}
+                    </ul>
+                </CardContent>
+            </Card>
+        </div>
+      )}
       
       <Modal open={!!selectedCategory} onClose={handleCloseModal}>
         {selectedCategory && (
