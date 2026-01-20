@@ -22,7 +22,7 @@ import { format, parse, isValid } from 'date-fns';
 const clientSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
+  phoneNumber: z.string().length(10, 'Phone number must be exactly 10 digits'),
   email: z.string().email('Invalid email address'),
   dateOfBirth: z.string().refine(val => val && isValid(parse(val, 'yyyy-MM-dd', new Date())), { message: "Invalid date" }),
   address: z.string().min(1, 'Address is required'),
@@ -255,6 +255,10 @@ export function FamilyFormModal({
                     id="phoneNumber"
                     type="tel"
                     {...register('phoneNumber')}
+                    maxLength={10}
+                    onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                      e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '');
+                    }}
                     disabled={isSaving}
                   />
                   {errors.phoneNumber && (

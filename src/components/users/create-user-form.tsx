@@ -35,7 +35,7 @@ const baseSchema = z.object({
     (email) => !users.some(u => u.email === email),
     { message: 'This email is already in use.' }
   ),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  phone: z.string().length(10, 'Phone number must be exactly 10 digits'),
   role: z.enum(CREATABLE_ROLES as [string, ...string[]]),
 });
 
@@ -127,7 +127,14 @@ export function CreateUserForm({ onUserCreated }: { onUserCreated: () => void })
         </div>
         <div className="space-y-1">
           <Label htmlFor="phone">Phone</Label>
-          <Input id="phone" {...register('phone')} />
+          <Input
+            id="phone"
+            {...register('phone')}
+            maxLength={10}
+            onInput={(e: React.FormEvent<HTMLInputElement>) => {
+              e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '');
+            }}
+          />
           {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
         </div>
       
@@ -231,5 +238,3 @@ export function CreateUserForm({ onUserCreated }: { onUserCreated: () => void })
     </form>
   );
 }
-
-    

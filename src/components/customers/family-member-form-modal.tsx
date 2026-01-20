@@ -22,7 +22,7 @@ const aadhaarRegex = /^[0-9]{12}$/;
 const memberSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
+  phoneNumber: z.string().length(10, 'Phone number must be exactly 10 digits'),
   emailId: z.string().email('Invalid email address'),
   dateOfBirth: z.string().refine(val => val && isValid(parse(val, 'yyyy-MM-dd', new Date())), { message: "Invalid date" }),
   address: z.string().min(1, 'Address is required'),
@@ -323,7 +323,16 @@ export function FamilyMemberFormModal({
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input id="phoneNumber" type="tel" {...register('phoneNumber')} disabled={isSaving} />
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      {...register('phoneNumber')}
+                      maxLength={10}
+                      onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                        e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '');
+                      }}
+                      disabled={isSaving}
+                    />
                     {errors.phoneNumber && <p className="text-sm text-destructive">{errors.phoneNumber.message}</p>}
                   </div>
                   <div className="flex flex-col gap-1.5">

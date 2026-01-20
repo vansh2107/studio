@@ -68,7 +68,16 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
                     name="fixedDeposits.mobileNumber"
                     control={control}
                     render={({ field }) => (
-                        <Input type="tel" maxLength={10} onKeyDown={handleNumericKeyDown} {...field} value={field.value || ''} />
+                        <Input
+                          type="tel"
+                          maxLength={10}
+                          {...field}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            field.onChange(value);
+                          }}
+                          value={field.value || ''}
+                        />
                     )}
                 />
                  {errors?.mobileNumber && <p className="text-sm text-destructive mt-1">{errors.mobileNumber.message}</p>}

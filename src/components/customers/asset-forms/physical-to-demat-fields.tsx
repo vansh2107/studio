@@ -84,8 +84,11 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
               <Input
                 type="tel"
                 maxLength={10}
-                onKeyDown={handleNumericKeyDown}
                 {...field}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '');
+                  field.onChange(value);
+                }}
                 value={field.value || ''}
               />
             )}

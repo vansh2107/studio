@@ -11,12 +11,6 @@ import { NomineeFields } from './nominee-fields';
 import { JointHolderFields } from './joint-holder-fields';
 
 export function StocksFields({ control, register, errors, familyMembers, watch, getValues, setValue }: { control: any; register: any; errors: any; familyMembers: (Client | FamilyMember)[], watch: any; getValues: any; setValue: any; }) {
-
-  const handleMobileKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (['e', 'E', '+', '-'].includes(e.key)) {
-      e.preventDefault();
-    }
-  };
   
   return (
     <div className="space-y-6">
@@ -86,12 +80,15 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
             control={control}
             render={({ field }) => (
                 <Input
-                type="tel"
-                maxLength={10}
-                onKeyDown={handleMobileKeyDown}
-                {...field}
-                value={field.value || ''}
-              />
+                  type="tel"
+                  maxLength={10}
+                  {...field}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    field.onChange(value);
+                  }}
+                  value={field.value || ''}
+                />
             )}
           />
            {errors?.mobileNumber && <p className="text-sm text-destructive">{errors.mobileNumber.message}</p>}

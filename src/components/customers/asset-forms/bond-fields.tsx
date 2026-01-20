@@ -85,8 +85,11 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
                 <Input
                   type="tel"
                   maxLength={10}
-                  onKeyDown={handleNumericKeyDown}
                   {...field}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    field.onChange(value);
+                  }}
                   value={field.value || ''}
                 />
               )}
