@@ -11,9 +11,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Task } from '@/hooks/use-tasks';
 import { TaskStatus, TaskStatus2 } from '@/lib/constants';
-import { Loader2, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   TASK_CATEGORIES,
   MUTUAL_FUND_SERVICES,
@@ -426,36 +434,15 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
   };
   const getToday = () => new Date().toISOString().split('T')[0];
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
-      onClick={onClose}
-    >
-      <div
-        className={cn(
-          'bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh] overflow-hidden',
-          'w-full max-w-4xl'
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6 border-b relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 close-icon"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-          <div className="flex flex-col space-y-1.5">
-            <h2 className="text-lg font-semibold leading-none tracking-tight">{isEditMode ? 'Edit Task' : 'Create Task Manually'}</h2>
-            <p className="text-sm text-muted-foreground">
-              {isEditMode ? 'Update the details for this task.' : 'Fill in the details to create a new task.'}
-            </p>
-          </div>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl flex flex-col max-h-[90vh] p-0 gap-0">
+        <DialogHeader className="p-6 border-b">
+          <DialogTitle>{isEditMode ? 'Edit Task' : 'Create Task Manually'}</DialogTitle>
+          <DialogDescription>
+            {isEditMode ? 'Update the details for this task.' : 'Fill in the details to create a new task.'}
+          </DialogDescription>
+        </DialogHeader>
         
         <form onSubmit={handleSubmit(processSave)} className="flex-1 min-h-0 flex flex-col">
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -1253,7 +1240,7 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
               </div>
           </div>
 
-          <div className="p-6 border-t flex justify-end gap-2">
+          <DialogFooter className="p-6 border-t flex-row justify-end gap-2 w-full">
               <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
                 Cancel
               </Button>
@@ -1268,9 +1255,9 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
                   )}
                   </Button>
               )}
-          </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -7,8 +7,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
   Loader2,
-  X,
   Upload,
   PlusCircle,
   Trash2,
@@ -422,35 +428,17 @@ export function AddAssetModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
-    >
-      <div
-        className={cn(
-          'bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh] overflow-hidden',
-          'w-full max-w-4xl'
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6 border-b relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className={cn('absolute top-4 right-4 close-icon')}
-          >
-            <X />
-          </Button>
-          <h2 className="font-semibold text-lg">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl flex flex-col max-h-[90vh] p-0 gap-0">
+        <DialogHeader className="p-6 border-b">
+          <DialogTitle>
             {assetToEdit ? 'Edit Asset' : 'Add Asset'}
-          </h2>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full flex-1 min-h-0">
-          <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {Object.keys(errors).length > 0 && (
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="font-semibold text-sm text-destructive mb-2">Please fix the following errors:</p>
@@ -558,17 +546,17 @@ export function AddAssetModal({
             </fieldset>
           </div>
 
-          <div className="p-6 border-t flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <DialogFooter className="p-6 border-t flex-row justify-end gap-2 w-full">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
               Close
             </Button>
             <Button type="submit" disabled={isSaving}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Asset
             </Button>
-          </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

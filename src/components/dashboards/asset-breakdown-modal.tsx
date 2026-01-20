@@ -10,6 +10,12 @@ import type { DashboardAsset, AssetCategory, FamilyMember, Document } from '@/li
 import { X, User as UserIcon } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from 'next/navigation';
+import {
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 const formatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -94,7 +100,7 @@ export function AssetBreakdownModal({
   }, [category, categoryAssets]);
 
   const renderContent = () => {
-    const totalValue = categoryAssets.reduce((sum, asset) => sum + asset.value, 0);
+    const totalValue = categoryAssets.reduce((sum, asset) => sum + (asset.premiumAmount || asset.value), 0);
 
     switch (category) {
       case 'Stocks':
@@ -327,33 +333,25 @@ export function AssetBreakdownModal({
   };
 
   return (
-    <div className="relative p-6 bg-card rounded-lg shadow-lg border w-full max-w-4xl max-h-[90vh] flex flex-col">
-       <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-4 right-4 z-10 close-icon">
-            <X className="h-4 w-4" />
-        </Button>
+    <TooltipProvider>
+      <DialogHeader className="p-6 pb-4 text-center sm:text-left">
+        <DialogTitle>{category} – Family Breakdown</DialogTitle>
+        <DialogDescription>
+          Distribution of {category} assets across family members.
+        </DialogDescription>
+      </DialogHeader>
       
-        <TooltipProvider>
-          <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
-            <h2 className="text-lg font-semibold leading-none tracking-tight">
-              {category} – Family Breakdown
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Distribution of {category} assets across family members.
-            </p>
-          </div>
-
-          <div className="flex-grow overflow-y-auto pr-4 -mr-4">
-            <Card>
-                <CardContent className="p-0">
-                {renderContent()}
-                </CardContent>
-            </Card>
-          </div>
-          
-          <div className="flex justify-end mt-6 pt-6 border-t">
-             <Button variant="outline" onClick={onClose}>Close</Button>
-          </div>
-        </TooltipProvider>
-    </div>
+      <div className="flex-grow overflow-y-auto px-6">
+        <Card>
+            <CardContent className="p-0">
+            {renderContent()}
+            </CardContent>
+        </Card>
+      </div>
+      
+      <DialogFooter className="p-6 pt-4 border-t">
+         <Button variant="outline" onClick={onClose}>Close</Button>
+      </DialogFooter>
+    </TooltipProvider>
   );
 }

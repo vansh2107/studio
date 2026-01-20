@@ -26,7 +26,7 @@ import {
   FileText,
   HelpCircle
 } from 'lucide-react';
-import Modal from '@/components/ui/Modal';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { AssetBreakdownModal } from './asset-breakdown-modal';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -163,7 +163,7 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   const assetsByCategory = useMemo(() => {
     return ASSET_CATEGORIES.map(category => {
       const categoryAssets = assets.filter(asset => asset.category === category);
-      const totalValue = categoryAssets.reduce((sum, asset) => sum + asset.value, 0);
+      const totalValue = categoryAssets.reduce((sum, asset) => sum + (asset.premiumAmount || asset.value), 0);
       const count = categoryAssets.length;
       return { category, totalValue, count };
     });
@@ -337,17 +337,19 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
         </div>
       )}
       
-      <Modal open={!!selectedCategory} onClose={handleCloseModal}>
-        {selectedCategory && (
-          <AssetBreakdownModal 
-            category={selectedCategory} 
-            assets={assets}
-            familyMembers={familyMembersForModal}
-            documents={mockDocuments}
-            onClose={handleCloseModal}
-          />
-        )}
-      </Modal>
+      <Dialog open={!!selectedCategory} onOpenChange={handleCloseModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0">
+          {selectedCategory && (
+            <AssetBreakdownModal 
+              category={selectedCategory} 
+              assets={assets}
+              familyMembers={familyMembersForModal}
+              documents={mockDocuments}
+              onClose={handleCloseModal}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
