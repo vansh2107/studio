@@ -355,6 +355,16 @@ export interface DashboardAsset {
   category: AssetCategory;
   value: number;
   familyHeadId: string;
+  
+  // Optional detailed fields for popups
+  dpName?: string;
+  dpId?: string;
+  bankName?: string;
+  accountOpeningDate?: string;
+  folioNumber?: string;
+  premiumAmount?: number;
+  sumAssured?: number;
+  policyName?: string;
+  policyType?: string;
+  issuerName?: string;
 }
-
-    

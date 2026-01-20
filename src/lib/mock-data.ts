@@ -255,36 +255,36 @@ export let familyMembers: FamilyMember[] = [
 ];
 
 export const dashboardAssets: DashboardAsset[] = [
-  // Ramniklal Hirpara (client-3) - Existing Data
-  { id: 'd-asset-1', ownerMemberId: 'client-3', familyHeadId: 'client-3', category: 'Life Insurance', value: 2500000 },
+  // Ramniklal Hirpara (client-3)
+  { id: 'd-asset-1', ownerMemberId: 'client-3', familyHeadId: 'client-3', category: 'Life Insurance', value: 2500000, premiumAmount: 50000, sumAssured: 2500000 },
   { id: 'd-asset-2', ownerMemberId: 'client-3', familyHeadId: 'client-3', category: 'Fixed Deposits', value: 800000 },
-  { id: 'd-asset-3', ownerMemberId: 'fm-4-1', familyHeadId: 'client-3', category: 'PPF', value: 450000 },
-  { id: 'd-asset-4', ownerMemberId: 'fm-4-2', familyHeadId: 'client-3', category: 'Stocks', value: 600000 },
-  { id: 'd-asset-5', ownerMemberId: 'fm-4-2', familyHeadId: 'client-3', category: 'Mutual Funds', value: 900000 },
-  { id: 'd-asset-6', ownerMemberId: 'fm-4-4', familyHeadId: 'client-3', category: 'General Insurance', value: 1500000 },
+  { id: 'd-asset-3', ownerMemberId: 'fm-4-1', familyHeadId: 'client-3', category: 'PPF', value: 450000, bankName: 'HDFC Bank', accountOpeningDate: '2015-04-01' },
+  { id: 'd-asset-4', ownerMemberId: 'fm-4-2', familyHeadId: 'client-3', category: 'Stocks', value: 600000, dpId: 'IN300095', dpName: 'Zerodha' },
+  { id: 'd-asset-5', ownerMemberId: 'fm-4-2', familyHeadId: 'client-3', category: 'Mutual Funds', value: 900000, folioNumber: '98765432/1' },
+  { id: 'd-asset-6', ownerMemberId: 'fm-4-4', familyHeadId: 'client-3', category: 'General Insurance', value: 15000, policyName: 'Health Guard', policyType: 'Health' },
   { id: 'd-asset-7', ownerMemberId: 'fm-4-3', familyHeadId: 'client-3', category: 'Fixed Deposits', value: 300000 },
-  { id: 'd-asset-8', ownerMemberId: 'fm-4-5', familyHeadId: 'client-3', category: 'Mutual Funds', value: 500000 },
+  { id: 'd-asset-8', ownerMemberId: 'fm-4-5', familyHeadId: 'client-3', category: 'Mutual Funds', value: 500000, folioNumber: '12345678/9' },
 
-  // Bipin Hirpara (client-1) - New Data
-  { id: 'd-asset-9', ownerMemberId: 'client-1', familyHeadId: 'client-1', category: 'Stocks', value: 720000 },
-  { id: 'd-asset-10', ownerMemberId: 'fm-1-1', familyHeadId: 'client-1', category: 'Mutual Funds', value: 1250000 },
+  // Bipin Hirpara (client-1)
+  { id: 'd-asset-9', ownerMemberId: 'client-1', familyHeadId: 'client-1', category: 'Stocks', value: 720000, dpId: 'IN300214', dpName: 'Upstox' },
+  { id: 'd-asset-10', ownerMemberId: 'fm-1-1', familyHeadId: 'client-1', category: 'Mutual Funds', value: 1250000, folioNumber: '23456789/0' },
   { id: 'd-asset-11', ownerMemberId: 'client-1', familyHeadId: 'client-1', category: 'Fixed Deposits', value: 1000000 },
-  { id: 'd-asset-12', ownerMemberId: 'fm-1-2', familyHeadId: 'client-1', category: 'Life Insurance', value: 1800000 },
-  { id: 'd-asset-21', ownerMemberId: 'fm-1-2', familyHeadId: 'client-1', category: 'General Insurance', value: 500000 },
+  { id: 'd-asset-12', ownerMemberId: 'fm-1-2', familyHeadId: 'client-1', category: 'Life Insurance', value: 1800000, premiumAmount: 45000, sumAssured: 1800000 },
+  { id: 'd-asset-21', ownerMemberId: 'fm-1-2', familyHeadId: 'client-1', category: 'General Insurance', value: 8000, policyName: 'Car Secure', policyType: 'Car' },
 
-  // Jitendra Hirpara (client-2) - New Data
-  { id: 'd-asset-13', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'Mutual Funds', value: 850000 },
-  { id: 'd-asset-14', ownerMemberId: 'fm-2-1', familyHeadId: 'client-2', category: 'Bonds', value: 500000 },
-  { id: 'd-asset-15', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'General Insurance', value: 2000000 },
-  { id: 'd-asset-16', ownerMemberId: 'fm-2-2', familyHeadId: 'client-2', category: 'PPF', value: 250000 },
-  { id: 'd-asset-22', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'Stocks', value: 400000 },
+  // Jitendra Hirpara (client-2)
+  { id: 'd-asset-13', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'Mutual Funds', value: 850000, folioNumber: '34567890/1' },
+  { id: 'd-asset-14', ownerMemberId: 'fm-2-1', familyHeadId: 'client-2', category: 'Bonds', value: 500000, issuerName: 'REC Ltd.' },
+  { id: 'd-asset-15', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'General Insurance', value: 12000, policyName: 'Bike Shield', policyType: 'Bike' },
+  { id: 'd-asset-16', ownerMemberId: 'fm-2-2', familyHeadId: 'client-2', category: 'PPF', value: 250000, bankName: 'SBI', accountOpeningDate: '2018-07-20' },
+  { id: 'd-asset-22', ownerMemberId: 'client-2', familyHeadId: 'client-2', category: 'Stocks', value: 400000, dpId: 'IN300183', dpName: 'HDFC Securities' },
 
-  // Jivraj Hirpara (client-4) - New Data
-  { id: 'd-asset-17', ownerMemberId: 'client-4', familyHeadId: 'client-4', category: 'Stocks', value: 1500000 },
-  { id: 'd-asset-18', ownerMemberId: 'fm-3-2', familyHeadId: 'client-4', category: 'Stocks', value: 900000 },
-  { id: 'd-asset-19', ownerMemberId: 'fm-3-3', familyHeadId: 'client-4', category: 'Mutual Funds', value: 2200000 },
+  // Jivraj Hirpara (client-4)
+  { id: 'd-asset-17', ownerMemberId: 'client-4', familyHeadId: 'client-4', category: 'Stocks', value: 1500000, dpId: 'IN300118', dpName: 'ICICI Direct' },
+  { id: 'd-asset-18', ownerMemberId: 'fm-3-2', familyHeadId: 'client-4', category: 'Stocks', value: 900000, dpId: 'IN300118', dpName: 'ICICI Direct' },
+  { id: 'd-asset-19', ownerMemberId: 'fm-3-3', familyHeadId: 'client-4', category: 'Mutual Funds', value: 2200000, folioNumber: '45678901/2' },
   { id: 'd-asset-20', ownerMemberId: 'fm-3-1', familyHeadId: 'client-4', category: 'Fixed Deposits', value: 1200000 },
-  { id: 'd-asset-23', ownerMemberId: 'fm-3-1', familyHeadId: 'client-4', category: 'Life Insurance', value: 3000000 },
+  { id: 'd-asset-23', ownerMemberId: 'fm-3-1', familyHeadId: 'client-4', category: 'Life Insurance', value: 3000000, premiumAmount: 80000, sumAssured: 3000000 },
 ];
 
 

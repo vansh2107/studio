@@ -150,7 +150,7 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   const totalNetWorth = useMemo(() => {
     return assets
         .filter(asset => asset.category !== 'General Insurance')
-        .reduce((sum, asset) => sum + asset.value, 0);
+        .reduce((sum, asset) => sum + (asset.premiumAmount || asset.value), 0);
   }, [assets]);
   
   const assetsByCategory = useMemo(() => {
@@ -169,16 +169,14 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   });
 
   const handleCardClick = (category: AssetCategory) => {
-    if (user.role === 'CUSTOMER') {
-      setSelectedCategory(category);
-    }
+    setSelectedCategory(category);
   };
 
   const handleCloseModal = () => {
     setSelectedCategory(null);
   };
   
-  const isCardClickable = user.role === 'CUSTOMER';
+  const isCardClickable = true;
   const showFilterDropdown = user.role !== 'SUPER_ADMIN' && dropdownOptions.length > 0;
 
   return (
@@ -270,7 +268,7 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
             </button>
           );
         })}
-        <Card className="flex flex-col h-full">
+         <Card className="flex flex-col h-full">
             <CardHeader className="flex-row items-center gap-4 space-y-0">
                 <div className="p-3 rounded-full bg-primary/10 text-primary">
                     <HelpCircle className="h-6 w-6" />
