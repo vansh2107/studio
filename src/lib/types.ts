@@ -1,7 +1,7 @@
 
 
-import { type Role, type Permission, type AssetCategory, type Permissions, type TaskStatus, type TaskStatus2 } from './constants';
-export type { Role, Permission, AssetCategory, Permissions, TaskStatus, TaskStatus2 };
+import { type Role, type Permission, type AssetCategory, type Permissions, type TaskStatus, type TaskStatus2, type TaskRMStatus } from './constants';
+export type { Role, Permission, AssetCategory, Permissions, TaskStatus, TaskStatus2, TaskRMStatus };
 
 // Base user type
 export interface BaseUser {
@@ -167,6 +167,8 @@ export interface Task {
   createDate: string;
   startDate?: string | null;
   completeDate?: string | null;
+  taskRM?: string;
+  taskRMStatus?: TaskRMStatus;
   mutualFund?: {
     familyHead: string;
     service: string;

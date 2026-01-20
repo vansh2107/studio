@@ -35,13 +35,15 @@ import {
   ISIN_NUMBERS,
   DPID_LIST,
   BANK_ACCOUNT_NUMBERS,
+  TASK_RM_STATUSES,
 } from '@/lib/constants';
-import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
+import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins, users as allUsers } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
 import { format, parse, parseISO, isValid } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { cn } from '@/lib/utils';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 /* ---------- VALIDATION HELPERS ---------- */
 const isDateInPast = (val: string | undefined) => {
@@ -95,6 +97,8 @@ const baseTaskSchema = z.object({
   associateId: z.string().optional(),
   rmId: z.string().optional(),
   adminId: z.string().optional(),
+  taskRM: z.string().optional(),
+  taskRMStatus: z.string().optional(),
 });
 
 const mutualFundDetailsSchema = z.object({
@@ -236,7 +240,9 @@ const sortedNonFinancialInsuranceServices = [...INSURANCE_SERVICES]
 export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskModalProps) {
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const { effectiveUser } = useCurrentUser();
   const isEditMode = !!task;
+  const isSuperAdmin = effectiveUser?.role === 'SUPER_ADMIN';
 
   const clientOptions = useMemo(() => {
     const heads = getAllClients().map(c => ({
@@ -256,6 +262,13 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
   }, []);
 
   const allRms = useMemo(() => getAllRMs().map(rm => ({ label: `${rm.name} (RM)`, value: rm.id })), []);
+
+  const taskRMs = useMemo(() => {
+    return allUsers
+      .filter(u => ['ADMIN', 'SUPER_ADMIN', 'RM', 'ASSOCIATE'].includes(u.role))
+      .map(u => ({ label: `${u.name} (${u.role})`, value: u.name }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, []);
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -375,6 +388,8 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
       dueDate: formatDateForInput(task.dueDate, 'datetime'),
       description: task.description ?? '',
       status2: task.status2 ?? undefined,
+      taskRM: task.taskRM,
+      taskRMStatus: task.taskRMStatus,
       ...getCategoryPayload(task),
     });
 
@@ -1186,6 +1201,48 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
               </div>
               )}
 
+            {isEditMode && task?.status === 'In Progress' && isSuperAdmin && (
+              <div className="space-y-4 pt-4">
+                  <Separator />
+                  <h3 className="text-md font-semibold">Task RM Assignment</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                          <Label>Task RM</Label>
+                          <Controller
+                              name="taskRM"
+                              control={control}
+                              render={({ field }) => (
+                                  <Combobox
+                                      options={taskRMs}
+                                      value={field.value}
+                                      onChange={(value) => setValue('taskRM', value, { shouldValidate: true })}
+                                      placeholder="Select a user"
+                                      searchPlaceholder="Search users..."
+                                  />
+                              )}
+                          />
+                      </div>
+                      <div className="space-y-1">
+                          <Label>Task RM Status</Label>
+                           <Controller
+                              name="taskRMStatus"
+                              control={control}
+                              render={({ field }) => (
+                                  <Select onValueChange={field.onChange} value={field.value ?? 'Pending'}>
+                                      <SelectTrigger>
+                                          <SelectValue placeholder="Select status" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                          {TASK_RM_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                      </SelectContent>
+                                  </Select>
+                              )}
+                          />
+                      </div>
+                  </div>
+              </div>
+            )}
+
               <div className="space-y-1">
                 <Label>Description (Optional)</Label>
                 <Textarea {...register('description')} maxLength={300} disabled={isTerminal}/>
@@ -1217,5 +1274,3 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
     </div>
   );
 }
-
-    

@@ -84,6 +84,9 @@ export const TASK_STATUS_2_OPTIONS = [
 ] as const;
 export type TaskStatus2 = typeof TASK_STATUS_2_OPTIONS[number];
 
+export const TASK_RM_STATUSES = ['Pending', 'In Progress', 'Hold', 'Complete'] as const;
+export type TaskRMStatus = typeof TASK_RM_STATUSES[number];
+
 
 export const RM_NAMES = [
   'Kashish Nathwani',

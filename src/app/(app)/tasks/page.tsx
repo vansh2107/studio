@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import * as XLSX from 'xlsx';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Table,
@@ -14,7 +15,7 @@ import {
 import { useTasks } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, ChevronRight, Edit } from 'lucide-react';
+import { Plus, Trash2, ChevronRight, Edit, Download } from 'lucide-react';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import type { TaskFormData } from '@/components/tasks/create-task-modal';
 import { Task, TaskStatus } from '@/hooks/use-tasks';
@@ -86,9 +87,16 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
     if (!status) return 'outline';
     const lowerCaseStatus = status.toLowerCase();
     if (['completed', 'received', 'done', 'credited', 'yes'].includes(lowerCaseStatus)) return 'default';
-    if (['pending', 'in progress', 'no'].includes(lowerCaseStatus)) return 'secondary';
+    if (['pending', 'in progress', 'no', 'hold'].includes(lowerCaseStatus)) return 'secondary';
     return 'outline';
   };
+
+  const TimelineStep = ({ label, value, isActive }: { label: string; value: string | null | undefined; isActive: boolean }) => (
+    <div className="flex-1 text-center">
+        <p className={cn("text-xs font-semibold uppercase tracking-wider", isActive ? "text-primary" : "text-muted-foreground")}>{label}</p>
+        <p className={cn("text-sm", isActive ? "text-foreground" : "text-muted-foreground")}>{isActive ? value : '—'}</p>
+    </div>
+  );
 
   return (
     <div className="bg-muted/30 p-6 space-y-6 relative">
@@ -121,13 +129,22 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
          <DetailItem label="Client Name">{task.clientName}</DetailItem>
          <DetailItem label="Assigned RM">{task.rmName}</DetailItem>
          <DetailItem label="Serviceable RM">{task.serviceableRM}</DetailItem>
+         {task.taskRM && <DetailItem label="Task RM">{task.taskRM}</DetailItem>}
+         {task.taskRMStatus && (
+            <DetailItem label="Task RM Status">
+                <Badge variant={getStatusBadgeVariant(task.taskRMStatus)}>{task.taskRMStatus}</Badge>
+            </DetailItem>
+         )}
       </Section>
 
       <Section title="Timeline">
-         <DetailItem label="Created On">{formatDate(task.createDate)}</DetailItem>
-         <DetailItem label="Started On">{formatDate(task.startDate)}</DetailItem>
-         <DetailItem label="Due By">{formatDate(task.dueDate)}</DetailItem>
-         <DetailItem label="Completed On">{formatDate(task.completeDate)}</DetailItem>
+        <div className="col-span-full flex items-start justify-between gap-4 border p-4 rounded-md">
+            <TimelineStep label="Created" value={formatDate(task.createDate)} isActive={!!task.createDate} />
+            <TimelineStep label="Assigned RM" value={task.rmName} isActive={!!task.rmName} />
+            <TimelineStep label="In Progress" value={formatDate(task.startDate)} isActive={!!task.startDate} />
+            <TimelineStep label="Task RM Assigned" value={task.taskRM} isActive={!!task.taskRM} />
+            <TimelineStep label="Completed" value={formatDate(task.completeDate)} isActive={!!task.completeDate} />
+        </div>
       </Section>
 
       {task.category === 'Mutual Funds' && task.mutualFund && (
@@ -382,6 +399,40 @@ export default function TasksPage() {
     setExpandedRow(current => (current === taskId ? null : taskId));
   };
 
+  const handleExport = () => {
+    const getServiceCategory = (task: Task) => {
+        if (task.category === 'General Insurance') return task.generalInsuranceTask?.serviceCategory;
+        if (task.category === 'FDs') return task.fdTask?.serviceCategory;
+        if (task.category === 'Bonds') return task.bondsTask?.serviceCategory;
+        if (task.category === 'PPF') return task.ppfTask?.serviceCategory;
+        if (task.category === 'Physical to Demat') return task.physicalToDematTask?.serviceCategory;
+        if (task.category === 'Stocks') return task.stocksTask?.service;
+        if (task.category === 'Mutual Funds') return task.mutualFund?.service;
+        if (task.category === 'Life Insurance') return task.insurance?.insuranceType === 'Financial' ? task.insurance.financialService : task.insurance?.typeOfService;
+        return 'N/A';
+    };
+
+    const dataToExport = filteredTasks.map(task => ({
+        'Task ID': task.id,
+        'Client Name': task.clientName,
+        'Category': task.category,
+        'Service Category': getServiceCategory(task) || 'N/A',
+        'Assigned RM': task.rmName || 'N/A',
+        'Task RM': task.taskRM || 'N/A',
+        'Task RM Status': task.taskRMStatus || 'N/A',
+        'Created Date': task.createDate ? formatDate(task.createDate) : 'N/A',
+        'In Progress Date': task.startDate ? formatDate(task.startDate) : 'N/A',
+        'Completed Date': task.completeDate ? formatDate(task.completeDate) : 'N/A',
+        'Due Date': task.dueDate ? formatDate(task.dueDate) : 'N/A',
+        'Status': task.status,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tasks");
+    XLSX.writeFile(workbook, "Tasks.xlsx");
+  };
+
   const terminalStatuses: TaskStatus[] = ['Completed', 'Cancelled', 'Rejected'];
 
   if (!canView) {
@@ -403,6 +454,13 @@ export default function TasksPage() {
                 A list of tasks generated by the Assistant or created manually.
               </p>
             </div>
+            <div className="flex items-center gap-2">
+             {isSuperAdmin && (
+                <Button onClick={handleExport} variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    Export Tasks
+                </Button>
+            )}
              {canCreate && (
                 <Button
                     onClick={handleOpenCreateModal}
@@ -411,6 +469,7 @@ export default function TasksPage() {
                     Add Task
                 </Button>
             )}
+            </div>
         </div>
 
 
