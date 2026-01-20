@@ -32,6 +32,8 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
     }
   };
   
+  const getToday = () => new Date().toISOString().split('T')[0];
+
   return (
     <div className="space-y-4">
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Life Insurance Details</h3>
@@ -97,16 +99,20 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
             </div>
             <div>
                 <Label>Policy Start Date</Label>
-                <Controller name="lifeInsurance.policyStartDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+                <Controller name="lifeInsurance.policyStartDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
+                {errors?.policyStartDate && <p className="text-sm text-destructive mt-1">{errors.policyStartDate.message}</p>}
             </div>
             <div>
                 <Label>Policy End Date</Label>
-                <Controller name="lifeInsurance.policyEndDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+                <Controller name="lifeInsurance.policyEndDate" control={control} render={({ field }) => <Input type="date" min={getToday()} {...field} value={field.value || ''} />} />
+                {errors?.policyEndDate && <p className="text-sm text-destructive mt-1">{errors.policyEndDate.message}</p>}
             </div>
         </div>
         <NomineeFields control={control} errors={errors?.lifeInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="lifeInsurance.nominees" />
     </div>
   );
 }
+
+    
 
     

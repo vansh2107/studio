@@ -30,6 +30,8 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
     }
   };
   
+  const getToday = () => new Date().toISOString().split('T')[0];
+
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">PPF Details</h3>
@@ -87,11 +89,13 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
           </div>
           <div>
             <Label>Date of Opening</Label>
-            <Controller name="ppf.openingDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+            <Controller name="ppf.openingDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
+            {errors?.openingDate && <p className="text-sm text-destructive mt-1">{errors.openingDate.message}</p>}
           </div>
           <div>
             <Label>Date of Mature</Label>
-            <Controller name="ppf.matureDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+            <Controller name="ppf.matureDate" control={control} render={({ field }) => <Input type="date" min={getToday()} {...field} value={field.value || ''} />} />
+            {errors?.matureDate && <p className="text-sm text-destructive mt-1">{errors.matureDate.message}</p>}
           </div>
         </div>
       </div>
@@ -100,3 +104,5 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
     </div>
   );
 }
+
+    

@@ -38,12 +38,41 @@ import {
 } from '@/lib/constants';
 import { getAllClients, getAllAssociates, getAllRMs, familyMembers as mockFamilyMembers, getAllAdmins } from '@/lib/mock-data';
 import { Combobox } from '@/components/ui/combobox';
-import { format, parse, parseISO } from 'date-fns';
+import { format, parse, parseISO, isValid } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { cn } from '@/lib/utils';
 
-/* ---------- VALIDATION ---------- */
+/* ---------- VALIDATION HELPERS ---------- */
+const isDateInPast = (val: string | undefined) => {
+    if (!val) return true;
+    const inputDate = parse(val, 'yyyy-MM-dd', new Date());
+    if (!isValid(inputDate)) return true;
+    const today = new Date();
+    inputDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return inputDate <= today;
+};
+
+const isDateInFuture = (val: string | undefined) => {
+    if (!val) return true;
+    const inputDate = parse(val, 'yyyy-MM-dd', new Date());
+    if (!isValid(inputDate)) return true;
+    const today = new Date();
+    inputDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return inputDate >= today;
+};
+
+const isDateTimeInFuture = (val: string) => {
+    if (!val) return true;
+    const inputDate = new Date(val);
+    if (!isValid(inputDate)) return true;
+    return inputDate >= new Date();
+};
+
+
+/* ---------- VALIDATION SCHEMAS ---------- */
 
 const numberField = z.preprocess(
   (a) => {
@@ -59,7 +88,7 @@ const baseTaskSchema = z.object({
   clientName: z.string().optional(),
   rmName: z.string().optional(),
   serviceableRM: z.string().optional(),
-  dueDate: z.string().min(1, 'Due date and time are required'),
+  dueDate: z.string().min(1, 'Due date and time are required').refine(isDateTimeInFuture, { message: 'Due date cannot be in the past.' }),
   description: z.string().max(300, 'Description cannot exceed 300 characters.').optional(),
   status2: z.string().optional(),
   familyHeadId: z.string().optional(),
@@ -88,20 +117,20 @@ const insuranceDetailsSchema = z.object({
   insuranceType: z.enum(['Financial', 'Non-Financial']),
   typeOfService: z.string().optional(),
   financialService: z.string().optional(),
-  nonFinancialDate: z.string().optional(),
+  nonFinancialDate: z.string().optional().refine(isDateInPast, { message: "Date cannot be in the future." }),
 
-  maturityDueDate: z.string().optional(),
+  maturityDueDate: z.string().optional().refine(isDateInFuture, { message: "Date cannot be in the past." }),
   maturityAmount: numberField,
 
-  deathClaimProcessDate: z.string().optional(),
-  surrenderProcessDate: z.string().optional(),
+  deathClaimProcessDate: z.string().optional().refine(isDateInPast, { message: "Date cannot be in the future." }),
+  surrenderProcessDate: z.string().optional().refine(isDateInPast, { message: "Date cannot be in the future." }),
 
   amountStatus: z.enum(["Credited", "Pending"]).optional(),
   
-  receivedDate: z.string().optional(),
+  receivedDate: z.string().optional().refine(isDateInPast, { message: "Date cannot be in the future." }),
   receivedAmount: numberField,
   reinvestmentStatus: z.string().optional(),
-  reinvestmentApproxDate: z.string().optional(),
+  reinvestmentApproxDate: z.string().optional().refine(isDateInFuture, { message: "Date cannot be in the past." }),
   reinvestmentReason: z.string().optional(),
 
 }).superRefine((data, ctx) => {
@@ -373,6 +402,15 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
     }, 400);
   };
   
+  const getTodayForDateTime = () => {
+    const now = new Date();
+    // Adjust for timezone offset
+    const timezoneOffset = now.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(now.getTime() - timezoneOffset).toISOString().slice(0, 16);
+    return localISOTime;
+  };
+  const getToday = () => new Date().toISOString().split('T')[0];
+
   if (!isOpen) return null;
 
   return (
@@ -483,7 +521,7 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
 
               <div className="space-y-1">
                   <Label htmlFor="dueDate">Due Date & Time</Label>
-                  <Input id="dueDate" type="datetime-local" {...register('dueDate')} disabled={isTerminal} />
+                  <Input id="dueDate" type="datetime-local" min={getTodayForDateTime()} {...register('dueDate')} disabled={isTerminal} />
                   {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
               </div>
 
@@ -1008,7 +1046,7 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
                       </div>
                       <div className="space-y-1">
                           <Label>Date</Label>
-                          <Input type="date" {...register('insurance.nonFinancialDate')} />
+                          <Input type="date" max={getToday()} {...register('insurance.nonFinancialDate')} />
                           {errorsWithType.insurance?.nonFinancialDate && <p className="text-sm text-destructive">{errorsWithType.insurance.nonFinancialDate.message}</p>}
                       </div>
                       </>
@@ -1039,7 +1077,7 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
                           <>
                           <div className="space-y-1">
                               <Label>Maturity Due Date</Label>
-                              <Input type="date" {...register('insurance.maturityDueDate')} />
+                              <Input type="date" min={getToday()} {...register('insurance.maturityDueDate')} />
                               {errorsWithType.insurance?.maturityDueDate && <p className="text-sm text-destructive">{errorsWithType.insurance.maturityDueDate.message}</p>}
                           </div>
                           <div className="space-y-1">
@@ -1054,7 +1092,7 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
                       {financialService === 'Death Claim' && (
                           <div className="space-y-1">
                               <Label>Death Claim Process Date</Label>
-                              <Input type="date" {...register('insurance.deathClaimProcessDate')} />
+                              <Input type="date" max={getToday()} {...register('insurance.deathClaimProcessDate')} />
                               {errorsWithType.insurance?.deathClaimProcessDate && <p className="text-sm text-destructive">{errorsWithType.insurance.deathClaimProcessDate.message}</p>}
                           </div>
                       )}
@@ -1063,7 +1101,7 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
                       {financialService === 'Surrender' && (
                           <div className="space-y-1">
                               <Label>Surrender Process Date</Label>
-                              <Input type="date" {...register('insurance.surrenderProcessDate')} />
+                              <Input type="date" max={getToday()} {...register('insurance.surrenderProcessDate')} />
                               {errorsWithType.insurance?.surrenderProcessDate && <p className="text-sm text-destructive">{errorsWithType.insurance.surrenderProcessDate.message}</p>}
                           </div>
                       )}
@@ -1088,7 +1126,7 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
                               <div className="space-y-1">
                               <Label>Received Date</Label>
-                              <Input type="date" {...register('insurance.receivedDate')} />
+                              <Input type="date" max={getToday()} {...register('insurance.receivedDate')} />
                               {errorsWithType.insurance?.receivedDate && <p className="text-sm text-destructive">{errorsWithType.insurance.receivedDate.message}</p>}
                               </div>
                               <div className="space-y-1">
@@ -1118,7 +1156,7 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
                               {reinvestmentStatus === 'Pending' && (
                               <div className="space-y-1">
                                   <Label>Approx Date</Label>
-                                  <Input type="date" {...register('insurance.reinvestmentApproxDate')} />
+                                  <Input type="date" min={getToday()} {...register('insurance.reinvestmentApproxDate')} />
                                   {errorsWithType.insurance?.reinvestmentApproxDate && <p className="text-sm text-destructive">{errorsWithType.insurance.reinvestmentApproxDate.message}</p>}
                               </div>
                               )}
@@ -1179,3 +1217,5 @@ export function CreateTaskModal({ isOpen, onClose, onSave, task }: CreateTaskMod
     </div>
   );
 }
+
+    

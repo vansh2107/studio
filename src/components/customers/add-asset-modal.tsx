@@ -31,6 +31,28 @@ import { JointHolderFields } from './asset-forms/joint-holder-fields';
 import { Label } from '../ui/label';
 import { DOC_UPLOAD_CATEGORIES } from '@/lib/constants';
 import { Input } from '../ui/input';
+import { parse, isValid } from 'date-fns';
+
+const isDateInPast = (val: string) => {
+    if (!val) return true;
+    const inputDate = parse(val, 'yyyy-MM-dd', new Date());
+    if (!isValid(inputDate)) return true; // Let other validators handle invalid format
+    const today = new Date();
+    inputDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return inputDate <= today;
+};
+
+const isDateInFuture = (val: string) => {
+    if (!val) return true;
+    const inputDate = parse(val, 'yyyy-MM-dd', new Date());
+    if (!isValid(inputDate)) return true;
+    const today = new Date();
+    inputDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return inputDate >= today;
+};
+
 
 const jointHolderSchema = z.object({
   name: z.string().min(1, 'Joint holder name is required.'),
@@ -42,7 +64,7 @@ const nomineeSchema = z.object({
     (a) => (a === '' ? undefined : parseFloat(String(a))),
     z.number().min(0, 'Must be positive').max(100, 'Cannot exceed 100').optional()
   ),
-  dateOfBirth: z.string().optional(),
+  dateOfBirth: z.string().optional().refine(isDateInPast, { message: "Date of Birth cannot be in the future." }),
 });
 
 const nomineesArraySchema = z.array(nomineeSchema).max(3, 'You can add a maximum of 3 nominees.').optional().superRefine((nominees, ctx) => {
@@ -68,9 +90,9 @@ const generalInsuranceSchema = z.object({
       planName: z.string().optional(),
       policyNumber: z.string().optional(),
       policyType: z.string().optional(),
-      policyStartDate: z.string().optional(),
-      policyIssueDate: z.string().optional(),
-      policyEndDate: z.string().optional(),
+      policyStartDate: z.string().optional().refine(isDateInPast, { message: "Start Date cannot be in the future." }),
+      policyIssueDate: z.string().optional().refine(isDateInPast, { message: "Issue Date cannot be in the future." }),
+      policyEndDate: z.string().optional().refine(isDateInFuture, { message: "End Date cannot be in the past." }),
       vehicleRegNumber: z.string().optional(),
       sumAssured: z.string().optional(),
       priceWithoutGST: z.string().optional(),
@@ -113,8 +135,8 @@ const bondsSchema = z.object({
       bondPrice: z.preprocess((a) => (a === '' ? undefined : parseFloat(String(a))), z.number().min(0).optional()),
       bondUnit: z.preprocess((a) => (a === '' ? undefined : parseInt(String(a), 10)), z.number().int().min(1).optional()),
       bondAmount: z.number().min(0).optional(),
-      purchaseDate: z.string().optional(),
-      maturityDate: z.string().optional(),
+      purchaseDate: z.string().optional().refine(isDateInPast, { message: "Purchase Date cannot be in the future." }),
+      maturityDate: z.string().optional().refine(isDateInFuture, { message: "Maturity Date cannot be in the past." }),
       nominees: nomineesArraySchema,
       jointHolders: z.array(jointHolderSchema).max(3).optional(),
   })
@@ -135,8 +157,8 @@ const fdSchema = z.object({
       periodDays: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(365).optional()),
       interestRate: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().min(0).max(100).optional()),
       maturityAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-      purchaseDate: z.string().optional(),
-      maturityDate: z.string().optional(),
+      purchaseDate: z.string().optional().refine(isDateInPast, { message: "Purchase Date cannot be in the future." }),
+      maturityDate: z.string().optional().refine(isDateInFuture, { message: "Maturity Date cannot be in the past." }),
       nominees: nomineesArraySchema,
       jointHolders: z.array(jointHolderSchema).max(3).optional(),
   })
@@ -151,8 +173,8 @@ const ppfSchema = z.object({
       bankAccountNumber: z.string().min(1, 'Bank account number is required'),
       contributedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
       balance: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-      openingDate: z.string().optional(),
-      matureDate: z.string().optional(),
+      openingDate: z.string().optional().refine(isDateInPast, { message: "Opening Date cannot be in the future." }),
+      matureDate: z.string().optional().refine(isDateInFuture, { message: "Mature Date cannot be in the past." }),
       jointHolders: z.array(jointHolderSchema).max(3).optional(),
       nominees: nomineesArraySchema,
   })
@@ -187,8 +209,8 @@ const lifeInsuranceSchema = z.object({
         planName: z.string().optional(),
         sumAssured: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
         premiumAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-        policyStartDate: z.string().optional(),
-        policyEndDate: z.string().optional(),
+        policyStartDate: z.string().optional().refine(isDateInPast, { message: "Start Date cannot be in the future." }),
+        policyEndDate: z.string().optional().refine(isDateInFuture, { message: "End Date cannot be in the past." }),
         nominees: nomineesArraySchema,
         jointHolders: z.array(jointHolderSchema).max(3).optional(),
     })
@@ -550,5 +572,7 @@ export function AddAssetModal({
     </div>
   );
 }
+
+    
 
     

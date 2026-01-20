@@ -19,14 +19,28 @@ import { RELATION_OPTIONS } from '@/lib/constants';
 const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 const aadhaarRegex = /^[0-9]{12}$/;
 
+const isDateInPast = (val: string) => {
+    if (!val) return true; // Allow optional fields
+    const inputDate = parse(val, 'yyyy-MM-dd', new Date());
+    if (!isValid(inputDate)) return true; // Let other validators handle invalid format
+    const today = new Date();
+    inputDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return inputDate <= today;
+};
+
 const memberSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   phoneNumber: z.string().length(10, 'Phone number must be exactly 10 digits'),
   emailId: z.string().email('Invalid email address'),
-  dateOfBirth: z.string().refine(val => val && isValid(parse(val, 'yyyy-MM-dd', new Date())), { message: "Invalid date" }),
+  dateOfBirth: z.string()
+    .refine(val => val && isValid(parse(val, 'yyyy-MM-dd', new Date())), { message: "Invalid date" })
+    .refine(isDateInPast, { message: "Date of Birth cannot be in the future." }),
   address: z.string().min(1, 'Address is required'),
-  anniversaryDate: z.string().optional().refine(val => !val || (val && isValid(parse(val, 'yyyy-MM-dd', new Date()))), { message: "Invalid date format. Use YYYY-MM-DD or leave empty." }),
+  anniversaryDate: z.string().optional()
+    .refine(val => !val || (val && isValid(parse(val, 'yyyy-MM-dd', new Date()))), { message: "Invalid date format." })
+    .refine(isDateInPast, { message: "Anniversary Date cannot be in the future." }),
   relation: z.string().min(1, 'Relation is required'),
   panNumber: z.string()
     .optional()
@@ -218,6 +232,10 @@ export function FamilyMemberFormModal({
   const handleNext = () => setStep(2);
   const handleBack = () => setStep(1);
 
+  const getToday = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
   const renderFileUploader = (
     label: string,
     file: File | null,
@@ -342,12 +360,12 @@ export function FamilyMemberFormModal({
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                    <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} disabled={isSaving} />
+                    <Input id="dateOfBirth" type="date" max={getToday()} {...register('dateOfBirth')} disabled={isSaving} />
                     {errors.dateOfBirth && <p className="text-sm text-destructive">{errors.dateOfBirth.message}</p>}
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="anniversaryDate">Anniversary Date (Optional)</Label>
-                    <Input id="anniversaryDate" type="date" {...register('anniversaryDate')} disabled={isSaving} />
+                    <Input id="anniversaryDate" type="date" max={getToday()} {...register('anniversaryDate')} disabled={isSaving} />
                     {errors.anniversaryDate && <p className="text-sm text-destructive">{errors.anniversaryDate.message}</p>}
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -432,3 +450,5 @@ export function FamilyMemberFormModal({
     </div>
   );
 }
+
+    

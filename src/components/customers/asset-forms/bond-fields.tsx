@@ -45,6 +45,8 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
     }
   };
 
+  const getToday = () => new Date().toISOString().split('T')[0];
+
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Bond Details</h3>
@@ -144,11 +146,13 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <Label>Purchase Date</Label>
-            <Controller name="bonds.purchaseDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+            <Controller name="bonds.purchaseDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
+            {errors?.purchaseDate && <p className="text-sm text-destructive mt-1">{errors.purchaseDate.message}</p>}
           </div>
           <div>
             <Label>Maturity Date</Label>
-            <Controller name="bonds.maturityDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+            <Controller name="bonds.maturityDate" control={control} render={({ field }) => <Input type="date" min={getToday()} {...field} value={field.value || ''} />} />
+            {errors?.maturityDate && <p className="text-sm text-destructive mt-1">{errors.maturityDate.message}</p>}
           </div>
         </div>
         
@@ -157,3 +161,5 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
     </div>
   );
 }
+
+    

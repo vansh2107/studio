@@ -39,6 +39,8 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
     }
   };
   
+  const getToday = () => new Date().toISOString().split('T')[0];
+
   return (
     <div className="space-y-4">
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">General Insurance Details</h3>
@@ -136,15 +138,18 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
             </div>
             <div>
                 <Label>Policy Start Date</Label>
-                <Controller name="generalInsurance.policyStartDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+                <Controller name="generalInsurance.policyStartDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
+                {errors?.policyStartDate && <p className="text-sm text-destructive mt-1">{errors.policyStartDate.message}</p>}
             </div>
             <div>
                 <Label>Policy Issue Date</Label>
-                <Controller name="generalInsurance.policyIssueDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+                <Controller name="generalInsurance.policyIssueDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
+                {errors?.policyIssueDate && <p className="text-sm text-destructive mt-1">{errors.policyIssueDate.message}</p>}
             </div>
             <div>
                 <Label>Policy End Date</Label>
-                <Controller name="generalInsurance.policyEndDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+                <Controller name="generalInsurance.policyEndDate" control={control} render={({ field }) => <Input type="date" min={getToday()} {...field} value={field.value || ''} />} />
+                {errors?.policyEndDate && <p className="text-sm text-destructive mt-1">{errors.policyEndDate.message}</p>}
             </div>
             {(selectedCategory === 'FOUR WHEELER' || selectedCategory === 'TWO WHEELER') && (
                  <div>
@@ -179,3 +184,5 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
     </div>
   );
 }
+
+    

@@ -119,6 +119,7 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
                   />
                 )}
               />
+               {errors?.[index]?.dateOfBirth && <p className="text-sm text-destructive mt-1">{errors[index].dateOfBirth.message}</p>}
             </div>
             <Button
               type="button"
@@ -131,7 +132,7 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
           </div>
         ))}
         
-        {errors && (
+        {errors && typeof errors !== 'string' && errors.message && (
             <p className="text-sm text-destructive mt-1">{errors.message}</p>
         )}
       </div>
@@ -149,3 +150,5 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
     </div>
   );
 }
+
+    

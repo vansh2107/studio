@@ -31,6 +31,7 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
     field.onChange(String(numValue));
   };
 
+  const getToday = () => new Date().toISOString().split('T')[0];
 
   return (
     <div className="space-y-4">
@@ -131,14 +132,18 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
             </div>
             <div>
                 <Label>Date of Purchase</Label>
-                <Controller name="fixedDeposits.purchaseDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+                <Controller name="fixedDeposits.purchaseDate" control={control} render={({ field }) => <Input type="date" max={getToday()} {...field} value={field.value || ''} />} />
+                {errors?.purchaseDate && <p className="text-sm text-destructive mt-1">{errors.purchaseDate.message}</p>}
             </div>
             <div>
                 <Label>Date of Maturity</Label>
-                <Controller name="fixedDeposits.maturityDate" control={control} render={({ field }) => <Input type="date" {...field} value={field.value || ''} />} />
+                <Controller name="fixedDeposits.maturityDate" control={control} render={({ field }) => <Input type="date" min={getToday()} {...field} value={field.value || ''} />} />
+                {errors?.maturityDate && <p className="text-sm text-destructive mt-1">{errors.maturityDate.message}</p>}
             </div>
         </div>
         <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="fixedDeposits.nominees" />
     </div>
   );
 }
+
+    

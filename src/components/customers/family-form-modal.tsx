@@ -19,14 +19,28 @@ import { useToast } from '@/hooks/use-toast';
 import { Client } from '@/lib/types';
 import { format, parse, isValid } from 'date-fns';
 
+const isDateInPast = (val: string) => {
+    if (!val) return true; // Allow optional fields
+    const inputDate = parse(val, 'yyyy-MM-dd', new Date());
+    if (!isValid(inputDate)) return true; // Let other validators handle invalid format
+    const today = new Date();
+    inputDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return inputDate <= today;
+};
+
 const clientSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   phoneNumber: z.string().length(10, 'Phone number must be exactly 10 digits'),
   email: z.string().email('Invalid email address'),
-  dateOfBirth: z.string().refine(val => val && isValid(parse(val, 'yyyy-MM-dd', new Date())), { message: "Invalid date" }),
+  dateOfBirth: z.string()
+    .refine(val => val && isValid(parse(val, 'yyyy-MM-dd', new Date())), { message: "Invalid date" })
+    .refine(isDateInPast, { message: "Date of Birth cannot be in the future." }),
   address: z.string().min(1, 'Address is required'),
-  anniversaryDate: z.string().optional().refine(val => !val || (val && isValid(parse(val, 'yyyy-MM-dd', new Date()))), { message: "Invalid date format. Use YYYY-MM-DD or leave empty." }),
+  anniversaryDate: z.string().optional()
+    .refine(val => !val || (val && isValid(parse(val, 'yyyy-MM-dd', new Date()))), { message: "Invalid date format." })
+    .refine(isDateInPast, { message: "Anniversary Date cannot be in the future." }),
 });
 
 
@@ -158,6 +172,10 @@ export function FamilyFormModal({
   const handleNext = () => setStep(2);
   const handleBack = () => setStep(1);
 
+  const getToday = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
   const renderFileUploader = (
     label: string,
     file: File | null,
@@ -286,6 +304,7 @@ export function FamilyFormModal({
                   <Input
                       id="dateOfBirth"
                       type="date"
+                      max={getToday()}
                       {...register('dateOfBirth')}
                       disabled={isSaving}
                   />
@@ -300,6 +319,7 @@ export function FamilyFormModal({
                   <Input
                       id="anniversaryDate"
                       type="date"
+                      max={getToday()}
                       {...register('anniversaryDate')}
                       disabled={isSaving}
                   />
@@ -371,3 +391,5 @@ export function FamilyFormModal({
     </div>
   );
 }
+
+    
