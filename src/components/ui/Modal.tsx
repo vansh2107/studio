@@ -5,7 +5,7 @@ export default function Modal({ open, onClose, children, className }: { open: bo
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
     >
       <div
         className={`bg-card rounded-xl p-6 w-full max-w-2xl shadow-lg border relative ${className}`}
