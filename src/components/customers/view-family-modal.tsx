@@ -116,7 +116,7 @@ export function ViewFamilyModal({
         className="bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh] overflow-hidden w-full max-w-4xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 border-b relative flex justify-between items-center">
+        <div className="p-6 border-b flex justify-between items-start">
           <div className="flex flex-col space-y-1.5">
             <h2 className="text-lg font-semibold leading-none tracking-tight">
               Family Members
@@ -125,14 +125,16 @@ export function ViewFamilyModal({
               Manage members of the {client.lastName} family.
             </p>
           </div>
-           {canCreateMember && (
-              <Button variant="outline" size="sm" onClick={handleAdd}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Member
-              </Button>
-            )}
-           <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-4 right-4 close-icon">
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {canCreateMember && (
+                <Button variant="outline" size="sm" onClick={handleAdd}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Member
+                </Button>
+              )}
+            <Button variant="ghost" size="icon" onClick={onClose} className="close-icon">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
            <Table>
@@ -162,8 +164,8 @@ export function ViewFamilyModal({
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <Button variant="ghost" size="icon" className="group">
-                              <Folder className="h-5 w-5 text-primary group-hover:text-primary-foreground" />
+                          <Button variant="ghost" size="icon" className="group text-primary hover:bg-primary">
+                              <Folder className="h-5 w-5 group-hover:text-primary-foreground" />
                           </Button>
                         </Link>
                       </TableCell>
