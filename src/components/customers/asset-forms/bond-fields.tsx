@@ -51,33 +51,36 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Bond Details</h3>
       
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label>Holder Name</Label>
+          <Controller
+              name="bonds.holderName"
+              control={control}
+              render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <SelectTrigger>
+                  <SelectValue placeholder="Select Member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                  {familyMembers.map((member) => (
+                      <SelectItem key={member.id} value={member.name}>
+                      {member.name}
+                      </SelectItem>
+                  ))}
+                  </SelectContent>
+              </Select>
+              )}
+          />
+            {errors?.holderName && <p className="text-sm text-destructive mt-1">{errors.holderName.message}</p>}
+        </div>
+      </div>
+      
       <JointHolderFields control={control} register={register} errors={errors?.bonds?.jointHolders} fieldPath="bonds.jointHolders" />
 
       <div className="space-y-4 pt-4">
         {/* Row 1 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-              <Label>Family Member</Label>
-              <Controller
-                  name="bonds.familyMember"
-                  control={control}
-                  render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
-                      <SelectTrigger>
-                      <SelectValue placeholder="Select Member" />
-                      </SelectTrigger>
-                      <SelectContent>
-                      {familyMembers.map((member) => (
-                          <SelectItem key={member.id} value={member.name}>
-                          {member.name}
-                          </SelectItem>
-                      ))}
-                      </SelectContent>
-                  </Select>
-                  )}
-              />
-               {errors?.familyMember && <p className="text-sm text-destructive mt-1">{errors.familyMember.message}</p>}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label>Mobile Number</Label>
             <Controller
@@ -161,5 +164,3 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
     </div>
   );
 }
-
-    

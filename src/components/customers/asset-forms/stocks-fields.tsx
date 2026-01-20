@@ -17,37 +17,37 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
       <div>
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Holder Details</h3>
         
-        <JointHolderFields control={control} register={register} errors={errors?.stocks?.jointHolders} fieldPath="stocks.jointHolders" />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-          <div>
-            <Label>Name of the Holder</Label>
-            <Controller
-              name="stocks.holderName"
-              control={control}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value || ''}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Holder" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {familyMembers.map((member) => (
-                      <SelectItem key={member.id} value={member.name}>
-                        {member.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors?.holderName && <p className="text-sm text-destructive">{errors.holderName.message}</p>}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <Label>Holder Name</Label>
+                <Controller
+                name="stocks.holderName"
+                control={control}
+                render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select Holder" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {familyMembers.map((member) => (
+                        <SelectItem key={member.id} value={member.name}>
+                            {member.name}
+                        </SelectItem>
+                        ))}
+                    </SelectContent>
+                    </Select>
+                )}
+                />
+                {errors?.holderName && <p className="text-sm text-destructive">{errors.holderName.message}</p>}
+            </div>
         </div>
 
+        <JointHolderFields control={control} register={register} errors={errors?.stocks?.jointHolders} fieldPath="stocks.jointHolders" />
       </div>
 
       <Separator />
 
+      <h3 className="font-semibold text-lg border-b pb-2 mb-4">DP Details</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>DPID</Label>

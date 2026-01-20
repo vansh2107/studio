@@ -85,6 +85,7 @@ const generalInsuranceSchema = z.object({
   familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("GENERAL INSURANCE"),
   generalInsurance: z.object({
+      holderName: z.string().min(1, "Holder Name is required."),
       category: z.string().min(1, "Category is required."),
       issuer: z.string().min(1, "Issuer is required."),
       planName: z.string().optional(),
@@ -99,7 +100,6 @@ const generalInsuranceSchema = z.object({
       priceWithGST: z.string().optional(),
       eligiblePremium: z.string().optional(),
       referenceAgent: z.string().optional(),
-      familyMember: z.string().min(1, "Family member is required."),
       nominees: nomineesArraySchema,
       jointHolders: z.array(jointHolderSchema).max(3).optional(),
   })
@@ -109,7 +109,7 @@ const physicalToDematSchema = z.object({
   familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("PHYSICAL TO DEMAT"),
   physicalToDemat: z.object({
-      clientName: z.string().min(1, "Client name is required."),
+      holderName: z.string().min(1, "Holder name is required."),
       mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must be exactly 10 digits"),
       emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
       nameOnShare: z.string().optional(),
@@ -127,7 +127,7 @@ const bondsSchema = z.object({
   familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("BONDS"),
   bonds: z.object({
-      familyMember: z.string().min(1, "Family member is required."),
+      holderName: z.string().min(1, "Holder name is required."),
       mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must contain only digits"),
       emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
       issuer: z.string().min(1, "Issuer is required."),
@@ -146,7 +146,7 @@ const fdSchema = z.object({
   familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("FIXED DEPOSITS"),
   fixedDeposits: z.object({
-      investorName: z.string().min(1, "Investor name is required"),
+      holderName: z.string().min(1, "Holder name is required"),
       companyName: z.string().min(1, "Company/Bank Name is required."),
       mobileNumber: z.string().length(10, "Mobile number must be exactly 10 digits").regex(/^[0-9]{10}$/, "Mobile number must contain only digits"),
       emailAddress: z.string().email("Invalid email address").optional().or(z.literal("")),
@@ -168,7 +168,7 @@ const ppfSchema = z.object({
   familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("PPF"),
   ppf: z.object({
-      familyMemberName: z.string().min(1, "Family member is required."),
+      holderName: z.string().min(1, "Holder name is required."),
       bankName: z.string().min(1, "Bank name is required."),
       bankAccountNumber: z.string().min(1, 'Bank account number is required'),
       contributedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
@@ -203,7 +203,7 @@ const lifeInsuranceSchema = z.object({
     familyHead: z.string().min(1, "Family Head is required."),
     assetType: z.literal("LIFE INSURANCE"),
     lifeInsurance: z.object({
-        familyMember: z.string().min(1, "Family member is required."),
+        holderName: z.string().min(1, "Holder name is required."),
         company: z.string().min(1, "Company is required."),
         policyNumber: z.string().min(1, "Policy Number is required."),
         planName: z.string().optional(),
@@ -220,7 +220,7 @@ const mutualFundsSchema = z.object({
   familyHead: z.string().min(1, "Family Head is required."),
   assetType: z.literal("MUTUAL FUNDS"),
   mutualFunds: z.object({
-      familyMember: z.string().min(1, "Family member is required."),
+      holderName: z.string().min(1, "Holder name is required."),
       folioNumber: z.string().min(1, "Folio number is required."),
       amc: z.string().min(1, "AMC is required."),
       schemeName: z.string().min(1, "Scheme name is required."),
@@ -572,7 +572,3 @@ export function AddAssetModal({
     </div>
   );
 }
-
-    
-
-    

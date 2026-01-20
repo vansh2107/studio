@@ -95,7 +95,7 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
 
       {asset.assetType === 'FIXED DEPOSITS' && asset.fixedDeposits && (
         <Section title="Fixed Deposit Details">
-          <DetailItem label="Investor Name">{asset.fixedDeposits.investorName}</DetailItem>
+          <DetailItem label="Holder Name">{asset.fixedDeposits.holderName}</DetailItem>
           <DetailItem label="Bank/Company">{asset.fixedDeposits.companyName}</DetailItem>
           <DetailItem label="FD Name">{asset.fixedDeposits.fdName}</DetailItem>
           <DetailItem label="FD Number">{asset.fixedDeposits.fdNumber}</DetailItem>
@@ -110,6 +110,7 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
 
       {asset.assetType === 'BONDS' && asset.bonds && (
         <Section title="Bonds Details">
+          <DetailItem label="Holder Name">{asset.bonds.holderName}</DetailItem>
           <DetailItem label="Issuer">{asset.bonds.issuer}</DetailItem>
           <DetailItem label="ISIN">{asset.bonds.isin}</DetailItem>
           <DetailItem label="Bond Price">{formatCurrency(asset.bonds.bondPrice)}</DetailItem>
@@ -122,7 +123,7 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
 
       {asset.assetType === 'PPF' && asset.ppf && (
         <Section title="PPF Details">
-          <DetailItem label="Member Name">{asset.ppf.familyMemberName}</DetailItem>
+          <DetailItem label="Holder Name">{asset.ppf.holderName}</DetailItem>
           <DetailItem label="Bank Name">{asset.ppf.bankName}</DetailItem>
           <DetailItem label="Account Number">{asset.ppf.bankAccountNumber}</DetailItem>
           <DetailItem label="Contributed Amount">{formatCurrency(asset.ppf.contributedAmount)}</DetailItem>
@@ -134,6 +135,7 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
 
       {asset.assetType === 'MUTUAL FUNDS' && asset.mutualFunds && (
         <Section title="Mutual Funds Details">
+          <DetailItem label="Holder Name">{asset.mutualFunds.holderName}</DetailItem>
           <DetailItem label="Folio Number">{asset.mutualFunds.folioNumber}</DetailItem>
           <DetailItem label="AMC">{asset.mutualFunds.amc}</DetailItem>
           <DetailItem label="Scheme Name">{asset.mutualFunds.schemeName}</DetailItem>
@@ -143,6 +145,7 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
 
       {asset.assetType === 'LIFE INSURANCE' && asset.lifeInsurance && (
         <Section title="Life Insurance Details">
+          <DetailItem label="Holder Name">{asset.lifeInsurance.holderName}</DetailItem>
           <DetailItem label="Company">{asset.lifeInsurance.company}</DetailItem>
           <DetailItem label="Policy Number">{asset.lifeInsurance.policyNumber}</DetailItem>
           <DetailItem label="Plan Name">{asset.lifeInsurance.planName}</DetailItem>
@@ -155,6 +158,7 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
 
       {asset.assetType === 'GENERAL INSURANCE' && asset.generalInsurance && (
         <Section title="General Insurance Details">
+          <DetailItem label="Holder Name">{asset.generalInsurance.holderName}</DetailItem>
           <DetailItem label="Category">{asset.generalInsurance.category}</DetailItem>
           <DetailItem label="Issuer">{asset.generalInsurance.issuer}</DetailItem>
           <DetailItem label="Plan Name">{asset.generalInsurance.planName}</DetailItem>
@@ -167,7 +171,7 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
 
       {asset.assetType === 'PHYSICAL TO DEMAT' && asset.physicalToDemat && (
         <Section title="Physical to Demat Details">
-          <DetailItem label="Client Name">{asset.physicalToDemat.clientName}</DetailItem>
+          <DetailItem label="Holder Name">{asset.physicalToDemat.holderName}</DetailItem>
           <DetailItem label="Company Name">{asset.physicalToDemat.companyName}</DetailItem>
           <DetailItem label="Folio Number">{asset.physicalToDemat.folioNumber}</DetailItem>
           <DetailItem label="Quantity">{asset.physicalToDemat.quantity}</DetailItem>

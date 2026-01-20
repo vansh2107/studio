@@ -36,13 +36,11 @@ export function MutualFundsFields({ control, errors, familyMembers, register, wa
     <div className="space-y-4">
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Mutual Funds Details</h3>
 
-        <JointHolderFields control={control} register={register} errors={errors?.mutualFunds?.jointHolders} fieldPath="mutualFunds.jointHolders" />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Family Member</Label>
+              <Label>Holder Name</Label>
               <Controller
-                name="mutualFunds.familyMember"
+                name="mutualFunds.holderName"
                 control={control}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value || ''}>
@@ -59,8 +57,13 @@ export function MutualFundsFields({ control, errors, familyMembers, register, wa
                   </Select>
                 )}
               />
-               {errors?.familyMember && <p className="text-sm text-destructive">{errors.familyMember.message}</p>}
+               {errors?.holderName && <p className="text-sm text-destructive">{errors.holderName.message}</p>}
             </div>
+        </div>
+
+        <JointHolderFields control={control} register={register} errors={errors?.mutualFunds?.jointHolders} fieldPath="mutualFunds.jointHolders" />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             <div>
                 <Label>Folio Number</Label>
                 <Controller name="mutualFunds.folioNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
@@ -97,5 +100,3 @@ export function MutualFundsFields({ control, errors, familyMembers, register, wa
     </div>
   );
 }
-
-    

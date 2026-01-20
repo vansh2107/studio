@@ -211,7 +211,7 @@ export interface Task {
 // --- Asset Management Types ---
 
 export interface GeneralInsuranceDetails {
-  familyMember?: string;
+  holderName?: string;
   category?: string;
   issuer?: string;
   planName?: string;
@@ -231,7 +231,7 @@ export interface GeneralInsuranceDetails {
 }
 
 export interface PhysicalToDematDetails {
-    clientName: string;
+    holderName: string;
     mobileNumber: string;
     emailAddress?: string;
     folioNumber?: string;
@@ -245,7 +245,7 @@ export interface PhysicalToDematDetails {
 }
 
 export interface BondDetails {
-    familyMember?: string;
+    holderName?: string;
     mobileNumber: string;
     emailAddress?: string;
     isin?: string;
@@ -260,8 +260,8 @@ export interface BondDetails {
 }
 
 export interface FDDetails {
+    holderName?: string;
     companyName?: string;
-    investorName?: string;
     mobileNumber: string;
     emailAddress?: string;
     fdName?: string;
@@ -278,7 +278,7 @@ export interface FDDetails {
 }
 
 export interface PPFDetails {
-    familyMemberName?: string;
+    holderName?: string;
     contributedAmount?: number;
     balance?: number;
     bankName?: string;
@@ -302,7 +302,7 @@ export interface StocksDetails {
 }
 
 export interface MutualFundsDetails {
-  familyMember?: string;
+  holderName?: string;
   folioNumber: string;
   amc: string;
   schemeName: string;
@@ -312,7 +312,7 @@ export interface MutualFundsDetails {
 }
 
 export interface LifeInsuranceDetails {
-  familyMember?: string;
+  holderName?: string;
   company: string;
   policyNumber: string;
   planName?: string;

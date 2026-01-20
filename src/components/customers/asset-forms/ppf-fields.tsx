@@ -36,15 +36,11 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">PPF Details</h3>
       
-      <JointHolderFields control={control} register={register} errors={errors?.ppf?.jointHolders} fieldPath="ppf.jointHolders" />
-
-      <div className="space-y-4 pt-4">
-        {/* ROW 1 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label>Family Member Name</Label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <Label>Holder Name</Label>
             <Controller
-              name="ppf.familyMemberName"
+              name="ppf.holderName"
               control={control}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value || ''}>
@@ -61,8 +57,15 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
                 </Select>
               )}
             />
-             {errors?.familyMemberName && <p className="text-sm text-destructive mt-1">{errors.familyMemberName.message}</p>}
+             {errors?.holderName && <p className="text-sm text-destructive mt-1">{errors.holderName.message}</p>}
           </div>
+      </div>
+      
+      <JointHolderFields control={control} register={register} errors={errors?.ppf?.jointHolders} fieldPath="ppf.jointHolders" />
+
+      <div className="space-y-4 pt-4">
+        {/* ROW 1 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label>Bank Name</Label>
             <Controller name="ppf.bankName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
@@ -104,5 +107,3 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
     </div>
   );
 }
-
-    

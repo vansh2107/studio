@@ -50,13 +50,11 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Physical to Demat Details</h3>
       
-      <JointHolderFields control={control} register={register} errors={errors?.physicalToDemat?.jointHolders} fieldPath="physicalToDemat.jointHolders" />
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label>Client Name</Label>
+          <Label>Holder Name</Label>
            <Controller
-                name="physicalToDemat.clientName"
+                name="physicalToDemat.holderName"
                 control={control}
                 render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value || ''}>
@@ -73,8 +71,13 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
                 </Select>
                 )}
             />
-            {errors?.physicalToDemat?.clientName && <p className="text-sm text-destructive">{errors.physicalToDemat.clientName.message}</p>}
+            {errors?.physicalToDemat?.holderName && <p className="text-sm text-destructive">{errors.physicalToDemat.holderName.message}</p>}
         </div>
+      </div>
+
+      <JointHolderFields control={control} register={register} errors={errors?.physicalToDemat?.jointHolders} fieldPath="physicalToDemat.jointHolders" />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
         <div>
           <Label>Mobile Number</Label>
           <Controller
