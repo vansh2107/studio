@@ -2,8 +2,17 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { dashboardAssets as allDashboardAssets, getFamilyMembersForClient, clients, documents as mockDocuments } from '@/lib/mock-data';
-import type { User, AssetCategory, DashboardAsset, FamilyMember, Document } from '@/lib/types';
+import { 
+    dashboardAssets as allDashboardAssets, 
+    getFamilyMembersForClient, 
+    clients, 
+    documents as mockDocuments,
+    getAllClients,
+    getRMsForAdmin,
+    getAssociatesForRM,
+    getClientsForAssociate
+} from '@/lib/mock-data';
+import type { User, AssetCategory, DashboardAsset, FamilyMember } from '@/lib/types';
 import { ASSET_CATEGORIES } from '@/lib/constants';
 import { useMemo, useState } from 'react';
 import {
@@ -37,9 +46,9 @@ const categoryIcons: Record<AssetCategory, React.ElementType> = {
 
 export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
-  const [selectedMemberId, setSelectedMemberId] = useState('all');
+  const [selectedId, setSelectedId] = useState('all');
 
-  const familyMembers = useMemo(() => {
+  const familyMembersForModal = useMemo(() => {
     if (user.role !== 'CUSTOMER') return [];
     const head = clients.find(c => c.id === user.id);
     if (!head) return [];
@@ -49,25 +58,83 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
     ];
   }, [user]);
 
-  const familyMembersForDropdown = useMemo(() => {
-    if (user.role !== 'CUSTOMER') return [];
-    const head = clients.find(c => c.id === user.id);
-    if (!head) return [];
-    const members = getFamilyMembersForClient(user.id);
-    return [
-        { id: head.id, name: `${head.firstName} ${head.lastName} (Head)` },
-        ...members.map(m => ({ id: m.id, name: `${m.name} (${m.relation})` }))
-    ];
+  const dropdownOptions = useMemo(() => {
+    if (!user) return [];
+    
+    let options: {id: string, name: string}[] = [];
+
+    switch(user.role) {
+        case 'CUSTOMER': {
+            const head = clients.find(c => c.id === user.id);
+            if (!head) return [];
+            const members = getFamilyMembersForClient(user.id);
+            return [
+                { id: head.id, name: `${head.firstName} ${head.lastName} (Head)` },
+                ...members.map(m => ({ id: m.id, name: `${m.name} (${m.relation})` }))
+            ];
+        }
+        case 'ASSOCIATE':
+            options = getClientsForAssociate(user.id).map(c => ({ id: c.id, name: c.name }));
+            break;
+        case 'RM': {
+            const associates = getAssociatesForRM(user.id);
+            options = associates.flatMap(assoc => getClientsForAssociate(assoc.id)).map(c => ({ id: c.id, name: c.name }));
+            break;
+        }
+        case 'ADMIN': {
+            const rms = getRMsForAdmin(user.id);
+            const associates = rms.flatMap(rm => getAssociatesForRM(rm.id));
+            options = associates.flatMap(assoc => getClientsForAssociate(assoc.id)).map(c => ({ id: c.id, name: c.name }));
+            break;
+        }
+        case 'SUPER_ADMIN':
+            options = getAllClients().map(c => ({ id: c.id, name: c.name }));
+            break;
+    }
+    return options.sort((a,b) => a.name.localeCompare(b.name));
   }, [user]);
 
   const assets: DashboardAsset[] = useMemo(() => {
-      if (user.role !== 'CUSTOMER') return [];
-      const userAssets = allDashboardAssets.filter(a => a.familyHeadId === user.id);
-      if (selectedMemberId === 'all') {
-          return userAssets;
+      if (!user) return [];
+      
+      let scopedClientIds: string[] = [];
+      switch(user.role) {
+        case 'CUSTOMER':
+            scopedClientIds = [user.id];
+            break;
+        case 'ASSOCIATE':
+            scopedClientIds = getClientsForAssociate(user.id).map(c => c.id);
+            break;
+        case 'RM': {
+            const associates = getAssociatesForRM(user.id);
+            scopedClientIds = associates.flatMap(assoc => getClientsForAssociate(assoc.id)).map(c => c.id);
+            break;
+        }
+        case 'ADMIN': {
+            const rms = getRMsForAdmin(user.id);
+            const associates = rms.flatMap(rm => getAssociatesForRM(rm.id));
+            scopedClientIds = associates.flatMap(assoc => getClientsForAssociate(assoc.id)).map(c => c.id);
+            break;
+        }
+        case 'SUPER_ADMIN':
+            scopedClientIds = getAllClients().map(c => c.id);
+            break;
       }
-      return userAssets.filter(a => a.ownerMemberId === selectedMemberId);
-  }, [user, selectedMemberId]);
+      
+      const scopedAssets = allDashboardAssets.filter(a => scopedClientIds.includes(a.familyHeadId));
+
+      if (selectedId === 'all') {
+          return scopedAssets;
+      }
+      
+      if (user.role === 'CUSTOMER') {
+        // for customer, selectedId is a memberId
+        return scopedAssets.filter(a => a.ownerMemberId === selectedId);
+      } else {
+        // for others, selectedId is a clientId (familyHeadId)
+        return scopedAssets.filter(a => a.familyHeadId === selectedId);
+      }
+  }, [user, selectedId]);
 
   const totalAssetValue = useMemo(() => {
     return assets.reduce((sum, asset) => sum + asset.value, 0);
@@ -89,39 +156,45 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   });
 
   const handleCardClick = (category: AssetCategory) => {
-    setSelectedCategory(category);
+    if (user.role === 'CUSTOMER') {
+      setSelectedCategory(category);
+    }
   };
 
   const handleCloseModal = () => {
     setSelectedCategory(null);
   };
+  
+  const isCardClickable = user.role === 'CUSTOMER';
 
   return (
     <>
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Family Dashboard</h1>
-        <div className="flex items-center gap-2">
-            <Label htmlFor="member-filter">View Assets For</Label>
-            <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
-                <SelectTrigger id="member-filter" className="w-[280px]">
-                    <SelectValue placeholder="Select a member" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Members</SelectItem>
-                    {familyMembersForDropdown.map(member => (
-                        <SelectItem key={member.id} value={member.id}>
-                            {member.name}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-        </div>
+        {dropdownOptions.length > 0 && (
+          <div className="flex items-center gap-2">
+              <Label htmlFor="member-filter">View Assets For</Label>
+              <Select value={selectedId} onValueChange={setSelectedId}>
+                  <SelectTrigger id="member-filter" className="w-[280px]">
+                      <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {dropdownOptions.map(option => (
+                          <SelectItem key={option.id} value={option.id}>
+                              {option.name}
+                          </SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+          </div>
+        )}
     </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Total Asset Value</CardTitle>
-          <CardDescription>The total value of all assets held by the selected family member(s).</CardDescription>
+          <CardDescription>The total value of all assets for the selected scope.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-4xl font-bold text-primary">
@@ -133,20 +206,20 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {assetsByCategory.map(({ category, totalValue, count }) => {
           const Icon = categoryIcons[category];
-          const isClickable = count > 0;
+          const canClick = isCardClickable && count > 0;
           return (
             <button
               key={category}
-              disabled={!isClickable}
-              onClick={() => isClickable && handleCardClick(category)}
+              disabled={!canClick}
+              onClick={() => canClick && handleCardClick(category)}
               className={cn(
                 "text-left",
-                isClickable ? "cursor-pointer" : "cursor-default"
+                canClick ? "cursor-pointer" : "cursor-default"
               )}
             >
               <Card className={cn(
                   "flex flex-col h-full", 
-                  isClickable && "hover:bg-muted transition-colors"
+                  canClick && "hover:bg-muted transition-colors"
               )}>
                 <CardHeader className="flex-row items-center gap-4 space-y-0">
                     <div className="p-3 rounded-full bg-primary/10 text-primary">
@@ -175,7 +248,7 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
           <AssetBreakdownModal 
             category={selectedCategory} 
             assets={assets}
-            familyMembers={familyMembers}
+            familyMembers={familyMembersForModal}
             documents={mockDocuments}
             onClose={handleCloseModal}
           />

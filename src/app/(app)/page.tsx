@@ -1,9 +1,6 @@
 
 'use client';
 
-import SuperAdminDashboard from '@/components/dashboards/super-admin-dashboard';
-import AdminDashboard from '@/components/dashboards/admin-dashboard';
-import AssociateDashboard from '@/components/dashboards/associate-dashboard';
 import CustomerDashboard from '@/components/dashboards/customer-dashboard';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,22 +26,6 @@ export default function DashboardPage() {
     );
   }
 
-  const renderDashboard = () => {
-    switch (effectiveUser.role) {
-      case 'SUPER_ADMIN':
-        return <SuperAdminDashboard />;
-      case 'ADMIN':
-        return <AdminDashboard user={effectiveUser} />;
-      case 'RM':
-        return <AdminDashboard user={effectiveUser} />;
-      case 'ASSOCIATE':
-        return <AssociateDashboard user={effectiveUser} />;
-      case 'CUSTOMER':
-        return <CustomerDashboard user={effectiveUser} />;
-      default:
-        return <div>Invalid user role.</div>;
-    }
-  };
-
-  return <div className="space-y-6">{renderDashboard()}</div>;
+  // Always render the unified CustomerDashboard, passing the effectiveUser to it.
+  return <div className="space-y-6"><CustomerDashboard user={effectiveUser} /></div>;
 }
