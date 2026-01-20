@@ -34,6 +34,7 @@ import { Label } from '@/components/ui/label';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { Combobox } from '../ui/combobox';
 import { Badge } from '../ui/badge';
+import { MultiSelectCheckbox } from '../ui/multi-select-checkbox';
 
 interface CustomerDashboardProps {
   user: User;
@@ -53,6 +54,7 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   const { impersonate } = useCurrentUser();
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
   const [selectedId, setSelectedId] = useState('all');
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>(['all']);
 
   const allClientsForSearch = useMemo(() => getAllClients().map(c => ({ label: c.name, value: c.id })), []);
 
@@ -72,16 +74,8 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
     let options: {id: string, name: string}[] = [];
 
     switch(user.role) {
-        case 'CUSTOMER': {
-            const head = clients.find(c => c.id === user.id);
-            if (!head) return [];
-            const members = getFamilyMembersForClient(user.id);
-            return [
-                { id: 'all', name: 'All Members'},
-                { id: head.id, name: `${head.firstName} ${head.lastName} (Head)` },
-                ...members.map(m => ({ id: m.id, name: `${m.name} (${m.relation})` }))
-            ];
-        }
+        case 'CUSTOMER': // This case is now handled by familyDropdownOptions
+            return [];
         case 'ASSOCIATE':
             options = getClientsForAssociate(user.id).map(c => ({ id: c.id, name: c.name }));
             break;
@@ -97,12 +91,23 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
             break;
         }
         case 'SUPER_ADMIN':
-            // The main dropdown is replaced by the client search for Super Admin
             return [];
     }
     
     const sortedOptions = options.sort((a,b) => a.name.localeCompare(b.name));
     return [{ id: 'all', name: 'All Clients'}, ...sortedOptions];
+  }, [user]);
+
+  const familyDropdownOptions = useMemo(() => {
+    if (user.role !== 'CUSTOMER') return [];
+    const head = clients.find(c => c.id === user.id);
+    if (!head) return [];
+    const members = getFamilyMembersForClient(user.id);
+    return [
+        { value: 'all', label: 'All Members'},
+        { value: head.id, label: `${head.firstName} ${head.lastName} (Head)` },
+        ...members.map(m => ({ value: m.id, label: `${m.name} (${m.relation})` }))
+    ];
   }, [user]);
 
   const assets: DashboardAsset[] = useMemo(() => {
@@ -134,18 +139,20 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
       
       let scopedAssets = allDashboardAssets.filter(a => scopedClientIds.includes(a.familyHeadId));
 
+      if (user.role === 'CUSTOMER') {
+        if (selectedMemberIds.includes('all') || selectedMemberIds.length === 0) {
+          return scopedAssets;
+        }
+        return scopedAssets.filter(asset => selectedMemberIds.includes(asset.ownerMemberId));
+      }
+      
       if (selectedId === 'all') {
           return scopedAssets;
       }
       
-      if (user.role === 'CUSTOMER') {
-        // for customer, selectedId is a memberId
-        return scopedAssets.filter(a => a.ownerMemberId === selectedId);
-      } else {
-        // for others, selectedId is a clientId (familyHeadId)
-        return scopedAssets.filter(a => a.familyHeadId === selectedId);
-      }
-  }, [user, selectedId]);
+      // for others, selectedId is a clientId (familyHeadId)
+      return scopedAssets.filter(a => a.familyHeadId === selectedId);
+  }, [user, selectedId, selectedMemberIds]);
 
   const totalNetWorth = useMemo(() => {
     return assets
@@ -177,7 +184,8 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   };
   
   const isCardClickable = true;
-  const showFilterDropdown = user.role !== 'SUPER_ADMIN' && dropdownOptions.length > 0;
+  const showFilterDropdown = user.role !== 'SUPER_ADMIN' && user.role !== 'CUSTOMER' && dropdownOptions.length > 0;
+
 
   return (
     <>
@@ -199,6 +207,16 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
               emptyText='No client found.'
             />
           </div>
+        ) : user.role === 'CUSTOMER' ? (
+             <div className="flex items-center gap-2">
+              <Label htmlFor="member-filter">View Assets For</Label>
+               <MultiSelectCheckbox
+                    options={familyDropdownOptions}
+                    selected={selectedMemberIds}
+                    onChange={setSelectedMemberIds}
+                    className="w-[280px]"
+                />
+            </div>
         ) : showFilterDropdown && (
           <div className="flex items-center gap-2">
               <Label htmlFor="member-filter">View Assets For</Label>
