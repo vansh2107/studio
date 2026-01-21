@@ -533,12 +533,12 @@ export default function TasksPage() {
                                 <TableCell>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild disabled={!canUpdate || !canEditTask}>
-                                            <Badge 
+                                            <Button 
                                                 variant={overdue ? 'destructive' : getStatusBadgeVariant(task.status)}
-                                                className={cn((canUpdate && canEditTask) ? "cursor-pointer" : "cursor-not-allowed")}
+                                                className={cn("px-2 py-1 text-sm", (canUpdate && canEditTask) ? "cursor-pointer" : "cursor-not-allowed")}
                                             >
-                                            {overdue ? 'Overdue' : task.status}
-                                            </Badge>
+                                                {overdue ? 'Overdue' : task.status}
+                                            </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
                                             {task.status === 'Pending' && (

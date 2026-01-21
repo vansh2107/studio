@@ -91,3 +91,22 @@ body {
   background-color: hsl(var(--destructive) / 0.9) !important;
   color: hsl(var(--destructive-foreground)) !important;
 }
+
+/* Global dropdown pointer-events fix */
+[data-radix-popper-content-wrapper] {
+  pointer-events: auto !important;
+  z-index: 10000 !important;
+}
+
+/* Ensure dropdown content is always clickable */
+[data-radix-popover-content],
+[data-radix-dropdown-menu-content],
+[data-radix-select-content] {
+  pointer-events: auto !important;
+  z-index: 10000 !important;
+}
+
+/* Fix for command input in searchable dropdowns */
+[cmdk-input] {
+  pointer-events: auto !important;
+}

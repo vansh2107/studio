@@ -305,8 +305,8 @@ export function FamilyMemberFormModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" onClick={onClose}>
-        <div className="bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh] overflow-hidden w-full max-w-4xl"
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[8000] p-4" onClick={onClose}>
+        <div className="bg-card rounded-xl shadow-lg border flex flex-col max-h-[90vh] overflow-hidden w-full max-w-4xl z-[9000]"
            onClick={(e) => e.stopPropagation()}>
         <div className="p-6 border-b relative">
             <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-4 right-4 close-icon">

@@ -150,7 +150,7 @@ const TheatreMode = ({ src, onClose }: { src: string; onClose: () => void }) => 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 bg-[rgba(0,0,0,0.92)] flex items-center justify-center z-[9999]"
+            className="fixed inset-0 bg-[rgba(0,0,0,0.92)] flex items-center justify-center z-[8000]"
             onClick={onClose}
         >
             <motion.div
@@ -158,7 +158,7 @@ const TheatreMode = ({ src, onClose }: { src: string; onClose: () => void }) => 
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="relative"
+                className="relative z-[9000]"
                 onClick={e => e.stopPropagation()}
             >
                 <Image
