@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -13,7 +14,7 @@ interface TaskOverviewSectionProps {
 }
 
 const statusConfig = {
-  Pending: { icon: Clock, className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700' },
+  Pending: { icon: Clock, className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700' },
   Overdue: { icon: AlertTriangle, className: 'bg-red-100/60 text-red-600 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800/50' },
   'In Progress': { icon: Play, className: 'bg-blue-100/60 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800/50' },
   Completed: { icon: CheckCircle, className: 'bg-green-100/60 text-green-600 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800/50' },
