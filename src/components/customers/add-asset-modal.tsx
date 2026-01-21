@@ -67,19 +67,19 @@ const jointHolderSchema = z.object({
 const nomineeSchema = z.object({
   name: z.string().min(1, 'Nominee name is required.'),
   allocation: z.preprocess(
-    (a) => (a === '' ? undefined : parseFloat(String(a))),
-    z.number().min(0, 'Must be positive').max(100, 'Cannot exceed 100').optional()
+    (a) => (a === '' ? undefined : parseInt(String(a), 10)),
+    z.number({invalid_type_error: 'Allocation must be a whole number.'}).int().min(0, 'Must be positive').max(100, 'Cannot exceed 100').optional()
   ),
   dateOfBirth: z.string().optional().refine(isDateInPast, { message: "Date of Birth cannot be in the future." }),
 });
 
 const nomineesArraySchema = z.array(nomineeSchema).max(3, 'You can add a maximum of 3 nominees.').optional().superRefine((nominees, ctx) => {
-    if (nominees) {
+    if (nominees && nominees.length > 1) {
         const totalAllocation = nominees.reduce((acc, nominee) => acc + (nominee.allocation || 0), 0);
-        if (totalAllocation > 100) {
+        if (totalAllocation !== 100) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: 'Total allocation cannot exceed 100%.',
+                message: 'Total nominee percentage must be exactly 100%',
                 path: [],
             });
         }
@@ -550,7 +550,7 @@ export function AddAssetModal({
             <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
               Close
             </Button>
-            <Button type="submit" disabled={isSaving}>
+            <Button type="submit" disabled={isSaving || Object.keys(errors).length > 0}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Asset
             </Button>

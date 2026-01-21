@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FamilyMember } from '@/lib/types';
-import { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 export function NomineeFields({ control, errors, familyMembers, watch, getValues, setValue, maxNominees = 3, fieldPath = 'nominees' }: { control: any; errors: any; familyMembers: FamilyMember[], watch: any, getValues: any, setValue: any, maxNominees?: number, fieldPath?: string }) {
   const { fields, append, remove } = useFieldArray({
@@ -16,43 +16,43 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
     name: fieldPath as any,
   });
   
-  const [totalAllocation, setTotalAllocation] = useState(0);
   const watchedNominees = watch(fieldPath);
   
+  // Effect to manage allocation for single vs. multiple nominees
   useEffect(() => {
-    const currentAllocation = watchedNominees?.reduce((acc: number, nominee: any) => acc + (parseFloat(nominee.allocation) || 0), 0) || 0;
-    setTotalAllocation(currentAllocation);
-  }, [watchedNominees, fieldPath]);
+    const nominees = getValues(fieldPath) || [];
+    if (nominees.length === 1) {
+      // If there is only one nominee, set their allocation to 100%
+      if (nominees[0].allocation !== 100) {
+        setValue(`${fieldPath}.0.allocation`, 100, { shouldValidate: true });
+      }
+    }
+  }, [fields.length, fieldPath, setValue, getValues]); // Re-run when the number of nominees changes
+
 
   const handleAddNominee = () => {
     if (fields.length < maxNominees) {
+      if (fields.length === 1) {
+        // If we are about to add the second nominee, clear the first one's allocation
+        // to encourage manual distribution.
+        setValue(`${fieldPath}.0.allocation`, '', { shouldValidate: true });
+      }
       append({ name: '', allocation: '', dateOfBirth: '' });
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (['-', '+', 'e', 'E'].includes(e.key)) {
+    // Prevent typing decimals and other non-numeric characters
+    if (['.', '-', '+', 'e', 'E'].includes(e.key)) {
       e.preventDefault();
     }
   };
   
-  const handleAllocationChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    let value = parseFloat(e.target.value);
-    if (isNaN(value) || value < 0) value = 0;
-    if (value > 100) value = 100;
-    
-    const tempNominees = [...(getValues(fieldPath) || [])];
-    tempNominees[index] = { ...tempNominees[index], allocation: value };
-    const tempTotal = tempNominees.reduce((acc, n) => acc + (n.allocation || 0), 0);
+  const totalAllocation = React.useMemo(() => {
+    if (!watchedNominees) return 0;
+    return watchedNominees.reduce((acc: number, nominee: any) => acc + (parseInt(String(nominee.allocation), 10) || 0), 0);
+  }, [watchedNominees]);
 
-    if (tempTotal <= 100) {
-        setValue(`${fieldPath}.${index}.allocation`, value);
-    } else {
-        const clampedValue = value - (tempTotal - 100);
-        setValue(`${fieldPath}.${index}.allocation`, clampedValue < 0 ? 0 : clampedValue);
-    }
-  };
-  
   const getToday = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -92,15 +92,20 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
                 name={`${fieldPath}.${index}.allocation`}
                 control={control}
                 render={({ field }) => (
-                  <Input
+                   <Input
                     type="number"
                     min="0"
                     max="100"
-                    step="any"
+                    step="1"
                     inputMode="numeric"
                     {...field}
                     onKeyDown={handleKeyDown}
-                    onChange={(e) => handleAllocationChange(e, index)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Only allow integers
+                      field.onChange(value.replace(/[^0-9]/g, ''));
+                    }}
+                    readOnly={fields.length === 1}
                   />
                 )}
               />
@@ -132,8 +137,14 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
           </div>
         ))}
         
+         {fields.length > 1 && (
+          <div className={`mt-2 text-sm font-medium text-right pr-12 ${totalAllocation !== 100 ? 'text-destructive' : 'text-muted-foreground'}`}>
+            Total: {totalAllocation}% / 100%
+          </div>
+        )}
+
         {errors && typeof errors !== 'string' && errors.message && (
-            <p className="text-sm text-destructive mt-1">{errors.message}</p>
+            <p className="text-sm text-destructive mt-1 text-center">{errors.message}</p>
         )}
       </div>
       {fields.length < maxNominees && (
@@ -150,5 +161,3 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
     </div>
   );
 }
-
-    
