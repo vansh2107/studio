@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -154,10 +152,46 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
       return scopedAssets.filter(a => a.familyHeadId === selectedId);
   }, [user, selectedId, selectedMemberIds]);
 
-  const totalNetWorth = useMemo(() => {
-    return assets
-        .filter(asset => asset.category !== 'General Insurance')
-        .reduce((sum, asset) => sum + (asset.premiumAmount || asset.value), 0);
+  const {
+    totalNetWorth,
+    lifeInsurancePremium,
+    generalInsurancePremium,
+    cashFlow,
+    totalSumAssured,
+  } = useMemo(() => {
+    const netWorth = assets
+      .filter(asset => asset.category !== 'General Insurance')
+      .reduce((sum, asset) => sum + (asset.premiumAmount || asset.value), 0);
+
+    const liPremium = assets
+      .filter(asset => asset.category === 'Life Insurance')
+      .reduce((sum, asset) => sum + (asset.premiumAmount || 0), 0);
+
+    const giPremium = assets
+      .filter(asset => asset.category === 'General Insurance')
+      .reduce((sum, asset) => sum + asset.value, 0);
+
+    const cashFlowCategories: AssetCategory[] = ['PPF', 'Fixed Deposits', 'Bonds', 'Life Insurance'];
+    const cf = assets
+      .filter(asset => cashFlowCategories.includes(asset.category))
+      .reduce((sum, asset) => {
+        if (asset.category === 'Life Insurance') {
+          return sum + (asset.premiumAmount || 0);
+        }
+        return sum + asset.value;
+      }, 0);
+
+    const sumAssured = assets
+      .filter(asset => asset.category === 'Life Insurance')
+      .reduce((sum, asset) => sum + (asset.sumAssured || 0), 0);
+
+    return {
+      totalNetWorth: netWorth,
+      lifeInsurancePremium: liPremium,
+      generalInsurancePremium: giPremium,
+      cashFlow: cf,
+      totalSumAssured: sumAssured,
+    };
   }, [assets]);
   
   const assetsByCategory = useMemo(() => {
@@ -185,6 +219,19 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   
   const isCardClickable = true;
   const showFilterDropdown = user.role !== 'SUPER_ADMIN' && user.role !== 'CUSTOMER' && dropdownOptions.length > 0;
+
+  const MetricItem = ({ label, value, isPrimary = false }: { label: string, value: string, isPrimary?: boolean }) => (
+    <div className="flex flex-col items-center justify-center text-center flex-1 py-2">
+        <p className={cn(
+            "text-sm text-muted-foreground mb-1",
+            isPrimary && "text-base"
+        )}>{label}</p>
+        <p className={cn(
+            "font-bold",
+            isPrimary ? "text-4xl text-primary" : "text-2xl"
+        )}>{value}</p>
+    </div>
+  );
 
 
   return (
@@ -237,14 +284,14 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
     </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Total Net Worth</CardTitle>
-          <CardDescription>The total net worth of all assets for the selected scope, excluding General Insurance.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-4xl font-bold text-primary">
-            {formatter.format(totalNetWorth)}
-          </div>
+        <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-stretch md:justify-around divide-y md:divide-y-0 md:divide-x divide-border">
+                <MetricItem label="Total Net Worth" value={formatter.format(totalNetWorth)} isPrimary />
+                <MetricItem label="LI Premium" value={formatter.format(lifeInsurancePremium)} />
+                <MetricItem label="GI Premium" value={formatter.format(generalInsurancePremium)} />
+                <MetricItem label="Cash Flow" value={formatter.format(cashFlow)} />
+                <MetricItem label="Total Sum Assured" value={formatter.format(totalSumAssured)} />
+            </div>
         </CardContent>
       </Card>
       
