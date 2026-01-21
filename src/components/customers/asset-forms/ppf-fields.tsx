@@ -3,7 +3,6 @@
 import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Client, FamilyMember } from '@/lib/types';
 import { JointHolderFields } from './joint-holder-fields';
 import { NomineeFields } from './nominee-fields';
@@ -36,38 +35,13 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">PPF Details</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-            <Label>Holder Name</Label>
-            <Controller
-              name="ppf.holderName"
-              control={control}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value || ''}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Member" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {familyMembers.map((member) => (
-                      <SelectItem key={member.id} value={member.name}>
-                        {member.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-             {errors?.ppf?.holderName && <p className="text-sm text-destructive mt-1">{errors.ppf.holderName.message}</p>}
-          </div>
-      </div>
-      
-      <JointHolderFields 
-        control={control} 
-        errors={errors?.ppf?.jointHolders} 
-        fieldPath="ppf.jointHolders"
+      <JointHolderFields
+        control={control}
+        errors={errors}
         familyMembers={familyMembers}
         watch={watch}
         holderNamePath="ppf.holderName"
+        jointHoldersPath="ppf.jointHolders"
       />
 
       <div className="space-y-4 pt-4">

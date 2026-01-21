@@ -1,8 +1,8 @@
+
 'use client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Controller } from 'react-hook-form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Client, FamilyMember } from '@/lib/types';
 import { useEffect, useState, useRef } from 'react';
 import { JointHolderFields } from './joint-holder-fields';
@@ -81,38 +81,13 @@ export function PhysicalToDematFields({ register, errors, control, familyMembers
     <div className="space-y-4">
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Physical to Demat Details</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label>Holder Name</Label>
-           <Controller
-                name="physicalToDemat.holderName"
-                control={control}
-                render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value || ''}>
-                    <SelectTrigger>
-                    <SelectValue placeholder="Select Member" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    {familyMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.name}>
-                          {member.name}
-                        </SelectItem>
-                    ))}
-                    </SelectContent>
-                </Select>
-                )}
-            />
-            {errors?.physicalToDemat?.holderName && <p className="text-sm text-destructive">{errors.physicalToDemat.holderName.message}</p>}
-        </div>
-      </div>
-
-      <JointHolderFields 
-        control={control} 
-        errors={errors?.physicalToDemat?.jointHolders} 
-        fieldPath="physicalToDemat.jointHolders"
+      <JointHolderFields
+        control={control}
+        errors={errors}
         familyMembers={familyMembers}
         watch={watch}
         holderNamePath="physicalToDemat.holderName"
+        jointHoldersPath="physicalToDemat.jointHolders"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">

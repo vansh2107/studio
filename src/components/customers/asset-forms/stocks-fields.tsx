@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -5,7 +6,6 @@ import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Client, FamilyMember } from '@/lib/types';
 import { NomineeFields } from './nominee-fields';
 import { JointHolderFields } from './joint-holder-fields';
@@ -50,38 +50,13 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
       <div>
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Holder Details</h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <Label>Holder Name</Label>
-                <Controller
-                name="stocks.holderName"
-                control={control}
-                render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select Holder" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {familyMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.name}>
-                            {member.name}
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                    </Select>
-                )}
-                />
-                {errors?.stocks?.holderName && <p className="text-sm text-destructive">{errors.stocks.holderName.message}</p>}
-            </div>
-        </div>
-
-        <JointHolderFields 
-            control={control} 
-            errors={errors?.stocks?.jointHolders} 
-            fieldPath="stocks.jointHolders"
+        <JointHolderFields
+            control={control}
+            errors={errors}
             familyMembers={familyMembers}
             watch={watch}
             holderNamePath="stocks.holderName"
+            jointHoldersPath="stocks.jointHolders"
         />
       </div>
 

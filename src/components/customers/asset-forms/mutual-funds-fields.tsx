@@ -3,7 +3,6 @@
 import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Client, FamilyMember } from '@/lib/types';
 import { AMC_NAMES } from '@/lib/constants';
 import { Combobox } from '@/components/ui/combobox';
@@ -36,38 +35,13 @@ export function MutualFundsFields({ control, errors, familyMembers, register, wa
     <div className="space-y-4">
         <h3 className="font-semibold text-lg border-b pb-2 mb-4">Mutual Funds Details</h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Holder Name</Label>
-              <Controller
-                name="mutualFunds.holderName"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Member" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {familyMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.name}>
-                          {member.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-               {errors?.mutualFunds?.holderName && <p className="text-sm text-destructive">{errors.mutualFunds.holderName.message}</p>}
-            </div>
-        </div>
-
-        <JointHolderFields 
-            control={control} 
-            errors={errors?.mutualFunds?.jointHolders} 
-            fieldPath="mutualFunds.jointHolders"
+        <JointHolderFields
+            control={control}
+            errors={errors}
             familyMembers={familyMembers}
             watch={watch}
             holderNamePath="mutualFunds.holderName"
+            jointHoldersPath="mutualFunds.jointHolders"
         />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
