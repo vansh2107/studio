@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useTasks, Task, TaskStatus } from '@/hooks/use-tasks';
+import { useTasks, Task, TaskStatus, TimelineEvent } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Trash2, ChevronRight, Edit, User, Plus, Repeat, AlertCircle, Edit2, CheckCircleIcon } from 'lucide-react';
@@ -40,6 +40,7 @@ import { isOverdue } from '@/lib/is-overdue';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import TaskOverview from '@/components/dashboards/task-overview';
+import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 
 
 const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: Task; canUpdate: boolean; canEditTask: boolean, onEdit: (task: Task) => void }) => {
@@ -86,18 +87,29 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
     if (['pending', 'in progress', 'no'].includes(lowerCaseStatus)) return 'secondary';
     return 'outline';
   };
-
-  const eventIcons: { [key: string]: React.ElementType } = {
-      TASK_CREATED: Plus,
-      STATUS_CHANGED: Edit2,
-      ASSIGNED_RM: User,
-      TASK_RM_ASSIGNED: User,
-      TASK_COMPLETED: CheckCircleIcon,
-      TASK_REOPENED: Repeat,
-      FIELD_UPDATED: Edit2,
-      'default': AlertCircle,
-  };
   
+  const eventVisuals: { [key: string]: { icon: React.ElementType, color: string } } = {
+      TASK_CREATED: { icon: Plus, color: 'bg-primary' },
+      STATUS_CHANGED: { icon: Edit2, color: 'bg-blue-500' },
+      ASSIGNED_RM: { icon: User, color: 'bg-gray-500' },
+      TASK_RM_ASSIGNED: { icon: User, color: 'bg-gray-500' },
+      TASK_COMPLETED: { icon: CheckCircleIcon, color: 'bg-green-500' },
+      TASK_REOPENED: { icon: Repeat, color: 'bg-orange-500' },
+      FIELD_UPDATED: { icon: Edit2, color: 'bg-gray-500' },
+      default: { icon: AlertCircle, color: 'bg-gray-500' },
+  };
+
+  const getEventVisuals = (event: TimelineEvent) => {
+      let visuals = eventVisuals[event.eventType] || eventVisuals.default;
+      if (event.eventType === 'STATUS_CHANGED') {
+          const newStatus = event.description.split(' to ')[1]?.replace(/"/g, '');
+          if (newStatus === 'Completed') return { icon: CheckCircleIcon, color: 'bg-green-500' };
+          if (newStatus === 'Cancelled' || newStatus === 'Rejected') return { icon: AlertCircle, color: 'bg-destructive' };
+      }
+      return visuals;
+  }
+
+  const sortedEvents = (task.timelineEvents || []).slice().sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   return (
     <div className="bg-muted/30 p-6 space-y-6 relative">
@@ -114,34 +126,48 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
       )}
 
       <Section title="Task History">
-        <div className="col-span-full max-h-96 overflow-y-auto space-y-6 pr-4">
-          {task.timelineEvents && task.timelineEvents.length > 0 ? (
-            task.timelineEvents
-              .slice()
-              .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-              .map((event, index) => {
-                const Icon = eventIcons[event.eventType] || eventIcons.default;
-                return (
-                  <div key={event.id} className="relative flex items-start gap-4">
-                    {index !== task.timelineEvents!.length - 1 && (
-                      <div className="absolute left-4 top-5 -bottom-5 w-px bg-border" />
-                    )}
-                    <div className="relative z-10 mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary">
-                      <Icon className="h-4 w-4 text-secondary-foreground" />
-                    </div>
-                    <div>
-                      <p className="font-semibold">{event.title}</p>
-                      <p className="text-sm text-muted-foreground">{event.description}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {format(parseISO(event.timestamp), 'dd MMM yyyy, h:mm a')} by {event.performedBy}
-                      </p>
-                    </div>
-                  </div>
-                )
-              })
-          ) : (
-            <p className="text-sm text-muted-foreground">No history for this task.</p>
-          )}
+        <div className="col-span-full">
+            <ScrollArea className="w-full pb-4">
+                <div className="flex p-4 items-start">
+                    {sortedEvents.map((event, index) => {
+                        const { icon: Icon, color } = getEventVisuals(event);
+                        return (
+                            <React.Fragment key={event.id}>
+                                <div className="flex flex-col items-center text-center w-40 flex-shrink-0">
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger>
+                                          <div className={cn("flex h-12 w-12 items-center justify-center rounded-full border-4 border-muted/50", color)}>
+                                              <Icon className="h-6 w-6 text-white" />
+                                          </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="font-bold">{event.title}</p>
+                                            <p>{event.description}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+
+                                    <p className="mt-2 font-semibold text-sm truncate">{event.title}</p>
+                                    <p className="text-xs text-muted-foreground mt-1 h-8 text-ellipsis overflow-hidden">
+                                      {event.description}
+                                    </p>
+                                    <p className="text-xs font-semibold text-muted-foreground mt-2">
+                                        {format(parseISO(event.timestamp), 'dd MMM, h:mm a')}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">by {event.performedBy}</p>
+                                </div>
+
+                                {index < sortedEvents.length - 1 && (
+                                    <div className="w-24 h-px bg-border mt-6 flex-shrink-0" />
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+                </div>
+                <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+             {sortedEvents.length === 0 && <p className="text-sm text-muted-foreground px-4">No history for this task.</p>}
         </div>
       </Section>
       
