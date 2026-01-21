@@ -1,9 +1,8 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Table,
@@ -44,6 +43,8 @@ import { cn } from '@/lib/utils';
 import { isOverdue } from '@/lib/is-overdue';
 import { getAllRMs, getAllAssociates, getAllAdmins, getAllClients, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TASK_STATUSES } from '@/lib/constants';
 
 
 const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: Task; canUpdate: boolean; canEditTask: boolean, onEdit: (task: Task) => void }) => {
@@ -320,6 +321,7 @@ export default function TasksPage() {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const statusFilter = searchParams.get('status');
 
   const canView = hasPermission('TASK', 'view');
@@ -499,6 +501,16 @@ export default function TasksPage() {
     XLSX.writeFile(workbook, "Tasks.xlsx");
   };
 
+  const handleFilterChange = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === 'All') {
+        params.delete('status');
+    } else {
+        params.set('status', value);
+    }
+    router.push(`/tasks?${params.toString()}`);
+  };
+
   const terminalStatuses: TaskStatus[] = ['Completed', 'Cancelled', 'Rejected'];
 
   if (!canView) {
@@ -546,10 +558,28 @@ export default function TasksPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>{statusFilter ? 'Filtered Tasks' : 'All Tasks'}</CardTitle>
-            <CardDescription>
-              This is a prototype. Tasks are stored in memory and will be cleared on page refresh.
-            </CardDescription>
+            <div className="flex items-center justify-between">
+                <div className="space-y-1.5">
+                    <CardTitle>{statusFilter ? 'Filtered Tasks' : 'All Tasks'}</CardTitle>
+                    <CardDescription>
+                    This is a prototype. Tasks are stored in memory and will be cleared on page refresh.
+                    </CardDescription>
+                </div>
+                <div className="w-full max-w-[200px]">
+                    <Select onValueChange={handleFilterChange} value={statusFilter || 'All'}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Filter by status..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All">All Statuses</SelectItem>
+                            <SelectItem value="Overdue">Overdue</SelectItem>
+                            {TASK_STATUSES.map(status => (
+                                <SelectItem key={status} value={status}>{status}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
           </CardHeader>
           <CardContent>
             <Table>
