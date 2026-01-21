@@ -52,7 +52,7 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
   const { impersonate } = useCurrentUser();
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
   const [selectedId, setSelectedId] = useState('all');
-  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>(['all']);
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
 
   const allClientsForSearch = useMemo(() => getAllClients().map(c => ({ label: c.name, value: c.id })), []);
 
@@ -138,7 +138,10 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
       let scopedAssets = allDashboardAssets.filter(a => scopedClientIds.includes(a.familyHeadId));
 
       if (user.role === 'CUSTOMER') {
-        if (selectedMemberIds.includes('all') || selectedMemberIds.length === 0) {
+        if (selectedMemberIds.length === 0) {
+            return [];
+        }
+        if (selectedMemberIds.includes('all')) {
           return scopedAssets;
         }
         return scopedAssets.filter(asset => selectedMemberIds.includes(asset.ownerMemberId));

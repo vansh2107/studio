@@ -20,7 +20,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Badge } from "./badge"
-import { Checkbox } from "./checkbox"
 
 export interface Option {
   value: string
@@ -120,12 +119,8 @@ function MultiSelectCheckbox({
                 onSelect={() => handleSelect("all")}
                 className="flex items-center"
               >
-                <Checkbox
-                  id="select-all"
-                  checked={isAllSelected}
-                  className="mr-2"
-                />
-                <label htmlFor="select-all" className="cursor-pointer flex-1">All Members</label>
+                <span className="flex-1">All Members</span>
+                <Check className={cn("h-4 w-4", isAllSelected ? "opacity-100" : "opacity-0")} />
               </CommandItem>
               {options.filter(option => option.value !== 'all').map((option) => {
                 const isSelected = isAllSelected || selected.includes(option.value)
@@ -135,12 +130,8 @@ function MultiSelectCheckbox({
                     onSelect={() => handleSelect(option.value)}
                     className="flex items-center"
                   >
-                    <Checkbox
-                      id={option.value}
-                      checked={isSelected}
-                      className="mr-2"
-                    />
-                     <label htmlFor={option.value} className="cursor-pointer flex-1">{option.label}</label>
+                    <span className="flex-1">{option.label}</span>
+                    <Check className={cn("h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
                   </CommandItem>
                 )
               })}
