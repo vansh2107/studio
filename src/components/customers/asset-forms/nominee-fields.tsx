@@ -126,7 +126,6 @@ export function NomineeFields({ control, errors, familyMembers, getValues, setVa
                     max={getToday()}
                     {...field}
                     value={field.value || ''}
-                    className="bg-muted/50"
                   />
                 )}
               />
