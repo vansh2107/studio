@@ -9,9 +9,10 @@ import {
     getAllClients,
     getRMsForAdmin,
     getAssociatesForRM,
-    getClientsForAssociate
+    getClientsForAssociate,
+    getAllRMs
 } from '@/lib/mock-data';
-import type { User, AssetCategory, DashboardAsset, FamilyMember } from '@/lib/types';
+import type { User, AssetCategory, DashboardAsset, FamilyMember, Task } from '@/lib/types';
 import { ASSET_CATEGORIES } from '@/lib/constants';
 import { useMemo, useState } from 'react';
 import {
@@ -33,9 +34,11 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { Combobox } from '../ui/combobox';
 import { Badge } from '../ui/badge';
 import { MultiSelectCheckbox } from '../ui/multi-select-checkbox';
+import { TaskOverviewSection } from './task-overview-section';
 
 interface CustomerDashboardProps {
   user: User;
+  allTasks: Task[];
 }
 
 const categoryIcons: Record<AssetCategory, React.ElementType> = {
@@ -48,7 +51,7 @@ const categoryIcons: Record<AssetCategory, React.ElementType> = {
   'Bonds': FileText,
 };
 
-export default function CustomerDashboard({ user }: CustomerDashboardProps) {
+export default function CustomerDashboard({ user, allTasks }: CustomerDashboardProps) {
   const { impersonate } = useCurrentUser();
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
   const [selectedId, setSelectedId] = useState('all');
@@ -154,6 +157,27 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
       // for others, selectedId is a clientId (familyHeadId)
       return scopedAssets.filter(a => a.familyHeadId === selectedId);
   }, [user, selectedId, selectedMemberIds]);
+
+  const allRms = useMemo(() => getAllRMs(), []);
+  const scopedTasks = useMemo(() => {
+      if (!user) return [];
+      if (user.role === 'SUPER_ADMIN') {
+          return allTasks;
+      }
+
+      return allTasks.filter(task => {
+          const serviceableRm = allRms.find(rm => rm.name === task.serviceableRM);
+
+          return (
+              task.adminId === user.id ||
+              task.rmId === user.id ||
+              task.associateId === user.id ||
+              (serviceableRm && serviceableRm.id === user.id) ||
+              task.clientId === user.id ||
+              task.familyHeadId === user.id
+          );
+      });
+  }, [allTasks, user, allRms]);
 
   const {
     totalNetWorth,
@@ -350,6 +374,8 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
             </CardContent>
         </Card>
       </div>
+
+      <TaskOverviewSection tasks={scopedTasks} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <Card>

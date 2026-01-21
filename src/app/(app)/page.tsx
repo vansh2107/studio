@@ -1,14 +1,15 @@
-
 'use client';
 
 import CustomerDashboard from '@/components/dashboards/customer-dashboard';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTasks } from '@/hooks/use-tasks';
 
 export default function DashboardPage() {
-  const { effectiveUser } = useCurrentUser();
+  const { effectiveUser, isLoading } = useCurrentUser();
+  const { tasks } = useTasks();
 
-  if (!effectiveUser) {
+  if (isLoading || !effectiveUser) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-1/4" />
@@ -27,5 +28,5 @@ export default function DashboardPage() {
   }
 
   // Always render the unified CustomerDashboard, passing the effectiveUser to it.
-  return <div className="space-y-6"><CustomerDashboard user={effectiveUser} /></div>;
+  return <div className="space-y-6"><CustomerDashboard user={effectiveUser} allTasks={tasks} /></div>;
 }
