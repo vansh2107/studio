@@ -12,7 +12,7 @@ import { JointHolderFields } from './joint-holder-fields';
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 
-export function StocksFields({ control, register, errors, familyMembers, watch, getValues, setValue }: { control: any; register: any; errors: any; familyMembers: (Client | FamilyMember)[], watch: any; getValues: any; setValue: any; }) {
+export function StocksFields({ control, register, errors, familyMembers, watch, getValues, setValue, trigger }: { control: any; register: any; errors: any; familyMembers: (Client | FamilyMember)[], watch: any; getValues: any; setValue: any; trigger: any; }) {
   const [isMobileReadOnly, setIsMobileReadOnly] = useState(true);
   const [isEmailReadOnly, setIsEmailReadOnly] = useState(true);
 
@@ -150,7 +150,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
 
       <Separator />
 
-      <NomineeFields control={control} errors={errors?.stocks?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="stocks.nominees" />
+      <NomineeFields control={control} errors={errors?.stocks?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="stocks.nominees" trigger={trigger} />
     </div>
   );
 }

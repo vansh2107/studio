@@ -12,7 +12,7 @@ import { Combobox } from '@/components/ui/combobox';
 import { JointHolderFields } from './joint-holder-fields';
 import { NomineeFields } from './nominee-fields';
 
-export function GeneralInsuranceFields({ control, errors, familyMembers, register, watch, getValues, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any }) {
+export function GeneralInsuranceFields({ control, errors, familyMembers, register, watch, getValues, setValue, trigger }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any, trigger: any }) {
 
   const selectedCategory = useWatch({
     control,
@@ -167,7 +167,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
               </div>
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="generalInsurance.nominees" />
+        <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="generalInsurance.nominees" trigger={trigger} />
     </div>
   );
 }

@@ -361,6 +361,7 @@ export function AddAssetModal({
     getValues,
     setValue,
     reset,
+    trigger,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(assetFormSchema),
@@ -523,14 +524,14 @@ export function AddAssetModal({
                 />
               </div>
 
-              {assetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'GENERAL INSURANCE' && <GeneralInsuranceFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} trigger={trigger} />}
               {assetType === 'PHYSICAL TO DEMAT' && <PhysicalToDematFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} setValue={setValue} />}
-              {assetType === 'BONDS' && <BondFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'MUTUAL FUNDS' && <MutualFundsFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
-              {assetType === 'LIFE INSURANCE' && <LifeInsuranceFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} />}
+              {assetType === 'BONDS' && <BondFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} trigger={trigger} />}
+              {assetType === 'FIXED DEPOSITS' && <FDFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} trigger={trigger} />}
+              {assetType === 'PPF' && <PPFFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} trigger={trigger} />}
+              {assetType === 'STOCKS' && <StocksFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} trigger={trigger} />}
+              {assetType === 'MUTUAL FUNDS' && <MutualFundsFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} trigger={trigger} />}
+              {assetType === 'LIFE INSURANCE' && <LifeInsuranceFields control={control} register={register} errors={errors as any} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} trigger={trigger} />}
               
                {assetType && !showDocuments && (
                 <Button

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 
 
-export function BondFields({ control, errors, familyMembers, watch, register, getValues, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], watch: any, register: any, getValues: any, setValue: any }) {
+export function BondFields({ control, errors, familyMembers, watch, register, getValues, setValue, trigger }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], watch: any, register: any, getValues: any, setValue: any, trigger: any }) {
   const [isMobileReadOnly, setIsMobileReadOnly] = useState(true);
   const [isEmailReadOnly, setIsEmailReadOnly] = useState(true);
 
@@ -199,7 +199,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
           </div>
         </div>
         
-        <NomineeFields control={control} errors={errors?.bonds?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="bonds.nominees" />
+        <NomineeFields control={control} errors={errors?.bonds?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="bonds.nominees" trigger={trigger} />
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import { Combobox } from '@/components/ui/combobox';
 import { JointHolderFields } from './joint-holder-fields';
 import { NomineeFields } from './nominee-fields';
 
-export function LifeInsuranceFields({ control, errors, familyMembers, register, watch, getValues, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any }) {
+export function LifeInsuranceFields({ control, errors, familyMembers, register, watch, getValues, setValue, trigger }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any, trigger: any }) {
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -92,7 +92,7 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
                 {errors?.lifeInsurance?.policyEndDate && <p className="text-sm text-destructive mt-1">{errors.lifeInsurance.policyEndDate.message}</p>}
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.lifeInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="lifeInsurance.nominees" />
+        <NomineeFields control={control} errors={errors?.lifeInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="lifeInsurance.nominees" trigger={trigger} />
     </div>
   );
 }

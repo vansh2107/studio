@@ -7,7 +7,7 @@ import { Client, FamilyMember } from '@/lib/types';
 import { JointHolderFields } from './joint-holder-fields';
 import { NomineeFields } from './nominee-fields';
 
-export function PPFFields({ control, errors, familyMembers, register, watch, getValues, setValue }: { control: any; errors: any; familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any; }) {
+export function PPFFields({ control, errors, familyMembers, register, watch, getValues, setValue, trigger }: { control: any; errors: any; familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any; trigger: any; }) {
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -84,7 +84,7 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
         </div>
       </div>
 
-      <NomineeFields control={control} errors={errors?.ppf?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="ppf.nominees" />
+      <NomineeFields control={control} errors={errors?.ppf?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="ppf.nominees" trigger={trigger} />
     </div>
   );
 }

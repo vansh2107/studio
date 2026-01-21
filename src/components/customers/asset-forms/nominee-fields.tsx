@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Client, FamilyMember } from '@/lib/types';
 import React, { useEffect } from 'react';
 
-export function NomineeFields({ control, errors, familyMembers, getValues, setValue, maxNominees = 3, fieldPath = 'nominees' }: { control: any; errors: any; familyMembers: (Client | FamilyMember)[], getValues: any, setValue: any, maxNominees?: number, fieldPath?: string }) {
+export function NomineeFields({ control, errors, familyMembers, getValues, setValue, maxNominees = 3, fieldPath = 'nominees', trigger }: { control: any; errors: any; familyMembers: (Client | FamilyMember)[], getValues: any, setValue: any, maxNominees?: number, fieldPath?: string, trigger?: any }) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: fieldPath as any,
@@ -18,16 +18,22 @@ export function NomineeFields({ control, errors, familyMembers, getValues, setVa
   
   const watchedNominees = useWatch({ control, name: fieldPath });
   
-  // Effect to manage allocation for single vs. multiple nominees
+  // Effect to manage allocation and trigger validation
   useEffect(() => {
     const nominees = getValues(fieldPath) || [];
     if (nominees.length === 1) {
-      // If there is only one nominee, set their allocation to 100%
+      // If there is only one nominee, and allocation is not 100, set it.
       if (nominees[0].allocation !== 100) {
         setValue(`${fieldPath}.0.allocation`, 100, { shouldValidate: true });
       }
     }
-  }, [fields.length, fieldPath, setValue, getValues]);
+    
+    // Always trigger validation on the parent field array when its content changes.
+    // This is crucial for the superRefine check to re-run.
+    if (trigger) {
+        trigger(fieldPath);
+    }
+  }, [watchedNominees, getValues, setValue, trigger, fieldPath]);
 
     // Effect to auto-fill DOB
   useEffect(() => {

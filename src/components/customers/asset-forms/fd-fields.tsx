@@ -10,7 +10,7 @@ import { NomineeFields } from './nominee-fields';
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 
-export function FDFields({ control, errors, familyMembers, register, watch, getValues, setValue }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any }) {
+export function FDFields({ control, errors, familyMembers, register, watch, getValues, setValue, trigger }: { control: any, errors: any, familyMembers: (Client | FamilyMember)[], register: any, watch: any, getValues: any, setValue: any, trigger: any }) {
   const [isMobileReadOnly, setIsMobileReadOnly] = useState(true);
   const [isEmailReadOnly, setIsEmailReadOnly] = useState(true);
 
@@ -201,7 +201,7 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
                 {errors?.fixedDeposits?.maturityDate && <p className="text-sm text-destructive mt-1">{errors.fixedDeposits.maturityDate.message}</p>}
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="fixedDeposits.nominees" />
+        <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="fixedDeposits.nominees" trigger={trigger} />
     </div>
   );
 }
