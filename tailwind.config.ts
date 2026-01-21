@@ -15,8 +15,8 @@ export default {
         'orange-gradient-horizontal': 'linear-gradient(180deg, #f8a63c 0%, #e87500 100%)',
       },
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['"Space Grotesk"', 'sans-serif'],
+        body: ['Roboto', 'sans-serif'],
+        headline: ['Roboto', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
