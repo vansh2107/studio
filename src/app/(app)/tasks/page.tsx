@@ -15,7 +15,7 @@ import {
 import { useTasks } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, ChevronRight, Edit, Download } from 'lucide-react';
+import { Plus, Trash2, ChevronRight, Edit, Download, UserCheck, Play, UserCog, CheckCircle, PauseCircle, XCircle, Check } from 'lucide-react';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import type { TaskFormData } from '@/components/tasks/create-task-modal';
 import { Task, TaskStatus } from '@/hooks/use-tasks';
@@ -44,6 +44,37 @@ import { cn } from '@/lib/utils';
 import { isOverdue } from '@/lib/is-overdue';
 import { getAllRMs, getAllAssociates, getAllAdmins, getAllClients, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import type { User } from '@/lib/types';
+
+const TimelineStep = ({ label, value, data, isActive, isCompleted, isFirst, isLast, icon: Icon, isHold }: { label: string; value: React.ReactNode; data?: React.ReactNode; isActive: boolean; isCompleted: boolean; isFirst: boolean, isLast: boolean, icon: React.ElementType, isHold?: boolean }) => {
+    const nodeColor = isHold ? 'bg-orange-500 border-orange-500' : isActive ? 'bg-primary border-primary' : isCompleted ? 'bg-green-600 border-green-600' : 'bg-card border-border';
+    const textColor = isActive ? 'text-primary' : isHold ? 'text-orange-500' : 'text-foreground';
+    const lineColor = isCompleted || isActive || isHold ? 'bg-primary' : 'bg-border';
+
+    return (
+        <div className={cn("relative flex md:flex-col items-center flex-1 w-full md:w-auto", isFirst && 'items-start', isLast && 'items-end md:items-center')}>
+            {!isFirst && <div className={cn("absolute h-full md:h-0.5 md:w-full md:top-4 md:-right-1/2 left-4 md:left-auto w-0.5", lineColor)}></div>}
+            
+            <div className="relative z-10 flex flex-col items-center">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center border-2 shrink-0", nodeColor)}>
+                             {isCompleted ? <Check className="w-5 h-5 text-white" /> : <Icon className={cn("w-5 h-5", (isActive || isHold) ? 'text-white' : 'text-muted-foreground')} />}
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p className="font-semibold">{label}</p>
+                        {data && <p>{data}</p>}
+                        {value && <p className="text-xs">{value}</p>}
+                    </TooltipContent>
+                </Tooltip>
+                 <div className="text-center mt-2 absolute md:relative top-full md:top-auto pt-1 md:pt-0">
+                    <p className={cn("font-semibold text-sm", textColor)}>{label}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{data}</p>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 
 const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: Task; canUpdate: boolean; canEditTask: boolean, onEdit: (task: Task) => void }) => {
@@ -77,6 +108,15 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
       return dateString;
     }
   };
+  
+  const formatShortDate = (dateString?: string | null) => {
+    if (!dateString) return null;
+    try {
+      return format(parseISO(dateString), 'dd MMM, h:mm a');
+    } catch {
+      return dateString;
+    }
+  };
 
   const formatCurrency = (amount?: number) => {
     if (amount === undefined || amount === null) return '—';
@@ -90,13 +130,34 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
     if (['pending', 'in progress', 'no', 'hold'].includes(lowerCaseStatus)) return 'secondary';
     return 'outline';
   };
+  
+  const allSteps = [
+      { key: 'created', label: 'Created', value: formatShortDate(task.createDate), icon: Plus, isApplicable: !!task.createDate, data: `By System`},
+      { key: 'assigned', label: 'Assigned RM', value: task.rmName, icon: UserCheck, isApplicable: !!task.rmName },
+      { key: 'inProgress', label: 'In Progress', value: formatShortDate(task.startDate), icon: Play, isApplicable: !!task.startDate },
+      { key: 'taskRm', label: 'Task RM', value: task.taskRM, icon: UserCog, isApplicable: !!task.taskRM, data: task.taskRMStatus },
+      { key: 'completed', label: 'Completed', value: formatShortDate(task.completeDate), icon: CheckCircle, isApplicable: task.status === 'Completed' },
+      { key: 'cancelled', label: 'Cancelled', value: formatShortDate(task.completeDate), icon: XCircle, isApplicable: task.status === 'Cancelled' },
+      { key: 'rejected', label: 'Rejected', value: formatShortDate(task.completeDate), icon: XCircle, isApplicable: task.status === 'Rejected' },
+      { key: 'onHold', label: 'On Hold', value: 'Task is on hold', icon: PauseCircle, isApplicable: task.taskRMStatus === 'Hold' },
+    ];
+  
+  const visibleSteps = allSteps.filter(step => step.isApplicable && step.key !== 'onHold');
+  const isHold = task.taskRMStatus === 'Hold';
 
-  const TimelineStep = ({ label, value, isActive }: { label: string; value: string | null | undefined; isActive: boolean }) => (
-    <div className="flex-1 text-center">
-        <p className={cn("text-xs font-semibold uppercase tracking-wider", isActive ? "text-primary" : "text-muted-foreground")}>{label}</p>
-        <p className={cn("text-sm", isActive ? "text-foreground" : "text-muted-foreground")}>{isActive ? value : '—'}</p>
-    </div>
-  );
+  let activeStepIndex = 0;
+  if (isHold) {
+     activeStepIndex = visibleSteps.findIndex(s => s.key === 'taskRm');
+  } else if (['Completed', 'Cancelled', 'Rejected'].includes(task.status)) {
+    activeStepIndex = visibleSteps.length -1;
+  } else if (task.status === 'In Progress') {
+    activeStepIndex = visibleSteps.findIndex(s => s.key === 'taskRm' || s.key === 'inProgress');
+    if (activeStepIndex === -1) activeStepIndex = visibleSteps.findIndex(s => s.key === 'assigned');
+  } else if (task.status === 'Pending') {
+    activeStepIndex = visibleSteps.findIndex(s => s.key === 'assigned');
+    if (activeStepIndex === -1) activeStepIndex = 0;
+  }
+  if (activeStepIndex < 0) activeStepIndex = 0;
 
   return (
     <div className="bg-muted/30 p-6 space-y-6 relative">
@@ -111,6 +172,26 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
           Edit Task
         </Button>
       )}
+      
+      <Section title="Timeline">
+         <div className="col-span-full flex flex-col md:flex-row items-stretch md:items-start justify-center gap-4 py-4 min-h-[120px]">
+            {visibleSteps.map((step, index) => (
+                <TimelineStep
+                    key={step.key}
+                    label={step.label}
+                    value={step.value}
+                    data={step.data}
+                    isActive={index === activeStepIndex}
+                    isCompleted={index < activeStepIndex}
+                    isHold={isHold && index === activeStepIndex}
+                    isFirst={index === 0}
+                    isLast={index === visibleSteps.length - 1}
+                    icon={step.icon}
+                />
+            ))}
+        </div>
+      </Section>
+      
       <Section title="General Information">
         <DetailItem label="Task ID">{task.id}</DetailItem>
         <DetailItem label="Category">{task.category}</DetailItem>
@@ -135,16 +216,6 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
                 <Badge variant={getStatusBadgeVariant(task.taskRMStatus)}>{task.taskRMStatus}</Badge>
             </DetailItem>
          )}
-      </Section>
-
-      <Section title="Timeline">
-        <div className="col-span-full flex items-start justify-between gap-4 border p-4 rounded-md">
-            <TimelineStep label="Created" value={formatDate(task.createDate)} isActive={!!task.createDate} />
-            <TimelineStep label="Assigned RM" value={task.rmName} isActive={!!task.rmName} />
-            <TimelineStep label="In Progress" value={formatDate(task.startDate)} isActive={!!task.startDate} />
-            <TimelineStep label="Task RM Assigned" value={task.taskRM} isActive={!!task.taskRM} />
-            <TimelineStep label="Completed" value={formatDate(task.completeDate)} isActive={!!task.completeDate} />
-        </div>
       </Section>
 
       {task.category === 'Mutual Funds' && task.mutualFund && (
