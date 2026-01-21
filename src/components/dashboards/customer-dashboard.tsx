@@ -301,41 +301,39 @@ export default function CustomerDashboard({ user }: CustomerDashboardProps) {
         </Card>
       </div>
 
-       {user.role === 'SUPER_ADMIN' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Compliance</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ul className="space-y-3">
-                        {['Address Update', 'Email Update', 'Mobile Number Update', 'Nominee Update', 'PAN Card Update', 'Name Change'].map(item => (
-                            <li key={item} className="flex justify-between items-center text-sm font-medium">
-                                <span>{item}</span>
-                                <Badge variant="secondary" className="cursor-pointer">{Math.floor(Math.random() * 15) + 1}</Badge>
-                            </li>
-                        ))}
-                    </ul>
-                </CardContent>
-            </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <Card>
+              <CardHeader>
+                  <CardTitle>Compliance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  <ul className="space-y-3">
+                      {['Address Update', 'Email Update', 'Mobile Number Update', 'Nominee Update', 'PAN Card Update', 'Name Change'].map(item => (
+                          <li key={item} className="flex justify-between items-center text-sm font-medium p-2 -m-2 rounded-md hover:bg-muted cursor-pointer transition-colors" role="button" tabIndex={0}>
+                              <span>{item}</span>
+                              <Badge variant="secondary">{Math.floor(Math.random() * 15) + 1}</Badge>
+                          </li>
+                      ))}
+                  </ul>
+              </CardContent>
+          </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Alerts</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ul className="space-y-3">
-                         {['FD Maturity', 'Insurance Renewal', 'Insurance Maturity', 'Bond Maturity', 'Upcoming Birthday', 'Minor to Major'].map(item => (
-                            <li key={item} className="flex justify-between items-center text-sm font-medium">
-                                <span>{item}</span>
-                                 <Badge variant="destructive" className="cursor-pointer">{Math.floor(Math.random() * 8)}</Badge>
-                            </li>
-                        ))}
-                    </ul>
-                </CardContent>
-            </Card>
-        </div>
-      )}
+          <Card>
+              <CardHeader>
+                  <CardTitle>Alerts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  <ul className="space-y-3">
+                        {['FD Maturity', 'Insurance Renewal', 'Insurance Maturity', 'Bond Maturity', 'Upcoming Birthday', 'Minor to Major'].map(item => (
+                          <li key={item} className="flex justify-between items-center text-sm font-medium p-2 -m-2 rounded-md hover:bg-muted cursor-pointer transition-colors" role="button" tabIndex={0}>
+                              <span>{item}</span>
+                                <Badge variant="destructive">{Math.floor(Math.random() * 8)}</Badge>
+                          </li>
+                      ))}
+                  </ul>
+              </CardContent>
+          </Card>
+      </div>
       
       <Dialog open={!!selectedCategory} onOpenChange={handleCloseModal}>
         <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0">
