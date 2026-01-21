@@ -366,7 +366,7 @@ export function AddAssetModal({
     resolver: zodResolver(assetFormSchema),
     defaultValues: defaultFormValues,
     shouldUnregister: false,
-    mode: 'onSubmit',
+    mode: 'onChange',
   });
 
   const assetType = watch('assetType');

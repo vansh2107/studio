@@ -201,7 +201,7 @@ export function FDFields({ control, errors, familyMembers, register, watch, getV
                 {errors?.fixedDeposits?.maturityDate && <p className="text-sm text-destructive mt-1">{errors.fixedDeposits.maturityDate.message}</p>}
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="fixedDeposits.nominees" />
+        <NomineeFields control={control} errors={errors?.fixedDeposits?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="fixedDeposits.nominees" />
     </div>
   );
 }

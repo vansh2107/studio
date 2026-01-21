@@ -150,7 +150,7 @@ export function StocksFields({ control, register, errors, familyMembers, watch, 
 
       <Separator />
 
-      <NomineeFields control={control} errors={errors?.stocks?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="stocks.nominees" />
+      <NomineeFields control={control} errors={errors?.stocks?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="stocks.nominees" />
     </div>
   );
 }

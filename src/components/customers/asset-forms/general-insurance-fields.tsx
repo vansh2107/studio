@@ -167,7 +167,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
               </div>
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="generalInsurance.nominees" />
+        <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="generalInsurance.nominees" />
     </div>
   );
 }

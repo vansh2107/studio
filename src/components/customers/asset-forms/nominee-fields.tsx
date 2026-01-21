@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useFieldArray, Controller } from 'react-hook-form';
+import { useFieldArray, Controller, useWatch } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -10,13 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Client, FamilyMember } from '@/lib/types';
 import React, { useEffect } from 'react';
 
-export function NomineeFields({ control, errors, familyMembers, watch, getValues, setValue, maxNominees = 3, fieldPath = 'nominees' }: { control: any; errors: any; familyMembers: (Client | FamilyMember)[], watch: any, getValues: any, setValue: any, maxNominees?: number, fieldPath?: string }) {
+export function NomineeFields({ control, errors, familyMembers, getValues, setValue, maxNominees = 3, fieldPath = 'nominees' }: { control: any; errors: any; familyMembers: (Client | FamilyMember)[], getValues: any, setValue: any, maxNominees?: number, fieldPath?: string }) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: fieldPath as any,
   });
   
-  const watchedNominees = watch(fieldPath);
+  const watchedNominees = useWatch({ control, name: fieldPath });
   
   // Effect to manage allocation for single vs. multiple nominees
   useEffect(() => {

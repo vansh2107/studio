@@ -77,7 +77,7 @@ export function MutualFundsFields({ control, errors, familyMembers, register, wa
                 <Controller name="mutualFunds.investedAmount" control={control} render={({ field }) => <Input type="number" min="0" step="any" inputMode="numeric" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field)} value={field.value || ''} />} />
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.mutualFunds?.nominees} familyMembers={familyMembers} watch={watch} getValues={getValues} setValue={setValue} fieldPath="mutualFunds.nominees" />
+        <NomineeFields control={control} errors={errors?.mutualFunds?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="mutualFunds.nominees" />
     </div>
   );
 }
