@@ -7,10 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FamilyMember } from '@/lib/types';
+import { Client, FamilyMember } from '@/lib/types';
 import React, { useEffect } from 'react';
 
-export function NomineeFields({ control, errors, familyMembers, watch, getValues, setValue, maxNominees = 3, fieldPath = 'nominees' }: { control: any; errors: any; familyMembers: FamilyMember[], watch: any, getValues: any, setValue: any, maxNominees?: number, fieldPath?: string }) {
+export function NomineeFields({ control, errors, familyMembers, watch, getValues, setValue, maxNominees = 3, fieldPath = 'nominees' }: { control: any; errors: any; familyMembers: (Client | FamilyMember)[], watch: any, getValues: any, setValue: any, maxNominees?: number, fieldPath?: string }) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: fieldPath as any,
@@ -27,7 +27,29 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
         setValue(`${fieldPath}.0.allocation`, 100, { shouldValidate: true });
       }
     }
-  }, [fields.length, fieldPath, setValue, getValues]); // Re-run when the number of nominees changes
+  }, [fields.length, fieldPath, setValue, getValues]);
+
+    // Effect to auto-fill DOB
+  useEffect(() => {
+    if (watchedNominees && watchedNominees.length > 0) {
+      watchedNominees.forEach((nominee: { name?: string }, index: number) => {
+        if (nominee.name) {
+          const member = familyMembers.find(m => m.name === nominee.name);
+          const dob = member?.dateOfBirth || '';
+          const currentDob = getValues(`${fieldPath}.${index}.dateOfBirth`);
+          if (dob !== currentDob) {
+            setValue(`${fieldPath}.${index}.dateOfBirth`, dob, { shouldValidate: true });
+          }
+        } else {
+           // if name is cleared, clear DOB
+           const currentDob = getValues(`${fieldPath}.${index}.dateOfBirth`);
+           if (currentDob) {
+             setValue(`${fieldPath}.${index}.dateOfBirth`, '', { shouldValidate: true });
+           }
+        }
+      });
+    }
+  }, [watchedNominees, familyMembers, fieldPath, setValue, getValues]);
 
 
   const handleAddNominee = () => {
@@ -87,6 +109,25 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
             </div>
             
             <div>
+              <Label>Date of Birth</Label>
+              <Controller
+                name={`${fieldPath}.${index}.dateOfBirth`}
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="date"
+                    readOnly
+                    max={getToday()}
+                    {...field}
+                    value={field.value || ''}
+                    className="bg-muted/50"
+                  />
+                )}
+              />
+               {errors?.[index]?.dateOfBirth && <p className="text-sm text-destructive mt-1">{errors[index].dateOfBirth.message}</p>}
+            </div>
+
+            <div>
               <Label>Allocation %</Label>
               <Controller
                 name={`${fieldPath}.${index}.allocation`}
@@ -110,22 +151,7 @@ export function NomineeFields({ control, errors, familyMembers, watch, getValues
                 )}
               />
             </div>
-             <div>
-              <Label>Date of Birth</Label>
-              <Controller
-                name={`${fieldPath}.${index}.dateOfBirth`}
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    type="date"
-                    max={getToday()}
-                    {...field}
-                    value={field.value || ''}
-                  />
-                )}
-              />
-               {errors?.[index]?.dateOfBirth && <p className="text-sm text-destructive mt-1">{errors[index].dateOfBirth.message}</p>}
-            </div>
+
             <Button
               type="button"
               variant="ghost"
