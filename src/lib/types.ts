@@ -149,6 +149,17 @@ export interface StocksTaskDetails {
     dpid?: string;
 }
 
+export interface TimelineEvent {
+  id: string;
+  eventType: 'TASK_CREATED' | 'STATUS_CHANGED' | 'ASSIGNED_RM' | 'SERVICEABLE_RM_ASSIGNED' | 'TASK_RM_ASSIGNED' | 'TASK_COMPLETED' | 'TASK_REOPENED' | 'FIELD_UPDATED';
+  title: string;
+  description: string;
+  previousValue?: string;
+  newValue?: string;
+  performedBy: string; // User name
+  timestamp: string; // ISO string
+}
+
 export interface Task {
   id: string;
   clientId: string; // The ID of the assigned member
@@ -169,6 +180,7 @@ export interface Task {
   completeDate?: string | null;
   taskRM?: string;
   taskRMStatus?: TaskRMStatus;
+  timelineEvents?: TimelineEvent[];
   mutualFund?: {
     familyHead: string;
     service: string;
