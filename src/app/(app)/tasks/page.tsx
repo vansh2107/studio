@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -45,6 +46,7 @@ import { getAllRMs, getAllAssociates, getAllAdmins, getAllClients, familyMembers
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TASK_STATUSES } from '@/lib/constants';
+import { Combobox } from '@/components/ui/combobox';
 
 
 const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: Task; canUpdate: boolean; canEditTask: boolean, onEdit: (task: Task) => void }) => {
@@ -323,6 +325,7 @@ export default function TasksPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const statusFilter = searchParams.get('status');
+  const clientFilter = searchParams.get('client');
 
   const canView = hasPermission('TASK', 'view');
   const canCreate = hasPermission('TASK', 'create');
@@ -337,14 +340,21 @@ export default function TasksPage() {
       relation: 'Head'
     }));
 
-    const members = mockFamilyMembers.map(m => ({
-      label: `${m.firstName} ${m.lastName} (${m.relation})`,
-      value: m.id,
-      clientId: m.clientId,
-      relation: m.relation,
-    }));
+    const members = mockFamilyMembers.map(m => {
+      const head = getAllClients().find(c => c.id === m.clientId);
+      return {
+        label: `${m.firstName} ${m.lastName} (${m.relation} of ${head?.firstName})`,
+        value: m.id,
+        clientId: m.clientId,
+        relation: m.relation,
+      };
+    });
 
-    return [...heads, ...members].sort((a, b) => a.label.localeCompare(b.label));
+    return [
+      { label: 'All Clients', value: 'all', relation: '' },
+      ...heads,
+      ...members
+    ].sort((a,b) => a.label.localeCompare(b.label));
   }, []);
 
   const allRms = useMemo(() => getAllRMs(), []);
@@ -369,15 +379,26 @@ export default function TasksPage() {
       });
     }
 
+    let filtered = tasksForUser;
+
+    // Apply client filter
+    if (clientFilter && clientFilter !== 'all') {
+        const selectedOption = clientOptions.find(opt => opt.value === clientFilter);
+        const familyId = (selectedOption as any)?.clientId || selectedOption?.value;
+        if (familyId) {
+            filtered = filtered.filter(task => task.familyHeadId === familyId);
+        }
+    }
+
     if (statusFilter) {
       if (statusFilter === 'Overdue') {
-        return tasksForUser.filter(task => isOverdue(task));
+        return filtered.filter(task => isOverdue(task));
       }
-      return tasksForUser.filter(task => task.status === statusFilter);
+      return filtered.filter(task => task.status === statusFilter);
     }
     
-    return tasksForUser;
-  }, [tasks, effectiveUser, allRms, statusFilter]);
+    return filtered;
+  }, [tasks, effectiveUser, allRms, statusFilter, clientFilter, clientOptions]);
 
 
   const getStatusBadgeVariant = (status: string) => {
@@ -501,12 +522,22 @@ export default function TasksPage() {
     XLSX.writeFile(workbook, "Tasks.xlsx");
   };
 
-  const handleFilterChange = (value: string) => {
+  const handleStatusFilterChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value === 'All') {
         params.delete('status');
     } else {
         params.set('status', value);
+    }
+    router.push(`/tasks?${params.toString()}`);
+  };
+
+  const handleClientFilterChange = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === 'all') {
+        params.delete('client');
+    } else {
+        params.set('client', value);
     }
     router.push(`/tasks?${params.toString()}`);
   };
@@ -565,19 +596,30 @@ export default function TasksPage() {
                     This is a prototype. Tasks are stored in memory and will be cleared on page refresh.
                     </CardDescription>
                 </div>
-                <div className="w-full max-w-[200px]">
-                    <Select onValueChange={handleFilterChange} value={statusFilter || 'All'}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Filter by status..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="All">All Statuses</SelectItem>
-                            <SelectItem value="Overdue">Overdue</SelectItem>
-                            {TASK_STATUSES.map(status => (
-                                <SelectItem key={status} value={status}>{status}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                <div className="flex items-center gap-2">
+                    <div className="w-full max-w-xs">
+                        <Combobox
+                            options={clientOptions}
+                            value={clientFilter || 'all'}
+                            onChange={handleClientFilterChange}
+                            placeholder="Filter by client..."
+                            searchPlaceholder="Search clients..."
+                        />
+                    </div>
+                    <div className="w-full max-w-[200px]">
+                        <Select onValueChange={handleStatusFilterChange} value={statusFilter || 'All'}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Filter by status..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All">All Statuses</SelectItem>
+                                <SelectItem value="Overdue">Overdue</SelectItem>
+                                {TASK_STATUSES.map(status => (
+                                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </div>
           </CardHeader>

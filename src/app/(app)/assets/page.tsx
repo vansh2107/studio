@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AddAssetModal } from '@/components/customers/add-asset-modal';
 import { PlusCircle, ChevronRight, Edit, Trash2 } from 'lucide-react';
-import { getAllClients, getClientsForAssociate, getAssociatesForRM, getRMsForAdmin } from '@/lib/mock-data';
+import { getAllClients, getClientsForAssociate, getAssociatesForRM, getRMsForAdmin, familyMembers as mockFamilyMembers } from '@/lib/mock-data';
 import { useAssets, type Asset } from '@/hooks/use-assets';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import { Combobox } from '@/components/ui/combobox';
 
 const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset: Asset) => void }) => {
   const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -232,6 +233,7 @@ export default function AssetsPage() {
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [clientFilterId, setClientFilterId] = useState('all');
 
   const canCreate = hasPermission('ASSETS', 'create');
 
@@ -259,12 +261,48 @@ export default function AssetsPage() {
     }
   }, [effectiveUser]);
 
-  const filteredAssets = useMemo(() => {
+  const clientOptions = useMemo(() => {
+    const heads = getAllClients().map(c => ({
+        label: `${c.firstName} ${c.lastName} (Head)`,
+        value: c.id,
+        relation: 'Head'
+    }));
+
+    const members = mockFamilyMembers.map(m => {
+        const head = getAllClients().find(c => c.id === m.clientId);
+        return {
+            label: `${m.firstName} ${m.lastName} (${m.relation} of ${head?.firstName})`,
+            value: m.id,
+            clientId: m.clientId,
+            relation: m.relation,
+        }
+    });
+
+    return [
+        { label: 'All Clients', value: 'all', relation: '' },
+        ...heads, ...members
+    ].sort((a,b) => a.label.localeCompare(b.label));
+  }, []);
+
+  const scopedAssets = useMemo(() => {
     if (!effectiveUser) return [];
-    
     const scopedClientIds = new Set(familyHeads.map(c => c.id));
     return assets.filter(asset => scopedClientIds.has(asset.familyHeadId));
   }, [assets, familyHeads, effectiveUser]);
+
+  const filteredAssets = useMemo(() => {
+    if (clientFilterId === 'all') {
+        return scopedAssets;
+    }
+
+    const selectedOption = clientOptions.find(opt => opt.value === clientFilterId);
+    const familyId = (selectedOption as any)?.clientId || selectedOption?.value;
+
+    if (familyId) {
+        return scopedAssets.filter(asset => asset.familyHeadId === familyId);
+    }
+    return scopedAssets;
+  }, [scopedAssets, clientFilterId, clientOptions]);
 
   const handleSaveAsset = (asset: Asset) => {
     if (editingAsset) {
@@ -364,8 +402,21 @@ export default function AssetsPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>All Assets</CardTitle>
-            <CardDescription>A list of all assets created for clients.</CardDescription>
+            <div className="flex justify-between items-center">
+                <div>
+                    <CardTitle>All Assets</CardTitle>
+                    <CardDescription>A list of all assets created for clients.</CardDescription>
+                </div>
+                <div className="w-full max-w-xs">
+                    <Combobox
+                        options={clientOptions}
+                        value={clientFilterId}
+                        onChange={setClientFilterId}
+                        placeholder="Filter by client..."
+                        searchPlaceholder="Search clients..."
+                    />
+                </div>
+            </div>
           </CardHeader>
           <CardContent>
             {filteredAssets.length > 0 ? (
