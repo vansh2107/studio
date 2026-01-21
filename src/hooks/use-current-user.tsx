@@ -89,24 +89,49 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
     const checkUser = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const impersonateId = urlParams.get('impersonate_id');
+      const actorId = urlParams.get('actor_id');
+
       try {
-        const storedUserId = localStorage.getItem('currentUser');
-        if (storedUserId) {
-          const user = users.find(u => u.id === storedUserId);
-          if(isMounted) setCurrentUser(user || null);
+        if (impersonateId && actorId) {
+          // This is an impersonation tab being opened.
+          const actor = users.find(u => u.id === actorId);
+          const target = users.find(u => u.id === impersonateId);
+
+          if (actor && target && canImpersonate(actor, target)) {
+            if (isMounted) {
+              setCurrentUser(actor);
+              setImpersonatedUser(target);
+              localStorage.setItem('currentUser', actorId); // Persist the ACTOR for this tab
+              // Clean the URL to avoid re-triggering this logic on reload
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+          } else {
+            console.error("Invalid impersonation attempt from URL.");
+            // Fallback to normal login check
+            const storedUserId = localStorage.getItem('currentUser');
+            const user = storedUserId ? users.find(u => u.id === storedUserId) : null;
+            if(isMounted) setCurrentUser(user || null);
+          }
+        } else {
+          // Normal login flow
+          const storedUserId = localStorage.getItem('currentUser');
+          const user = storedUserId ? users.find(u => u.id === storedUserId) : null;
+          if (isMounted) setCurrentUser(user || null);
         }
       } catch (e) {
-        // localStorage not available
+        console.error("Error during user check:", e);
       }
-      if(isMounted) setIsLoading(false);
+      if (isMounted) setIsLoading(false);
     };
 
     checkUser();
 
     return () => {
       isMounted = false;
-    }
-  }, []);
+    };
+  }, []); // Empty dependency array means this runs once on initial mount
   
   useEffect(() => {
     if (!isLoading) {
@@ -146,14 +171,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     if (!currentUser) return;
     const target = users.find(u => u.id === userId);
     if (target && canImpersonate(currentUser, target)) {
-      setImpersonatedUser(target);
-      if(pathname !== '/') {
-        router.push('/');
-      }
+      const url = `/?impersonate_id=${target.id}&actor_id=${currentUser.id}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       console.error("Impersonation not allowed");
     }
-  }, [currentUser, router, pathname]);
+  }, [currentUser]);
 
   const stopImpersonation = useCallback(() => {
     setImpersonatedUser(null);
