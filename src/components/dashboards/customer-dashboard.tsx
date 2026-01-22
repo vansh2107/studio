@@ -58,7 +58,10 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
   const [selectedId, setSelectedId] = useState('all');
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
 
-  const allClientsForSearch = useMemo(() => [{ label: 'All Clients', value: 'all' }, ...getAllClients().map(c => ({ label: c.name, value: c.id }))], []);
+  const allClientsForSearch = useMemo(() => {
+    const clients = getAllClients().map(c => ({ label: c.name, value: c.id }));
+    return [{ label: 'All Clients', value: 'all' }, ...clients];
+  }, []);
 
   const familyMembersForModal = useMemo(() => {
     if (user.role !== 'CUSTOMER') return [];
@@ -105,10 +108,11 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
     const head = clients.find(c => c.id === user.id);
     if (!head) return [];
     const members = getFamilyMembersForClient(user.id);
+    const sortedMembers = members.sort((a,b) => a.name.localeCompare(b.name));
     return [
         { value: 'all', label: 'All Members'},
         { value: head.id, label: `${head.firstName} ${head.lastName} (Head)` },
-        ...members.map(m => ({ value: m.id, label: `${m.name} (${m.relation})` }))
+        ...sortedMembers.map(m => ({ value: m.id, label: `${m.name} (${m.relation})` }))
     ];
   }, [user]);
 
@@ -384,7 +388,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
           <Card>
               <CardHeader>
                   <CardTitle className="text-xl">Compliance</CardTitle>
-                  <CardDescription>Quick access to compliance-related tasks.</CardDescription>
+                  <Separator />
               </CardHeader>
               <CardContent>
                   <ul className="space-y-3">
@@ -396,15 +400,12 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
                       ))}
                   </ul>
               </CardContent>
-               <div className="px-6 pb-6 pt-2">
-                <Separator />
-              </div>
           </Card>
 
           <Card>
               <CardHeader>
                   <CardTitle className="text-xl">Alerts</CardTitle>
-                   <CardDescription>Important upcoming dates and events.</CardDescription>
+                   <Separator />
               </CardHeader>
               <CardContent>
                   <ul className="space-y-3">
@@ -416,9 +417,6 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
                       ))}
                   </ul>
               </CardContent>
-              <div className="px-6 pb-6 pt-2">
-                <Separator />
-              </div>
           </Card>
       </div>
     </div>
