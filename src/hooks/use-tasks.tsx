@@ -96,12 +96,13 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
 
           // Task RM Assignment
           if (updatedTaskData.taskRM && updatedTaskData.taskRM !== task.taskRM) {
-              newEvents.push({ id: `event-${Date.now()}-${Math.random()}`, eventType: 'TASK_RM_ASSIGNED', title: 'Task RM Assigned', description: `Task RM assigned to ${updatedTaskData.taskRM}.`, performedBy, timestamp: now });
+              newEvents.push({ id: `event-${Date.now()}-${Math.random()}`, eventType: 'TASK_RM_ASSIGNED', title: `Assigned to ${updatedTaskData.taskRM}`, description: `Task has been assigned.`, performedBy, timestamp: now });
           }
 
           // Task RM Status Change
           if (updatedTaskData.taskRMStatus && updatedTaskData.taskRMStatus !== task.taskRMStatus) {
-              newEvents.push({ id: `event-${Date.now()}-${Math.random()}`, eventType: 'STATUS_CHANGED', title: 'Task RM Status Updated', description: `Task RM status changed to "${updatedTaskData.taskRMStatus}".`, performedBy, timestamp: now });
+              const taskRmName = updatedTaskData.taskRM || task.taskRM;
+              newEvents.push({ id: `event-${Date.now()}-${Math.random()}`, eventType: 'STATUS_CHANGED', title: 'Status Updated', description: `${taskRmName} status changed to "${updatedTaskData.taskRMStatus}".`, performedBy, timestamp: now });
           }
 
           // If other details were changed without a specific event, add a generic one

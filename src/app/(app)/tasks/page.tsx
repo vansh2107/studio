@@ -16,7 +16,7 @@ import {
 import { useTasks } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, ChevronRight, Edit, Download, User, AlertCircle, Edit2, CheckCircleIcon, Repeat, MoreHorizontal } from 'lucide-react';
+import { Plus, Trash2, ChevronRight, Edit, Download, User, AlertCircle, Edit2, CheckCircleIcon, Repeat, MoreHorizontal, ChevronLeft } from 'lucide-react';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import type { TaskFormData } from '@/components/tasks/create-task-modal';
 import { Task, TaskStatus, TimelineEvent } from '@/hooks/use-tasks';
@@ -155,19 +155,26 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
     
     if (showFullHistory) {
       return (
-        <ScrollArea className="w-full pb-4">
-          <div className="flex p-4 items-start">
-            {sortedEvents.map((event, index) => (
-              <React.Fragment key={event.id}>
-                <EventNode event={event} />
-                {index < sortedEvents.length - 1 && (
-                  <div className="w-16 h-px bg-border mt-5 flex-shrink-0" />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        <div className="w-full">
+            <div className="flex justify-start items-center pl-2 pb-2">
+                <Button variant="ghost" size="sm" onClick={() => setShowFullHistory(false)} className="text-sm text-primary hover:text-primary">
+                    <ChevronLeft className="mr-1 h-4 w-4" /> Collapse
+                </Button>
+            </div>
+            <ScrollArea className="w-full pb-4">
+            <div className="flex px-4 pt-0 items-start">
+                {sortedEvents.map((event, index) => (
+                <React.Fragment key={event.id}>
+                    <EventNode event={event} />
+                    {index < sortedEvents.length - 1 && (
+                    <div className="w-16 h-px bg-border mt-5 flex-shrink-0" />
+                    )}
+                </React.Fragment>
+                ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+        </div>
       );
     }
     
@@ -848,7 +855,7 @@ export default function TasksPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will permanently delete the task for <strong>{taskToDelete?.clientName}</strong>.
+                    This will permanently delete the task for strong>{taskToDelete?.clientName}</strong>.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
