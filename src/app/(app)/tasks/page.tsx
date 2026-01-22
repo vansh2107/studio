@@ -16,7 +16,7 @@ import {
 import { useTasks } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, ChevronRight, Edit, Download, User, AlertCircle, Edit2, CheckCircleIcon, Repeat } from 'lucide-react';
+import { Plus, Trash2, ChevronRight, Edit, Download, User, AlertCircle, Edit2, CheckCircleIcon, Repeat, MoreHorizontal } from 'lucide-react';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import type { TaskFormData } from '@/components/tasks/create-task-modal';
 import { Task, TaskStatus, TimelineEvent } from '@/hooks/use-tasks';
@@ -50,6 +50,8 @@ import { Combobox } from '@/components/ui/combobox';
 
 
 const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: Task; canUpdate: boolean; canEditTask: boolean, onEdit: (task: Task) => void }) => {
+  const [showFullHistory, setShowFullHistory] = useState(false);
+
   const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
     <div>
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
@@ -117,6 +119,108 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
 
   const sortedEvents = (task.timelineEvents || []).slice().sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
+    const EventNode = ({ event }: { event: TimelineEvent }) => {
+    const { icon: Icon, color } = getEventVisuals(event);
+    return (
+      <div className="flex flex-col items-center text-center w-32 flex-shrink-0 px-1">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <div className={cn("flex h-10 w-10 items-center justify-center rounded-full border-2", color)}>
+                <Icon className="h-5 w-5 text-white" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="font-bold">{event.title}</p>
+              <p>{event.description}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <p className="mt-2 font-semibold text-sm truncate w-full">{event.title}</p>
+        <p className="text-xs text-muted-foreground mt-1 w-full text-ellipsis overflow-hidden h-8">
+          {event.description}
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {format(parseISO(event.timestamp), 'dd MMM, h:mm a')}
+        </p>
+        <p className="text-xs text-muted-foreground">by {event.performedBy}</p>
+      </div>
+    );
+  };
+
+  const renderedTimeline = useMemo(() => {
+    if (sortedEvents.length === 0) {
+      return <p className="text-sm text-muted-foreground px-4">No history for this task.</p>;
+    }
+    
+    if (showFullHistory) {
+      return (
+        <ScrollArea className="w-full pb-4">
+          <div className="flex p-4 items-start">
+            {sortedEvents.map((event, index) => (
+              <React.Fragment key={event.id}>
+                <EventNode event={event} />
+                {index < sortedEvents.length - 1 && (
+                  <div className="w-16 h-px bg-border mt-5 flex-shrink-0" />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      );
+    }
+    
+    if (sortedEvents.length <= 4) {
+      return (
+        <div className="flex p-4 items-start justify-center w-full">
+          {sortedEvents.map((event, index) => (
+            <React.Fragment key={event.id}>
+              <EventNode event={event} />
+              {index < sortedEvents.length - 1 && (
+                <div className="w-8 h-px bg-border mt-5 flex-shrink-0" />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      );
+    }
+    
+    const first = sortedEvents[0];
+    const last = sortedEvents[sortedEvents.length - 1];
+    const middleEvents = sortedEvents.slice(1, -1);
+    const lastTwoMiddle = middleEvents.slice(-2);
+
+    return (
+      <div className="flex p-4 items-start justify-center w-full">
+        <EventNode event={first} />
+        <div className="w-8 h-px bg-border mt-5 flex-shrink-0" />
+
+        <div
+          onClick={() => setShowFullHistory(true)}
+          className="flex flex-col items-center text-center w-24 flex-shrink-0 cursor-pointer group pt-1"
+        >
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-dashed border-border text-muted-foreground group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent transition-colors">
+            <MoreHorizontal className="h-5 w-5" />
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground group-hover:text-accent-foreground transition-colors">
+            {middleEvents.length - lastTwoMiddle.length} more
+          </p>
+        </div>
+
+        <div className="w-8 h-px bg-border mt-5 flex-shrink-0" />
+
+        {lastTwoMiddle.map((event) => (
+          <React.Fragment key={event.id}>
+            <EventNode event={event} />
+            <div className="w-8 h-px bg-border mt-5 flex-shrink-0" />
+          </React.Fragment>
+        ))}
+        
+        <EventNode event={last} />
+      </div>
+    );
+  }, [sortedEvents, showFullHistory]);
 
   return (
     <div className="bg-muted/30 p-6 space-y-6 relative">
@@ -132,54 +236,14 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
         </Button>
       )}
       
-      <div className="space-y-6">
+      <div>
         <h1 className="text-3xl font-bold font-headline">
           Task History
         </h1>
       </div>
       <Section title="Task History">
         <div className="col-span-full">
-            <ScrollArea className="w-full pb-4">
-                <div className="flex p-4 items-start">
-                    {sortedEvents.map((event, index) => {
-                        const { icon: Icon, color } = getEventVisuals(event);
-                        return (
-                            <React.Fragment key={event.id}>
-                                <div className="flex flex-col items-center text-center w-40 flex-shrink-0">
-                                    <TooltipProvider>
-                                      <Tooltip>
-                                        <TooltipTrigger>
-                                          <div className={cn("flex h-12 w-12 items-center justify-center rounded-full border-4 border-muted/50", color)}>
-                                              <Icon className="h-6 w-6 text-white" />
-                                          </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p className="font-bold">{event.title}</p>
-                                            <p>{event.description}</p>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
-
-                                    <p className="mt-2 font-semibold text-sm truncate">{event.title}</p>
-                                    <p className="text-xs text-muted-foreground mt-1 h-8 text-ellipsis overflow-hidden">
-                                      {event.description}
-                                    </p>
-                                    <p className="text-xs font-semibold text-muted-foreground mt-2">
-                                        {format(parseISO(event.timestamp), 'dd MMM, h:mm a')}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">by {event.performedBy}</p>
-                                </div>
-
-                                {index < sortedEvents.length - 1 && (
-                                    <div className="w-24 h-px bg-border mt-6 flex-shrink-0" />
-                                )}
-                            </React.Fragment>
-                        );
-                    })}
-                </div>
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-             {sortedEvents.length === 0 && <p className="text-sm text-muted-foreground px-4">No history for this task.</p>}
+          {renderedTimeline}
         </div>
       </Section>
       
@@ -796,3 +860,4 @@ export default function TasksPage() {
     </TooltipProvider>
   );
 }
+
