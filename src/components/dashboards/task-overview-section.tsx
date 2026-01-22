@@ -56,7 +56,7 @@ export function TaskOverviewSection({ tasks }: TaskOverviewSectionProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold font-headline">Task Overview</h2>
+      <h2 className="text-xl font-semibold">Task Overview</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {statuses.map(status => {
           const Icon = statusConfig[status].icon;

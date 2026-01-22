@@ -28,9 +28,10 @@ export function AssociateList({ initialAssociates }: { initialAssociates: Associ
 
   return (
     <div className="space-y-6">
-        <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold font-headline">Associate Management</h1>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold font-headline">Associate Management</h1>
+        <p className="text-muted-foreground">View and manage Associate users.</p>
+      </div>
       <Card>
          <CardContent className="p-0">
           <Table>

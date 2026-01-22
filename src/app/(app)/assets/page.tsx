@@ -390,8 +390,11 @@ export default function AssetsPage() {
   return (
     <TooltipProvider>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold font-headline">Asset Management</h1>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold font-headline">Asset Management</h1>
+            <p className="text-muted-foreground">Track and manage all financial assets for your clients.</p>
+          </div>
           {canCreate && (
             <Button onClick={openModal}>
               <PlusCircle className="mr-2 h-4 w-4" />

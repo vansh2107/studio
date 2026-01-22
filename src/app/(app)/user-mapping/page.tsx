@@ -39,7 +39,7 @@ export default function UserMappingPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold font-headline">User Management</h1>
           <p className="text-muted-foreground">

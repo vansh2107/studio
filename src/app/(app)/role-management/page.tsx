@@ -1,3 +1,4 @@
+
 'use client';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useRouter } from 'next/navigation';
@@ -114,8 +115,11 @@ export default function RoleManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline">Role Management</h1>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold font-headline">Role Management</h1>
+          <p className="text-muted-foreground">Define roles and manage their permissions across the application.</p>
+        </div>
         {canManage && <AddRoleDialog onAdd={handleAddRole} />}
       </div>
       <Card>

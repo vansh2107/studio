@@ -9,7 +9,10 @@ export default function ProfilePage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">My Profile</h1>
+            <div>
+              <h1 className="text-3xl font-bold font-headline">My Profile</h1>
+              <p className="text-muted-foreground">View your user details and role.</p>
+            </div>
             <Card>
                 <CardHeader>
                     <CardTitle>User Details</CardTitle>

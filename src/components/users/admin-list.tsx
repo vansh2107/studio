@@ -16,8 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { LogIn } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { superAdmins as initialSuperAdmins } from '@/lib/mock-data';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function AdminList({ initialAdmins }: { initialAdmins: Admin[] }) {
   const { currentUser, canImpersonate, impersonate } = useCurrentUser();
@@ -31,9 +30,10 @@ export function AdminList({ initialAdmins }: { initialAdmins: Admin[] }) {
 
   return (
     <div className="space-y-6">
-       <div className="flex justify-between items-center">
+      <div>
         <h1 className="text-3xl font-bold font-headline">Admin Management</h1>
-       </div>
+        <p className="text-muted-foreground">View and manage Admin and Super Admin users.</p>
+      </div>
 
       <Card>
         <CardContent className="p-0">
