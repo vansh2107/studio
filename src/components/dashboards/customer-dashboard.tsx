@@ -35,6 +35,7 @@ import { Combobox } from '../ui/combobox';
 import { Badge } from '../ui/badge';
 import { MultiSelectCheckbox } from '../ui/multi-select-checkbox';
 import { TaskOverviewSection } from './task-overview-section';
+import { Separator } from '../ui/separator';
 
 interface CustomerDashboardProps {
   user: User;
@@ -57,7 +58,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
   const [selectedId, setSelectedId] = useState('all');
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
 
-  const allClientsForSearch = useMemo(() => getAllClients().map(c => ({ label: c.name, value: c.id })), []);
+  const allClientsForSearch = useMemo(() => [{ label: 'All Clients', value: 'all' }, ...getAllClients().map(c => ({ label: c.name, value: c.id }))], []);
 
   const familyMembersForModal = useMemo(() => {
     if (user.role !== 'CUSTOMER') return [];
@@ -263,16 +264,19 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
 
   return (
     <>
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline">Family Dashboard</h1>
+      <div className="space-y-6">
+        <div className="space-y-2">
+            <h1 className="text-3xl font-bold font-headline">Family Dashboard</h1>
+            <p className="text-muted-foreground">A summary of your family's financial health.</p>
+        </div>
 
         {user.role === 'SUPER_ADMIN' ? (
-          <div className="flex items-center gap-2 w-full max-w-sm">
+          <div className="flex items-center gap-2 w-full max-w-sm ml-auto">
             <Label htmlFor="client-search" className="whitespace-nowrap">Switch to Client View</Label>
             <Combobox
               options={allClientsForSearch}
               onChange={(clientId) => {
-                if (clientId) {
+                if (clientId && clientId !== 'all') {
                   impersonate(clientId);
                 }
               }}
@@ -282,7 +286,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
             />
           </div>
         ) : user.role === 'CUSTOMER' ? (
-             <div className="flex items-center gap-2">
+             <div className="flex items-center gap-2 justify-end">
               <Label htmlFor="member-filter">View Assets For</Label>
                <MultiSelectCheckbox
                     options={familyDropdownOptions}
@@ -292,7 +296,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
                 />
             </div>
         ) : showFilterDropdown && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-end">
               <Label htmlFor="member-filter">View Assets For</Label>
               <Select value={selectedId} onValueChange={setSelectedId}>
                   <SelectTrigger id="member-filter" className="w-[280px]">
@@ -308,7 +312,6 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
               </Select>
           </div>
         )}
-    </div>
 
       <Card>
         <CardContent className="p-4 md:p-6">
@@ -345,7 +348,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
                       <Icon className="h-6 w-6" />
                     </div>
                     <div>
-                      <CardTitle>{category}</CardTitle>
+                      <CardTitle className="text-lg">{category}</CardTitle>
                       <CardDescription>{count} asset{count !== 1 ? 's' : ''}</CardDescription>
                     </div>
                 </CardHeader>
@@ -366,7 +369,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
                     <HelpCircle className="h-6 w-6" />
                 </div>
                 <div>
-                    <CardTitle>Others</CardTitle>
+                    <CardTitle className="text-lg">Others</CardTitle>
                 </div>
             </CardHeader>
             <CardContent className="mt-auto">
@@ -380,7 +383,8 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <Card>
               <CardHeader>
-                  <CardTitle>Compliance</CardTitle>
+                  <CardTitle className="text-xl">Compliance</CardTitle>
+                  <CardDescription>Quick access to compliance-related tasks.</CardDescription>
               </CardHeader>
               <CardContent>
                   <ul className="space-y-3">
@@ -392,11 +396,15 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
                       ))}
                   </ul>
               </CardContent>
+               <div className="px-6 pb-6 pt-2">
+                <Separator />
+              </div>
           </Card>
 
           <Card>
               <CardHeader>
-                  <CardTitle>Alerts</CardTitle>
+                  <CardTitle className="text-xl">Alerts</CardTitle>
+                   <CardDescription>Important upcoming dates and events.</CardDescription>
               </CardHeader>
               <CardContent>
                   <ul className="space-y-3">
@@ -408,8 +416,12 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
                       ))}
                   </ul>
               </CardContent>
+              <div className="px-6 pb-6 pt-2">
+                <Separator />
+              </div>
           </Card>
       </div>
+    </div>
       
       <Dialog open={!!selectedCategory} onOpenChange={handleCloseModal}>
         <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0">
