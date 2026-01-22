@@ -62,11 +62,27 @@ export function AssetBreakdownModal({
       totalValue: number;
       totalPremium?: number;
       totalSumAssured?: number;
+      dpCount?: number;
+      ppfCount?: number;
+      folioCount?: number;
+      policyCount?: number;
       fdCount?: number;
+      bondsCount?: number;
     }>();
 
     categoryAssets.forEach(asset => {
-      const current = data.get(asset.ownerMemberId) || { assets: [], totalValue: 0, totalPremium: 0, totalSumAssured: 0, fdCount: 0 };
+      const current = data.get(asset.ownerMemberId) || {
+        assets: [],
+        totalValue: 0,
+        totalPremium: 0,
+        totalSumAssured: 0,
+        dpCount: 0,
+        ppfCount: 0,
+        folioCount: 0,
+        policyCount: 0,
+        fdCount: 0,
+        bondsCount: 0,
+      };
       current.assets.push(asset);
       current.totalValue += asset.value;
       if (asset.premiumAmount) {
@@ -75,8 +91,26 @@ export function AssetBreakdownModal({
       if (asset.sumAssured) {
         current.totalSumAssured = (current.totalSumAssured || 0) + asset.sumAssured;
       }
-      if (category === 'Fixed Deposits') {
-        current.fdCount = (current.fdCount || 0) + 1;
+      switch (category) {
+        case 'Fixed Deposits':
+          current.fdCount = (current.fdCount || 0) + 1;
+          break;
+        case 'Stocks':
+          current.dpCount = (current.dpCount || 0) + 1; // Assuming each asset corresponds to one DP for now
+          break;
+        case 'PPF':
+          current.ppfCount = (current.ppfCount || 0) + 1; // Assuming each asset corresponds to one PPF for now
+          break;
+        case 'Mutual Funds':
+          current.folioCount = (current.folioCount || 0) + 1; // Assuming each asset corresponds to one folio for now
+          break;
+        case 'Life Insurance':
+        case 'General Insurance':
+          current.policyCount = (current.policyCount || 0) + 1; // Assuming each asset corresponds to one policy for now
+          break;
+        case 'Bonds':
+          current.bondsCount = (current.bondsCount || 0) + 1; // Assuming each asset corresponds to one bond for now
+          break;
       }
       data.set(asset.ownerMemberId, current);
     });
@@ -109,31 +143,24 @@ export function AssetBreakdownModal({
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead>DP Name</TableHead>
-                <TableHead>DP ID</TableHead>
+                <TableHead>DP Count</TableHead>
                 <TableHead className="text-right">Total Value</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {categoryAssets.map(asset => {
-                const member = familyMembers.find(fm => fm.id === asset.ownerMemberId);
-                return (
-                  <TableRow key={asset.id}>
-                    <TableCell>{member?.name || 'Unknown'}</TableCell>
-                    <TableCell>{asset.dpName || 'N/A'}</TableCell>
-                    <TableCell>{asset.dpId || 'N/A'}</TableCell>
-                    <TableCell className="text-right">
-                      <Link href={`/assets/stocks/${asset.ownerMemberId}`} target="_blank" className="text-primary hover:underline">
-                        {formatter.format(asset.value)}
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {memberData.map(item => (
+                <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/stocks/${item.memberId}`)}>
+                  <TableCell>{item.memberName}</TableCell>
+                  <TableCell>{item.dpCount || 0}</TableCell>
+                  <TableCell className="text-right">
+                    {formatter.format(item.totalValue)}
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
             <TableFooter>
                 <TableRow>
-                    <TableCell colSpan={3} className="font-bold">Total</TableCell>
+                    <TableCell colSpan={2} className="font-bold">Total</TableCell>
                     <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
                 </TableRow>
             </TableFooter>
@@ -145,27 +172,22 @@ export function AssetBreakdownModal({
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead>Bank Name</TableHead>
-                <TableHead>Account Opening Date</TableHead>
+                <TableHead>PPF Count</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-               {categoryAssets.map(asset => {
-                const member = familyMembers.find(fm => fm.id === asset.ownerMemberId);
-                return (
-                  <TableRow key={asset.id}>
-                    <TableCell>{member?.name || 'Unknown'}</TableCell>
-                    <TableCell>{asset.bankName || 'N/A'}</TableCell>
-                    <TableCell>{formatDate(asset.accountOpeningDate)}</TableCell>
-                    <TableCell className="text-right">{formatter.format(asset.value)}</TableCell>
-                  </TableRow>
-                );
-              })}
+               {memberData.map(item => (
+                <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/ppf/${item.memberId}`)}>
+                  <TableCell>{item.memberName}</TableCell>
+                  <TableCell>{item.ppfCount || 0}</TableCell>
+                  <TableCell className="text-right">{formatter.format(item.totalValue)}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
             <TableFooter>
                 <TableRow>
-                    <TableCell colSpan={3} className="font-bold">Total</TableCell>
+                    <TableCell colSpan={2} className="font-bold">Total</TableCell>
                     <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
                 </TableRow>
             </TableFooter>
@@ -177,21 +199,18 @@ export function AssetBreakdownModal({
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead>Folio Number</TableHead>
+                <TableHead>Folio Count</TableHead>
                 <TableHead className="text-right">Total Value</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-               {categoryAssets.map(asset => {
-                const member = familyMembers.find(fm => fm.id === asset.ownerMemberId);
-                return (
-                  <TableRow key={asset.id}>
-                    <TableCell>{member?.name || 'Unknown'}</TableCell>
-                    <TableCell>{asset.folioNumber || 'N/A'}</TableCell>
-                    <TableCell className="text-right">{formatter.format(asset.value)}</TableCell>
-                  </TableRow>
-                );
-              })}
+               {memberData.map(item => (
+                <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/mutual-funds/${item.memberId}`)}>
+                  <TableCell>{item.memberName}</TableCell>
+                  <TableCell>{item.folioCount || 0}</TableCell>
+                  <TableCell className="text-right">{formatter.format(item.totalValue)}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
             <TableFooter>
                 <TableRow>
@@ -207,19 +226,17 @@ export function AssetBreakdownModal({
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead className="text-right">Number of Assets</TableHead>
+                <TableHead className="text-right">Policy Count</TableHead>
                 <TableHead className="text-right">Premium Amount</TableHead>
                 <TableHead className="text-right">Sum Assured</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {memberData.map(item => (
-                <TableRow key={item.memberId}>
+                <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/life-insurance/${item.memberId}`)}>
                   <TableCell>{item.memberName}</TableCell>
                   <TableCell className="text-right">
-                     <Link href={`/assets/life-insurance/${item.memberId}`} target="_blank" className="text-primary hover:underline">
                         {item.assets.length}
-                     </Link>
                   </TableCell>
                   <TableCell className="text-right">{formatter.format(item.totalPremium || 0)}</TableCell>
                   <TableCell className="text-right">{formatter.format(item.totalSumAssured || 0)}</TableCell>
@@ -241,28 +258,26 @@ export function AssetBreakdownModal({
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead>Policy Name</TableHead>
-                <TableHead>Type of Policy</TableHead>
-                <TableHead className="text-right">Premium</TableHead>
+                <TableHead>Policy Count</TableHead>
+                <TableHead className="text-right">Premium Amount</TableHead>
+                <TableHead className="text-right">Sum Assured</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-               {categoryAssets.map(asset => {
-                const member = familyMembers.find(fm => fm.id === asset.ownerMemberId);
-                return (
-                  <TableRow key={asset.id}>
-                    <TableCell>{member?.name || 'Unknown'}</TableCell>
-                    <TableCell>{asset.policyName || 'N/A'}</TableCell>
-                    <TableCell>{asset.policyType || 'N/A'}</TableCell>
-                    <TableCell className="text-right">{formatter.format(asset.value)}</TableCell>
-                  </TableRow>
-                );
-              })}
+               {memberData.map(item => (
+                <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/general-insurance/${item.memberId}`)}>
+                  <TableCell>{item.memberName}</TableCell>
+                  <TableCell>{item.policyCount || 0}</TableCell>
+                  <TableCell className="text-right">{formatter.format(item.totalPremium || 0)}</TableCell>
+                  <TableCell className="text-right">{formatter.format(item.totalSumAssured || 0)}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
             <TableFooter>
                 <TableRow>
                     <TableCell colSpan={3} className="font-bold">Total</TableCell>
-                    <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(lifeInsuranceTotals?.totalPremium || 0)}</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(lifeInsuranceTotals?.totalSumAssured || 0)}</TableCell>
                 </TableRow>
             </TableFooter>
           </Table>
@@ -281,7 +296,7 @@ export function AssetBreakdownModal({
             </TableHeader>
             <TableBody>
               {memberData.map(item => (
-                <TableRow key={item.memberId}>
+                <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/fixed-deposits/${item.memberId}`)}>
                   <TableCell>{item.memberName}</TableCell>
                   <TableCell className="text-right">{item.fdCount || 0}</TableCell>
                   <TableCell className="text-right">{formatter.format(item.totalValue)}</TableCell>
@@ -303,18 +318,17 @@ export function AssetBreakdownModal({
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead>Issuer Name</TableHead>
+                <TableHead>Bonds Count</TableHead>
                 <TableHead className="text-right">Total Value</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-               {categoryAssets.map(asset => {
-                const member = familyMembers.find(fm => fm.id === asset.ownerMemberId);
+               {memberData.map(item => {
                 return (
-                  <TableRow key={asset.id}>
-                    <TableCell>{member?.name || 'Unknown'}</TableCell>
-                    <TableCell>{asset.issuerName || 'N/A'}</TableCell>
-                    <TableCell className="text-right">{formatter.format(asset.value)}</TableCell>
+                  <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/bonds/${item.memberId}`)}>
+                    <TableCell>{item.memberName}</TableCell>
+                    <TableCell>{item.bondsCount || 0}</TableCell>
+                    <TableCell className="text-right">{formatter.format(item.totalValue)}</TableCell>
                   </TableRow>
                 );
               })}

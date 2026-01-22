@@ -13,11 +13,11 @@ const formatter = new Intl.NumberFormat('en-IN', {
   maximumFractionDigits: 0,
 });
 
-// Mock data for Life Insurance details with Policy Number
-const mockLifeInsuranceDetails = [
-  { policyNumber: 'LI001', policyName: 'Term Life Plan', insurer: 'LIC', premium: 10000, sumAssured: 1000000, maturityDate: '2040-01-01' },
-  { policyNumber: 'LI002', policyName: 'ULIP Plan', insurer: 'HDFC Life', premium: 20000, sumAssured: 1500000, maturityDate: '2045-06-01' },
-  { policyNumber: 'LI003', policyName: 'Endowment Plan', insurer: 'SBI Life', premium: 15000, sumAssured: 800000, maturityDate: '2035-11-01' },
+// Mock data for General Insurance details with Policy Number
+const mockGeneralInsuranceDetails = [
+  { policyNumber: 'GI001', policyName: 'Car Insurance', policyType: 'Motor', insurer: 'Bajaj Allianz', premium: 12000, sumAssured: 500000, expiryDate: '2026-10-20' },
+  { policyNumber: 'GI002', policyName: 'Health Insurance', policyType: 'Health', insurer: 'Apollo Munich', premium: 8000, sumAssured: 300000, expiryDate: '2027-03-15' },
+  { policyNumber: 'GI003', policyName: 'Home Insurance', policyType: 'Property', insurer: 'ICICI Lombard', premium: 5000, sumAssured: 2000000, expiryDate: '2028-01-01' },
 ];
 
 const formatDate = (dateString?: string) => {
@@ -33,7 +33,7 @@ const formatDate = (dateString?: string) => {
   }
 };
 
-export default function LifeInsuranceDetailsPage() {
+export default function GeneralInsuranceDetailsPage() {
   const params = useParams();
   const memberId = params.memberId as string;
   const [selectedPolicy, setSelectedPolicy] = useState<string | null>(null);
@@ -43,9 +43,9 @@ export default function LifeInsuranceDetailsPage() {
     return allMembers.find(m => m.id === memberId);
   }, [memberId]);
 
-  const lifeInsuranceByPolicy = useMemo(() => {
-    const grouped = new Map<string, typeof mockLifeInsuranceDetails>();
-    mockLifeInsuranceDetails.forEach(policy => {
+  const generalInsuranceByPolicy = useMemo(() => {
+    const grouped = new Map<string, typeof mockGeneralInsuranceDetails>();
+    mockGeneralInsuranceDetails.forEach(policy => {
       if (!grouped.has(policy.policyNumber)) {
         grouped.set(policy.policyNumber, []);
       }
@@ -82,12 +82,12 @@ export default function LifeInsuranceDetailsPage() {
 
   return (
     <div className="space-y-6 p-4">
-      <h1 className="text-3xl font-bold font-headline">Life Insurance Details for {member.name}</h1>
-      <p className="text-muted-foreground">Detailed breakdown of life insurance policies.</p>
+      <h1 className="text-3xl font-bold font-headline">General Insurance Details for {member.name}</h1>
+      <p className="text-muted-foreground">Detailed breakdown of general insurance policies.</p>
 
       {!selectedPolicy ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lifeInsuranceByPolicy.map((policyGroup, index) => (
+          {generalInsuranceByPolicy.map((policyGroup, index) => (
             <Card
               key={policyGroup.policyNumber}
               className="cursor-pointer hover:shadow-lg transition-all duration-300 relative overflow-hidden"
@@ -97,7 +97,7 @@ export default function LifeInsuranceDetailsPage() {
                 transition: 'transform 0.3s ease-in-out',
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-600 opacity-20"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500 to-amber-600 opacity-20"></div>
               <CardHeader className="relative z-10">
                 <CardTitle className="text-white drop-shadow-md text-2xl">Policy: {policyGroup.policyNumber}</CardTitle>
                 <CardDescription className="text-gray-200">Total Premium: {formatter.format(policyGroup.totalPremium)}</CardDescription>
@@ -125,20 +125,22 @@ export default function LifeInsuranceDetailsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Policy Name</TableHead>
+                  <TableHead>Policy Type</TableHead>
                   <TableHead>Insurer</TableHead>
                   <TableHead className="text-right">Premium</TableHead>
                   <TableHead className="text-right">Sum Assured</TableHead>
-                  <TableHead>Maturity Date</TableHead>
+                  <TableHead>Expiry Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {lifeInsuranceByPolicy.find(policyGroup => policyGroup.policyNumber === selectedPolicy)?.policies.map((policy, index) => (
+                {generalInsuranceByPolicy.find(policyGroup => policyGroup.policyNumber === selectedPolicy)?.policies.map((policy, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{policy.policyName}</TableCell>
+                    <TableCell>{policy.policyType}</TableCell>
                     <TableCell>{policy.insurer}</TableCell>
                     <TableCell className="text-right">{formatter.format(policy.premium)}</TableCell>
                     <TableCell className="text-right">{formatter.format(policy.sumAssured)}</TableCell>
-                    <TableCell>{formatDate(policy.maturityDate)}</TableCell>
+                    <TableCell>{formatDate(policy.expiryDate)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
