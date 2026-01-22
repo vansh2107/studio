@@ -132,6 +132,11 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
         </Button>
       )}
       
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold font-headline">
+          Task History
+        </h1>
+      </div>
       <Section title="Task History">
         <div className="col-span-full">
             <ScrollArea className="w-full pb-4">
@@ -350,11 +355,12 @@ export default function TasksPage() {
       };
     });
 
+    const sortedClients = [...heads, ...members].sort((a,b) => a.label.localeCompare(b.label));
+    
     return [
       { label: 'All Clients', value: 'all', relation: '' },
-      ...heads,
-      ...members
-    ].sort((a,b) => a.label.localeCompare(b.label));
+      ...sortedClients
+    ];
   }, []);
 
   const allRms = useMemo(() => getAllRMs(), []);
@@ -547,7 +553,9 @@ export default function TasksPage() {
   if (!canView) {
       return (
           <Card>
-              <CardHeader><CardTitle>Access Denied</CardTitle></CardHeader>
+              <CardHeader>
+                  <h1 className="text-3xl font-bold font-headline">Access Denied</h1>
+              </CardHeader>
               <CardContent><p>You do not have permission to view this page.</p></CardContent>
           </Card>
       );
@@ -591,10 +599,10 @@ export default function TasksPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
                 <div className="space-y-1.5">
-                    <CardTitle>{statusFilter ? 'Filtered Tasks' : 'All Tasks'}</CardTitle>
-                    <CardDescription>
+                    <h2 className="text-xl font-semibold">{statusFilter ? 'Filtered Tasks' : 'All Tasks'}</h2>
+                    <p className="text-muted-foreground">
                     This is a prototype. Tasks are stored in memory and will be cleared on page refresh.
-                    </CardDescription>
+                    </p>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-full max-w-xs">

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -75,6 +74,11 @@ const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset:
         Edit Asset
       </Button>
       
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold font-headline">
+          Asset Information
+        </h1>
+      </div>
       <Section title="Asset Information">
         <DetailItem label="Asset Type">{asset.assetType}</DetailItem>
         <DetailItem label="Family Head">{asset.familyHeadName}</DetailItem>
@@ -278,10 +282,12 @@ export default function AssetsPage() {
         }
     });
 
+    const sortedClients = [...heads, ...members].sort((a,b) => a.label.localeCompare(b.label));
+
     return [
         { label: 'All Clients', value: 'all', relation: '' },
-        ...heads, ...members
-    ].sort((a,b) => a.label.localeCompare(b.label));
+        ...sortedClients
+    ];
   }, []);
 
   const scopedAssets = useMemo(() => {
@@ -407,8 +413,8 @@ export default function AssetsPage() {
           <CardHeader>
             <div className="flex justify-between items-center">
                 <div>
-                    <CardTitle>All Assets</CardTitle>
-                    <CardDescription>A list of all assets created for clients.</CardDescription>
+                    <h2 className="text-xl font-semibold">All Assets</h2>
+                    <p className="text-muted-foreground">A list of all assets created for clients.</p>
                 </div>
                 <div className="w-full max-w-xs">
                     <Combobox

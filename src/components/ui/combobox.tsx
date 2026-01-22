@@ -51,6 +51,9 @@ export function Combobox({
   const selectedLabel = options.find((option) => option.value.toLowerCase() === value?.toLowerCase())?.label;
 
   const handleFilter = (itemValue: string, search: string) => {
+    if (itemValue.toLowerCase() === 'all') {
+      return 1;
+    }
     const option = options.find(opt => opt.value.toLowerCase() === itemValue.toLowerCase());
     if (option?.label.toLowerCase().includes(search.toLowerCase())) {
       return 1;
