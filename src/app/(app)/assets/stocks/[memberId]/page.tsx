@@ -8,9 +8,8 @@ import { familyMembers, clients, mockStockDetails } from '@/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, ArrowLeft, ArrowRight } from 'lucide-react';
 
 const formatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -86,7 +85,7 @@ type DpData = {
 export default function StockDetailsPage() {
     const params = useParams();
     const memberId = params.memberId as string;
-    const [selectedDp, setSelectedDp] = useState<DpData | null>(null);
+    const [selectedDpIndex, setSelectedDpIndex] = useState<number | null>(null);
     const [isFlipped, setIsFlipped] = useState(false);
 
     const member = useMemo(() => {
@@ -109,15 +108,44 @@ export default function StockDetailsPage() {
         }));
     }, []);
 
-    const handleCardClick = (dp: DpData) => {
-        setSelectedDp(dp);
+    const handleCardClick = (index: number) => {
+        setSelectedDpIndex(index);
         setIsFlipped(false);
     };
 
     const handleClose = () => {
-        setSelectedDp(null);
+        setSelectedDpIndex(null);
         setIsFlipped(false);
     };
+
+    const handleNext = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (selectedDpIndex === null) return;
+        setIsFlipped(false);
+        setTimeout(() => {
+            setSelectedDpIndex((prevIndex) => (prevIndex! + 1) % stocksByDp.length);
+        }, 150);
+    };
+    
+    const handlePrev = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (selectedDpIndex === null) return;
+        setIsFlipped(false);
+        setTimeout(() => {
+            setSelectedDpIndex((prevIndex) => (prevIndex! - 1 + stocksByDp.length) % stocksByDp.length);
+        }, 150);
+    };
+
+    const handleDotClick = (e: React.MouseEvent, index: number) => {
+        e.stopPropagation();
+        if (selectedDpIndex === index) return;
+        setIsFlipped(false);
+        setTimeout(() => {
+            setSelectedDpIndex(index);
+        }, 150);
+    }
+    
+    const selectedDp = selectedDpIndex !== null ? stocksByDp[selectedDpIndex] : null;
 
     if (!member) {
         return (
@@ -134,11 +162,11 @@ export default function StockDetailsPage() {
             <p className="text-muted-foreground">Detailed breakdown of stock portfolio.</p>
 
             <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {stocksByDp.map((dp) => (
+                {stocksByDp.map((dp, index) => (
                     <motion.div
                         key={dp.dpName}
                         layoutId={`card-container-${dp.dpName}`}
-                        onClick={() => handleCardClick(dp)}
+                        onClick={() => handleCardClick(index)}
                         className="cursor-pointer h-56"
                         whileHover={{ scale: 1.03 }}
                     >
@@ -170,6 +198,24 @@ export default function StockDetailsPage() {
                             >
                                 <X className="h-5 w-5" />
                             </Button>
+                            
+                            {stocksByDp.length > 1 && (
+                                <>
+                                    <Button
+                                        variant="ghost" size="icon" onClick={handlePrev}
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 z-[70] bg-black/20 hover:bg-black/40 text-white hover:text-white rounded-full"
+                                    >
+                                        <ArrowLeft className="h-6 w-6" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost" size="icon" onClick={handleNext}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 z-[70] bg-black/20 hover:bg-black/40 text-white hover:text-white rounded-full"
+                                    >
+                                        <ArrowRight className="h-6 w-6" />
+                                    </Button>
+                                </>
+                            )}
+                            
                             <motion.div
                                 className="w-full h-full cursor-pointer"
                                 style={{ transformStyle: 'preserve-3d' }}
@@ -190,6 +236,22 @@ export default function StockDetailsPage() {
                                     <CardBack dp={selectedDp} />
                                 </motion.div>
                             </motion.div>
+
+                             {stocksByDp.length > 1 && (
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[70] flex gap-2">
+                                    {stocksByDp.map((_, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={(e) => handleDotClick(e, index)}
+                                            className={cn(
+                                                "h-2 w-2 rounded-full bg-white/50 transition-colors",
+                                                index === selectedDpIndex && "bg-white"
+                                            )}
+                                            aria-label={`Go to slide ${index + 1}`}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </motion.div>
                     </motion.div>
                 )}
@@ -205,3 +267,4 @@ export default function StockDetailsPage() {
         </div>
     );
 }
+
