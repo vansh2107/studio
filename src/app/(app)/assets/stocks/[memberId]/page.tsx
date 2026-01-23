@@ -19,15 +19,15 @@ const formatter = new Intl.NumberFormat('en-IN', {
 });
 
 const CardFront = ({ dp, isExpanded = false }: { dp: DpData, isExpanded?: boolean }) => (
-    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-indigo-700 to-purple-800", isExpanded && "rounded-xl")}>
+    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 via-blue-500 to-orange-400", isExpanded && "rounded-xl")}>
         <CardHeader>
             <CardTitle className="text-3xl font-bold">{dp.dpName}</CardTitle>
-            <CardDescription className="text-indigo-200">{dp.stocks.length} assets in this DP</CardDescription>
+            <CardDescription className="text-blue-100">{dp.stocks.length} assets in this DP</CardDescription>
         </CardHeader>
         <CardContent>
-            <p className="text-indigo-200">Total Value</p>
+            <p className="text-blue-100">Total Value</p>
             <p className="text-4xl font-semibold">{formatter.format(dp.totalValue)}</p>
-            {!isExpanded && <p className="text-sm mt-2 text-indigo-300">Click to view details</p>}
+            {!isExpanded && <p className="text-sm mt-2 text-blue-200">Click to view details</p>}
         </CardContent>
     </Card>
 );
@@ -205,3 +205,4 @@ export default function StockDetailsPage() {
         </div>
     );
 }
+
