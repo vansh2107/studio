@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import type { DashboardAsset, AssetCategory, FamilyMember, Document } from '@/lib/types';
+import type { DashboardAsset, AssetCategory, FamilyMember, Document, Client } from '@/lib/types';
 import { X, User as UserIcon } from 'lucide-react';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from 'next/navigation';
@@ -39,7 +39,7 @@ const formatDate = (dateString?: string) => {
 interface AssetBreakdownModalProps {
   category: AssetCategory;
   assets: DashboardAsset[];
-  familyMembers: FamilyMember[];
+  familyMembers: (FamilyMember | Client)[];
   documents: Document[];
   onClose: () => void;
 }
@@ -119,7 +119,7 @@ export function AssetBreakdownModal({
       const member = familyMembers.find(fm => fm.id === memberId);
       return {
         memberId,
-        memberName: member?.name || 'Unknown Member',
+        memberName: member?.name || 'Unassigned',
         ...data,
       };
     });

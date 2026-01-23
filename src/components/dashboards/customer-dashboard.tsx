@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,9 +10,10 @@ import {
     getRMsForAdmin,
     getAssociatesForRM,
     getClientsForAssociate,
-    getAllRMs
+    getAllRMs,
+    familyMembers as allFamilyMembersData,
 } from '@/lib/mock-data';
-import type { User, AssetCategory, DashboardAsset, FamilyMember, Task } from '@/lib/types';
+import type { User, AssetCategory, DashboardAsset, FamilyMember, Task, Client } from '@/lib/types';
 import { ASSET_CATEGORIES } from '@/lib/constants';
 import { useMemo, useState } from 'react';
 import {
@@ -64,14 +64,49 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
     return [{ label: 'All Clients', value: 'all' }, ...clients];
   }, []);
 
-  const familyMembersForModal = useMemo(() => {
-    if (user.role !== 'CUSTOMER') return [];
-    const head = clients.find(c => c.id === user.id);
-    if (!head) return [];
-    return [
-        head as unknown as FamilyMember,
-        ...getFamilyMembersForClient(user.id)
-    ];
+  const allAvailableFamilyMembers = useMemo(() => {
+    if (!user) return [];
+    
+    let allMembers: (FamilyMember | Client)[] = [];
+    let clientIds: string[] = [];
+
+    switch(user.role) {
+      case 'CUSTOMER':
+        const head = clients.find(c => c.id === user.id);
+        if (head) {
+          allMembers.push(head as unknown as FamilyMember);
+          allMembers.push(...getFamilyMembersForClient(user.id));
+        }
+        break;
+      case 'ASSOCIATE':
+        clientIds = getClientsForAssociate(user.id).map(c => c.id);
+        break;
+      case 'RM': {
+        const associates = getAssociatesForRM(user.id);
+        clientIds = associates.flatMap(assoc => getClientsForAssociate(assoc.id)).map(c => c.id);
+        break;
+      }
+      case 'ADMIN': {
+        const rms = getRMsForAdmin(user.id);
+        const associates = rms.flatMap(rm => getAssociatesForRM(rm.id));
+        clientIds = associates.flatMap(assoc => getClientsForAssociate(assoc.id)).map(c => c.id);
+        break;
+      }
+      case 'SUPER_ADMIN':
+        clientIds = getAllClients().map(c => c.id);
+        break;
+    }
+
+    if (clientIds.length > 0) {
+      const allScopedClients = getAllClients().filter(c => clientIds.includes(c.id));
+      allMembers.push(...allScopedClients.map(c => ({ ...c, relation: 'Head' } as unknown as FamilyMember)));
+      
+      const allScopedFamilyMembers = clientIds.flatMap(id => getFamilyMembersForClient(id));
+      allMembers.push(...allScopedFamilyMembers);
+    }
+    
+    // Add a consistent 'name' property if it doesn't exist
+    return allMembers.map(m => ({ ...m, name: m.name || `${m.firstName} ${m.lastName}` }));
   }, [user]);
 
   const dropdownOptions = useMemo(() => {
@@ -432,7 +467,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
             <AssetBreakdownModal 
               category={selectedCategory} 
               assets={assets}
-              familyMembers={familyMembersForModal}
+              familyMembers={allAvailableFamilyMembers}
               documents={mockDocuments}
               onClose={handleCloseModal}
             />
