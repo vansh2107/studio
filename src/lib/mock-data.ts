@@ -312,9 +312,47 @@ export const mockStockDetails = [
   { dpName: 'Zerodha', scriptName: 'Tata Consultancy Services', purchaseValue: 3500, quantity: 50, currentMarketValue: 3600 },
   { dpName: 'Upstox', scriptName: 'HDFC Bank', purchaseValue: 1500, quantity: 150, currentMarketValue: 1600 },
   { dpName: 'Upstox', scriptName: 'Infosys', purchaseValue: 1400, quantity: 120, currentMarketValue: 1450 },
-  { dpName: 'Groww', scriptName: 'ICICI Bank', purchaseValue: 900, quantity: 200, currentMarketValue: 950 },
-  { dpName: 'Groww', scriptName: 'Hindustan Unilever', purchaseValue: 2500, quantity: 80, currentMarketValue: 2600 },
+  { dpName: 'ICICI Direct', scriptName: 'ICICI Bank', purchaseValue: 900, quantity: 200, currentMarketValue: 950 },
+  { dpName: 'ICICI Direct', scriptName: 'Hindustan Unilever', purchaseValue: 2500, quantity: 80, currentMarketValue: 2600 },
 ];
+
+export const mockPpfDetails = [
+  { bankName: 'SBI', accountHolder: 'John Doe', accountNumber: '123456789', openingDate: '2010-01-15', maturityDate: '2025-01-15', value: 500000, interestRate: 7.1 },
+  { bankName: 'HDFC Bank', accountHolder: 'John Doe', accountNumber: '987654321', openingDate: '2012-03-01', maturityDate: '2027-03-01', value: 750000, interestRate: 7.1 },
+  { bankName: 'ICICI Bank', accountHolder: 'Jane Doe', accountNumber: '112233445', openingDate: '2015-06-20', maturityDate: '2030-06-20', value: 300000, interestRate: 7.1 },
+];
+
+export const mockMutualFundDetails = [
+  { folioNumber: 'FOLIO001', fundName: 'Reliance Large Cap Fund', scheme: 'Growth', nav: 250, units: 1000, currentValue: 250000, purchaseDate: '2018-05-10' },
+  { folioNumber: 'FOLIO001', fundName: 'HDFC Mid-Cap Opportunities Fund', scheme: 'Growth', nav: 120, units: 1500, currentValue: 180000, purchaseDate: '2019-02-20' },
+  { folioNumber: 'FOLIO002', fundName: 'ICICI Prudential Bluechip Fund', scheme: 'Growth', nav: 60, units: 5000, currentValue: 300000, purchaseDate: '2017-11-01' },
+  { folioNumber: 'FOLIO003', fundName: 'SBI Equity Hybrid Fund', scheme: 'Growth', nav: 300, units: 800, currentValue: 240000, purchaseDate: '2020-09-15' },
+];
+
+export const mockLifeInsuranceDetails = [
+  { policyNumber: 'LI001', policyName: 'Term Life Plan', insurer: 'LIC', premium: 10000, sumAssured: 1000000, maturityDate: '2040-01-01' },
+  { policyNumber: 'LI002', policyName: 'ULIP Plan', insurer: 'HDFC Life', premium: 20000, sumAssured: 1500000, maturityDate: '2045-06-01' },
+  { policyNumber: 'LI003', policyName: 'Endowment Plan', insurer: 'SBI Life', premium: 15000, sumAssured: 800000, maturityDate: '2035-11-01' },
+];
+
+export const mockGeneralInsuranceDetails = [
+  { policyNumber: 'GI001', policyName: 'Car Insurance', policyType: 'Motor', insurer: 'Bajaj Allianz', premium: 12000, sumAssured: 500000, expiryDate: '2026-10-20' },
+  { policyNumber: 'GI002', policyName: 'Health Insurance', policyType: 'Health', insurer: 'Apollo Munich', premium: 8000, sumAssured: 300000, expiryDate: '2027-03-15' },
+  { policyNumber: 'GI003', policyName: 'Home Insurance', policyType: 'Property', insurer: 'ICICI Lombard', premium: 5000, sumAssured: 2000000, expiryDate: '2028-01-01' },
+];
+
+export const mockFixedDepositDetails = [
+  { fdName: 'SBI Tax Saver FD', bankName: 'SBI', amount: 100000, interestRate: 6.5, tenure: '5 Years', maturityDate: '2028-03-01' },
+  { fdName: 'HDFC Bank Regular FD', bankName: 'HDFC Bank', amount: 200000, interestRate: 7.0, tenure: '3 Years', maturityDate: '2026-11-10' },
+  { fdName: 'ICICI Bank Golden Years FD', bankName: 'ICICI Bank', amount: 150000, interestRate: 7.2, tenure: '2 Years', maturityDate: '2025-07-22' },
+];
+
+export const mockBondDetails = [
+  { issuer: 'Government of India', bondName: '7.26% GS 2032', faceValue: 1000, quantity: 100, currentValue: 102000, maturityDate: '2032-08-14' },
+  { issuer: 'NABARD', bondName: 'NABARD Bonds', faceValue: 10000, quantity: 10, currentValue: 105000, maturityDate: '2028-01-25' },
+  { issuer: 'Reliance Industries', bondName: 'Reliance NCD', faceValue: 5000, quantity: 20, currentValue: 101000, maturityDate: '2027-06-30' },
+];
+
 
 // --- Permissions ---
 

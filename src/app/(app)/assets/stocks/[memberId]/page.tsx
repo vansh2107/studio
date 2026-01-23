@@ -2,14 +2,12 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useMemo, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useMemo } from 'react';
 import { familyMembers, clients, mockStockDetails } from '@/lib/mock-data';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { X, ArrowLeft, ArrowRight } from 'lucide-react';
+import { InteractiveAssetCardViewer } from '@/components/dashboards/InteractiveAssetCardViewer';
 
 const formatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -69,9 +67,6 @@ const CardBack = ({ dp }: { dp: DpData }) => (
                 </TableBody>
             </Table>
         </CardContent>
-        <CardFooter className="justify-center text-xs text-muted-foreground p-2">
-            Click to flip back
-        </CardFooter>
     </div>
 );
 
@@ -85,8 +80,6 @@ type DpData = {
 export default function StockDetailsPage() {
     const params = useParams();
     const memberId = params.memberId as string;
-    const [selectedDpIndex, setSelectedDpIndex] = useState<number | null>(null);
-    const [isFlipped, setIsFlipped] = useState(false);
 
     const member = useMemo(() => {
         const allMembers = [...clients, ...familyMembers];
@@ -107,46 +100,7 @@ export default function StockDetailsPage() {
             totalValue: stocks.reduce((sum, s) => sum + s.currentMarketValue * s.quantity, 0),
         }));
     }, []);
-
-    const handleCardClick = (index: number) => {
-        setSelectedDpIndex(index);
-        setIsFlipped(false);
-    };
-
-    const handleClose = () => {
-        setSelectedDpIndex(null);
-        setIsFlipped(false);
-    };
-
-    const handleNext = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (selectedDpIndex === null) return;
-        setIsFlipped(false);
-        setTimeout(() => {
-            setSelectedDpIndex((prevIndex) => (prevIndex! + 1) % stocksByDp.length);
-        }, 150);
-    };
     
-    const handlePrev = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (selectedDpIndex === null) return;
-        setIsFlipped(false);
-        setTimeout(() => {
-            setSelectedDpIndex((prevIndex) => (prevIndex! - 1 + stocksByDp.length) % stocksByDp.length);
-        }, 150);
-    };
-
-    const handleDotClick = (e: React.MouseEvent, index: number) => {
-        e.stopPropagation();
-        if (selectedDpIndex === index) return;
-        setIsFlipped(false);
-        setTimeout(() => {
-            setSelectedDpIndex(index);
-        }, 150);
-    }
-    
-    const selectedDp = selectedDpIndex !== null ? stocksByDp[selectedDpIndex] : null;
-
     if (!member) {
         return (
             <Card>
@@ -155,116 +109,31 @@ export default function StockDetailsPage() {
             </Card>
         );
     }
+    
+    if (stocksByDp.length === 0) {
+        return (
+            <div className="space-y-6 p-4">
+                <h1 className="text-3xl font-bold font-headline">Stock Details for {member.name}</h1>
+                 <Card>
+                    <CardContent className="p-10 text-center text-muted-foreground">
+                        <p>No stock assets found for {member.name}.</p>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 p-4">
             <h1 className="text-3xl font-bold font-headline">Stock Details for {member.name}</h1>
             <p className="text-muted-foreground">Detailed breakdown of stock portfolio.</p>
 
-            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {stocksByDp.map((dp, index) => (
-                    <motion.div
-                        key={dp.dpName}
-                        layoutId={`card-container-${dp.dpName}`}
-                        onClick={() => handleCardClick(index)}
-                        className="cursor-pointer h-56"
-                        whileHover={{ scale: 1.03 }}
-                    >
-                        <CardFront dp={dp} />
-                    </motion.div>
-                ))}
-            </motion.div>
-
-            <AnimatePresence>
-                {selectedDp && (
-                    <motion.div
-                        className="fixed inset-0 bg-black/70 flex items-center justify-center z-[8000] p-4"
-                        onClick={handleClose}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
-                        <motion.div
-                            layoutId={`card-container-${selectedDp.dpName}`}
-                            className="w-[50vw] h-[50vh] relative"
-                            onClick={(e) => e.stopPropagation()}
-                            style={{ perspective: 1000 }}
-                        >
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleClose}
-                                className="absolute top-2 right-2 z-[60] bg-black/30 hover:bg-black/50 text-white hover:text-white rounded-full close-icon"
-                            >
-                                <X className="h-5 w-5" />
-                            </Button>
-                            
-                            {stocksByDp.length > 1 && (
-                                <>
-                                    <Button
-                                        variant="ghost" size="icon" onClick={handlePrev}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 z-[70] bg-black/20 hover:bg-black/40 text-white hover:text-white rounded-full"
-                                    >
-                                        <ArrowLeft className="h-6 w-6" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost" size="icon" onClick={handleNext}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 z-[70] bg-black/20 hover:bg-black/40 text-white hover:text-white rounded-full"
-                                    >
-                                        <ArrowRight className="h-6 w-6" />
-                                    </Button>
-                                </>
-                            )}
-                            
-                            <motion.div
-                                className="w-full h-full cursor-pointer"
-                                style={{ transformStyle: 'preserve-3d' }}
-                                onClick={() => setIsFlipped(!isFlipped)}
-                                animate={{ rotateY: isFlipped ? 180 : 0 }}
-                                transition={{ duration: 0.6, ease: 'easeInOut' }}
-                            >
-                                <motion.div
-                                    className="absolute inset-0"
-                                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-                                >
-                                    <CardFront dp={selectedDp} isExpanded />
-                                </motion.div>
-                                <motion.div
-                                    className="absolute inset-0"
-                                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-                                >
-                                    <CardBack dp={selectedDp} />
-                                </motion.div>
-                            </motion.div>
-
-                             {stocksByDp.length > 1 && (
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[70] flex gap-2">
-                                    {stocksByDp.map((_, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={(e) => handleDotClick(e, index)}
-                                            className={cn(
-                                                "h-2 w-2 rounded-full bg-white/50 transition-colors",
-                                                index === selectedDpIndex && "bg-white"
-                                            )}
-                                            aria-label={`Go to slide ${index + 1}`}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {stocksByDp.length === 0 && (
-                <Card>
-                    <CardContent className="p-10 text-center text-muted-foreground">
-                        <p>No stock assets found for {member.name}.</p>
-                    </CardContent>
-                </Card>
-            )}
+            <InteractiveAssetCardViewer<DpData>
+                items={stocksByDp}
+                renderCardFront={(item, isExpanded) => <CardFront dp={item} isExpanded={isExpanded} />}
+                renderCardBack={(item) => <CardBack dp={item} />}
+                layoutIdPrefix="stock-card"
+            />
         </div>
     );
 }
-

@@ -1,24 +1,18 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useMemo, useState, useCallback } from 'react';
-import { familyMembers, clients } from '@/lib/mock-data';
+import { useMemo } from 'react';
+import { familyMembers, clients, mockLifeInsuranceDetails } from '@/lib/mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { InteractiveAssetCardViewer } from '@/components/dashboards/InteractiveAssetCardViewer';
 
 const formatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
   currency: 'INR',
   maximumFractionDigits: 0,
 });
-
-// Mock data for Life Insurance details with Policy Number
-const mockLifeInsuranceDetails = [
-  { policyNumber: 'LI001', policyName: 'Term Life Plan', insurer: 'LIC', premium: 10000, sumAssured: 1000000, maturityDate: '2040-01-01' },
-  { policyNumber: 'LI002', policyName: 'ULIP Plan', insurer: 'HDFC Life', premium: 20000, sumAssured: 1500000, maturityDate: '2045-06-01' },
-  { policyNumber: 'LI003', policyName: 'Endowment Plan', insurer: 'SBI Life', premium: 15000, sumAssured: 800000, maturityDate: '2035-11-01' },
-];
 
 const formatDate = (dateString?: string) => {
   if (!dateString) return 'N/A';
@@ -33,119 +27,115 @@ const formatDate = (dateString?: string) => {
   }
 };
 
-export default function LifeInsuranceDetailsPage() {
-  const params = useParams();
-  const memberId = params.memberId as string;
-  const [selectedPolicy, setSelectedPolicy] = useState<string | null>(null);
-
-  const member = useMemo(() => {
-    const allMembers = [...clients, ...familyMembers];
-    return allMembers.find(m => m.id === memberId);
-  }, [memberId]);
-
-  const lifeInsuranceByPolicy = useMemo(() => {
-    const grouped = new Map<string, typeof mockLifeInsuranceDetails>();
-    mockLifeInsuranceDetails.forEach(policy => {
-      if (!grouped.has(policy.policyNumber)) {
-        grouped.set(policy.policyNumber, []);
-      }
-      grouped.get(policy.policyNumber)?.push(policy);
-    });
-    return Array.from(grouped.entries()).map(([policyNumber, policies]) => ({
-      policyNumber,
-      policies,
-      totalPremium: policies.reduce((sum, p) => sum + p.premium, 0),
-      totalSumAssured: policies.reduce((sum, p) => sum + p.sumAssured, 0),
-    }));
-  }, []);
-
-  const handleCardClick = useCallback((policyNumber: string) => {
-    setSelectedPolicy(policyNumber);
-  }, []);
-
-  const handleBackClick = useCallback(() => {
-    setSelectedPolicy(null);
-  }, []);
-
-  if (!member) {
-    return (
-      <Card>
+const CardFront = ({ item, isExpanded }: { item: GroupedPolicies; isExpanded?: boolean }) => (
+    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 to-teal-500", isExpanded && "rounded-xl")}>
         <CardHeader>
-          <CardTitle>Member not found</CardTitle>
+            <CardTitle className="text-3xl font-bold">{item.policyNumber}</CardTitle>
+            <CardDescription className="text-blue-100">{item.policies.length} assets in this policy</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>The requested details could not be loaded.</p>
+            <p className="text-blue-100">Total Premium</p>
+            <p className="text-4xl font-semibold">{formatter.format(item.totalPremium)}</p>
+            {!isExpanded && <p className="text-sm mt-2 text-blue-200">Click to view details</p>}
         </CardContent>
-      </Card>
-    );
-  }
+    </Card>
+);
 
-  return (
-    <div className="space-y-6 p-4">
-      <h1 className="text-3xl font-bold font-headline">Life Insurance Details for {member.name}</h1>
-      <p className="text-muted-foreground">Detailed breakdown of life insurance policies.</p>
-
-      {!selectedPolicy ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lifeInsuranceByPolicy.map((policyGroup, index) => (
-            <Card
-              key={policyGroup.policyNumber}
-              className="cursor-pointer hover:shadow-lg transition-all duration-300 relative overflow-hidden"
-              onClick={() => handleCardClick(policyGroup.policyNumber)}
-              style={{
-                transform: `scale(1)`, // Initial scale
-                transition: 'transform 0.3s ease-in-out',
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-600 opacity-20"></div>
-              <CardHeader className="relative z-10">
-                <CardTitle className="text-white drop-shadow-md text-2xl">Policy: {policyGroup.policyNumber}</CardTitle>
-                <CardDescription className="text-gray-200">Total Premium: {formatter.format(policyGroup.totalPremium)}</CardDescription>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <p className="text-gray-100">Total Sum Assured: {formatter.format(policyGroup.totalSumAssured)}</p>
-                <p className="text-gray-100">{policyGroup.policies.length} policies</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card className="animate-in slide-in-from-left-0 fade-in-0 duration-500">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-2xl">Policy: {selectedPolicy}</CardTitle>
-              <CardDescription>Detailed view of policy {selectedPolicy}</CardDescription>
-            </div>
-            <Button onClick={handleBackClick} variant="outline">
-              Back to Policy List
-            </Button>
-          </CardHeader>
-          <CardContent>
+const CardBack = ({ item }: { item: GroupedPolicies }) => (
+    <div className="w-full h-full flex flex-col text-card-foreground bg-card rounded-xl">
+        <CardHeader>
+            <CardTitle>{item.policyNumber} Portfolio</CardTitle>
+            <CardDescription>Detailed breakdown of life insurance holdings.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 overflow-y-auto">
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Policy Name</TableHead>
-                  <TableHead>Insurer</TableHead>
-                  <TableHead className="text-right">Premium</TableHead>
-                  <TableHead className="text-right">Sum Assured</TableHead>
-                  <TableHead>Maturity Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {lifeInsuranceByPolicy.find(policyGroup => policyGroup.policyNumber === selectedPolicy)?.policies.map((policy, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{policy.policyName}</TableCell>
-                    <TableCell>{policy.insurer}</TableCell>
-                    <TableCell className="text-right">{formatter.format(policy.premium)}</TableCell>
-                    <TableCell className="text-right">{formatter.format(policy.sumAssured)}</TableCell>
-                    <TableCell>{formatDate(policy.maturityDate)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Policy Name</TableHead>
+                        <TableHead>Insurer</TableHead>
+                        <TableHead className="text-right">Premium</TableHead>
+                        <TableHead className="text-right">Sum Assured</TableHead>
+                        <TableHead>Maturity Date</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {item.policies.map((policy, index) => (
+                        <TableRow key={index}>
+                            <TableCell className="font-medium">{policy.policyName}</TableCell>
+                            <TableCell>{policy.insurer}</TableCell>
+                            <TableCell className="text-right">{formatter.format(policy.premium)}</TableCell>
+                            <TableCell className="text-right">{formatter.format(policy.sumAssured)}</TableCell>
+                            <TableCell>{formatDate(policy.maturityDate)}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-      )}
+        </CardContent>
     </div>
-  );
+);
+
+type GroupedPolicies = {
+  policyNumber: string;
+  policies: (typeof mockLifeInsuranceDetails);
+  totalPremium: number;
+};
+
+export default function LifeInsuranceDetailsPage() {
+    const params = useParams();
+    const memberId = params.memberId as string;
+
+    const member = useMemo(() => {
+        const allMembers = [...clients, ...familyMembers];
+        return allMembers.find(m => m.id === memberId);
+    }, [memberId]);
+
+    const policiesByNumber = useMemo(() => {
+        const grouped = new Map<string, typeof mockLifeInsuranceDetails>();
+        mockLifeInsuranceDetails.forEach(policy => {
+            if (!grouped.has(policy.policyNumber)) {
+                grouped.set(policy.policyNumber, []);
+            }
+            grouped.get(policy.policyNumber)?.push(policy);
+        });
+        return Array.from(grouped.entries()).map(([policyNumber, policies]) => ({
+            policyNumber,
+            policies,
+            totalPremium: policies.reduce((sum, p) => sum + p.premium, 0),
+        }));
+    }, []);
+
+    if (!member) {
+        return (
+            <Card>
+                <CardHeader><CardTitle>Member not found</CardTitle></CardHeader>
+                <CardContent><p>The requested details could not be loaded.</p></CardContent>
+            </Card>
+        );
+    }
+
+    if (policiesByNumber.length === 0) {
+        return (
+             <div className="space-y-6 p-4">
+                <h1 className="text-3xl font-bold font-headline">Life Insurance Details for {member.name}</h1>
+                <Card>
+                    <CardContent className="p-10 text-center text-muted-foreground">
+                        <p>No life insurance assets found for {member.name}.</p>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+    
+    return (
+        <div className="space-y-6 p-4">
+            <h1 className="text-3xl font-bold font-headline">Life Insurance Details for {member.name}</h1>
+            <p className="text-muted-foreground">Detailed breakdown of life insurance policies.</p>
+            <InteractiveAssetCardViewer<GroupedPolicies>
+              items={policiesByNumber}
+              renderCardFront={(item, isExpanded) => <CardFront item={item} isExpanded={isExpanded} />}
+              renderCardBack={(item) => <CardBack item={item} />}
+              layoutIdPrefix="li-card"
+            />
+        </div>
+    );
 }
