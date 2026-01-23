@@ -307,6 +307,15 @@ export const documents: Document[] = [
   { id: 'doc-5', clientId: 'client-3', memberId: 'fm-4-1', category: 'PPF', name: 'PPF_Statement.pdf', url: 'https://picsum.photos/seed/doc/400/300' },
 ];
 
+export const mockStockDetails = [
+  { dpName: 'Zerodha', scriptName: 'Reliance Industries', purchaseValue: 2800, quantity: 100, currentMarketValue: 3000 },
+  { dpName: 'Zerodha', scriptName: 'Tata Consultancy Services', purchaseValue: 3500, quantity: 50, currentMarketValue: 3600 },
+  { dpName: 'Upstox', scriptName: 'HDFC Bank', purchaseValue: 1500, quantity: 150, currentMarketValue: 1600 },
+  { dpName: 'Upstox', scriptName: 'Infosys', purchaseValue: 1400, quantity: 120, currentMarketValue: 1450 },
+  { dpName: 'Groww', scriptName: 'ICICI Bank', purchaseValue: 900, quantity: 200, currentMarketValue: 950 },
+  { dpName: 'Groww', scriptName: 'Hindustan Unilever', purchaseValue: 2500, quantity: 80, currentMarketValue: 2600 },
+];
+
 // --- Permissions ---
 
 export const permissions: Record<string, Permissions> = {
