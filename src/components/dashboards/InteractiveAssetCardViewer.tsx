@@ -90,7 +90,7 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
                 variant="ghost"
                 size="icon"
                 onClick={handleClose}
-                className="absolute top-2 right-2 z-[60] bg-black/30 hover:bg-black/50 text-white hover:text-white rounded-full close-icon"
+                className="absolute top-2 right-2 z-[60] bg-black/30 hover:bg-black/50 text-white hover:text-white rounded-full"
               >
                 <X className="h-5 w-5" />
               </Button>
