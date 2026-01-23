@@ -108,6 +108,7 @@ export const MUTUAL_FUND_SERVICES = [
   'Update of Tax Status',
   'Status Modification from Minor To Major',
   'Change of FATCA',
+  'Change of Broker',
 ] as const;
 
 export const AMC_NAMES = [
