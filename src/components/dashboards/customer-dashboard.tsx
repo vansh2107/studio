@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -398,6 +399,10 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
                               <Badge variant="secondary">{Math.floor(Math.random() * 15) + 1}</Badge>
                           </li>
                       ))}
+                      <li className="flex justify-between items-center text-sm font-medium p-2 -m-2 rounded-md hover:bg-muted cursor-pointer transition-colors" role="button" tabIndex={0}>
+                          <span>Document Not Available</span>
+                          <Badge variant="secondary">{Math.floor(Math.random() * 5)}</Badge>
+                      </li>
                   </ul>
               </CardContent>
           </Card>
