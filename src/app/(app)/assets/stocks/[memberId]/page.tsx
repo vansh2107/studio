@@ -19,7 +19,7 @@ const formatter = new Intl.NumberFormat('en-IN', {
 });
 
 const CardFront = ({ dp, isExpanded = false }: { dp: DpData, isExpanded?: boolean }) => (
-    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 via-blue-500 to-orange-400", isExpanded && "rounded-xl")}>
+    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 to-orange-400", isExpanded && "rounded-xl")}>
         <CardHeader>
             <CardTitle className="text-3xl font-bold">{dp.dpName}</CardTitle>
             <CardDescription className="text-blue-100">{dp.stocks.length} assets in this DP</CardDescription>
@@ -158,7 +158,7 @@ export default function StockDetailsPage() {
                     >
                         <motion.div
                             layoutId={`card-container-${selectedDp.dpName}`}
-                            className="w-[85vw] h-[75vh] relative"
+                            className="w-[50vw] h-[50vh] relative"
                             onClick={(e) => e.stopPropagation()}
                             style={{ perspective: 1000 }}
                         >
