@@ -28,7 +28,7 @@ const formatDate = (dateString?: string) => {
 };
 
 const CardFront = ({ item, isExpanded }: { item: GroupedBonds; isExpanded?: boolean }) => (
-    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 to-yellow-400", isExpanded && "rounded-xl")}>
+    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 to-orange-400", isExpanded && "rounded-xl")}>
         <CardHeader>
             <CardTitle className="text-3xl font-bold">{item.issuer}</CardTitle>
             <CardDescription className="text-blue-100">{item.bonds.length} assets in this issuer</CardDescription>
