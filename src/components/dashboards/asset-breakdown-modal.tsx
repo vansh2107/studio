@@ -56,6 +56,8 @@ export function AssetBreakdownModal({
     return assets.filter(asset => asset.category === category);
   }, [category, assets]);
 
+  const totalAssetCount = categoryAssets.length;
+
   const memberData = useMemo(() => {
     const data = new Map<string, {
       assets: DashboardAsset[];
@@ -124,26 +126,19 @@ export function AssetBreakdownModal({
       };
     });
   }, [categoryAssets, familyMembers, category]);
-  
-  const lifeInsuranceTotals = useMemo(() => {
-    if (category !== 'Life Insurance') return null;
-    return {
-      totalPremium: categoryAssets.reduce((sum, asset) => sum + (asset.premiumAmount || 0), 0),
-      totalSumAssured: categoryAssets.reduce((sum, asset) => sum + (asset.sumAssured || 0), 0),
-    };
-  }, [category, categoryAssets]);
 
   const renderContent = () => {
     const totalValue = categoryAssets.reduce((sum, asset) => sum + (asset.premiumAmount || asset.value), 0);
 
     switch (category) {
       case 'Stocks':
+        const totalDPCount = memberData.reduce((sum, item) => sum + (item.dpCount || 0), 0);
         return (
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead>DP Count</TableHead>
+                <TableHead className="text-right">DP Count</TableHead>
                 <TableHead className="text-right">Total Value</TableHead>
               </TableRow>
             </TableHeader>
@@ -151,7 +146,7 @@ export function AssetBreakdownModal({
               {memberData.map(item => (
                 <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/stocks/${item.memberId}`)}>
                   <TableCell>{item.memberName}</TableCell>
-                  <TableCell>{item.dpCount || 0}</TableCell>
+                  <TableCell className="text-right">{item.dpCount || 0}</TableCell>
                   <TableCell className="text-right">
                     {formatter.format(item.totalValue)}
                   </TableCell>
@@ -160,19 +155,21 @@ export function AssetBreakdownModal({
             </TableBody>
             <TableFooter>
                 <TableRow>
-                    <TableCell colSpan={2} className="font-bold">Total</TableCell>
+                    <TableCell className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{totalDPCount}</TableCell>
                     <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
                 </TableRow>
             </TableFooter>
           </Table>
         );
       case 'PPF':
+        const totalPPFCount = memberData.reduce((sum, item) => sum + (item.ppfCount || 0), 0);
         return (
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead>PPF Count</TableHead>
+                <TableHead className="text-right">PPF Count</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
               </TableRow>
             </TableHeader>
@@ -180,26 +177,28 @@ export function AssetBreakdownModal({
                {memberData.map(item => (
                 <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/ppf/${item.memberId}`)}>
                   <TableCell>{item.memberName}</TableCell>
-                  <TableCell>{item.ppfCount || 0}</TableCell>
+                  <TableCell className="text-right">{item.ppfCount || 0}</TableCell>
                   <TableCell className="text-right">{formatter.format(item.totalValue)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
             <TableFooter>
                 <TableRow>
-                    <TableCell colSpan={2} className="font-bold">Total</TableCell>
+                    <TableCell className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{totalPPFCount}</TableCell>
                     <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
                 </TableRow>
             </TableFooter>
           </Table>
         );
       case 'Mutual Funds':
+         const totalFolioCount = memberData.reduce((sum, item) => sum + (item.folioCount || 0), 0);
          return (
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead>Folio Count</TableHead>
+                <TableHead className="text-right">Folio Count</TableHead>
                 <TableHead className="text-right">Total Value</TableHead>
               </TableRow>
             </TableHeader>
@@ -207,20 +206,26 @@ export function AssetBreakdownModal({
                {memberData.map(item => (
                 <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/mutual-funds/${item.memberId}`)}>
                   <TableCell>{item.memberName}</TableCell>
-                  <TableCell>{item.folioCount || 0}</TableCell>
+                  <TableCell className="text-right">{item.folioCount || 0}</TableCell>
                   <TableCell className="text-right">{formatter.format(item.totalValue)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
             <TableFooter>
                 <TableRow>
-                    <TableCell colSpan={2} className="font-bold">Total</TableCell>
+                    <TableCell className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{totalFolioCount}</TableCell>
                     <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
                 </TableRow>
             </TableFooter>
           </Table>
         );
       case 'Life Insurance':
+        const lifeInsuranceTotals = {
+            totalPremium: categoryAssets.reduce((sum, asset) => sum + (asset.premiumAmount || 0), 0),
+            totalSumAssured: categoryAssets.reduce((sum, asset) => sum + (asset.sumAssured || 0), 0),
+        };
+        const totalLIPolicyCount = memberData.reduce((sum, item) => sum + (item.policyCount || 0), 0);
         return (
           <Table>
             <TableHeader>
@@ -245,20 +250,26 @@ export function AssetBreakdownModal({
             </TableBody>
             <TableFooter>
                 <TableRow>
-                    <TableCell colSpan={2} className="font-bold">Total</TableCell>
-                    <TableCell className="text-right font-bold">{formatter.format(lifeInsuranceTotals?.totalPremium || 0)}</TableCell>
-                    <TableCell className="text-right font-bold">{formatter.format(lifeInsuranceTotals?.totalSumAssured || 0)}</TableCell>
+                    <TableCell className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{totalLIPolicyCount}</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(lifeInsuranceTotals.totalPremium)}</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(lifeInsuranceTotals.totalSumAssured)}</TableCell>
                 </TableRow>
             </TableFooter>
           </Table>
         );
        case 'General Insurance':
+        const generalInsuranceTotals = {
+            totalPremium: categoryAssets.reduce((sum, asset) => sum + (asset.premiumAmount || 0), 0),
+            totalSumAssured: categoryAssets.reduce((sum, asset) => sum + (asset.sumAssured || 0), 0),
+        };
+        const totalGIPolicyCount = memberData.reduce((sum, item) => sum + (item.policyCount || 0), 0);
         return (
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead>Policy Count</TableHead>
+                <TableHead className="text-right">Policy Count</TableHead>
                 <TableHead className="text-right">Premium Amount</TableHead>
                 <TableHead className="text-right">Sum Assured</TableHead>
               </TableRow>
@@ -267,7 +278,7 @@ export function AssetBreakdownModal({
                {memberData.map(item => (
                 <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/general-insurance/${item.memberId}`)}>
                   <TableCell>{item.memberName}</TableCell>
-                  <TableCell>{item.policyCount || 0}</TableCell>
+                  <TableCell className="text-right">{item.policyCount || 0}</TableCell>
                   <TableCell className="text-right">{formatter.format(item.totalPremium || 0)}</TableCell>
                   <TableCell className="text-right">{formatter.format(item.totalSumAssured || 0)}</TableCell>
                 </TableRow>
@@ -275,9 +286,10 @@ export function AssetBreakdownModal({
             </TableBody>
             <TableFooter>
                 <TableRow>
-                    <TableCell colSpan={3} className="font-bold">Total</TableCell>
-                    <TableCell className="text-right font-bold">{formatter.format(lifeInsuranceTotals?.totalPremium || 0)}</TableCell>
-                    <TableCell className="text-right font-bold">{formatter.format(lifeInsuranceTotals?.totalSumAssured || 0)}</TableCell>
+                    <TableCell className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{totalGIPolicyCount}</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(generalInsuranceTotals.totalPremium)}</TableCell>
+                    <TableCell className="text-right font-bold">{formatter.format(generalInsuranceTotals.totalSumAssured)}</TableCell>
                 </TableRow>
             </TableFooter>
           </Table>
@@ -313,12 +325,13 @@ export function AssetBreakdownModal({
           </Table>
         );
       case 'Bonds':
+         const totalBondsCount = memberData.reduce((sum, item) => sum + (item.bondsCount || 0), 0);
          return (
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Holder Name</TableHead>
-                <TableHead>Bonds Count</TableHead>
+                <TableHead className="text-right">Bonds Count</TableHead>
                 <TableHead className="text-right">Total Value</TableHead>
               </TableRow>
             </TableHeader>
@@ -327,7 +340,7 @@ export function AssetBreakdownModal({
                 return (
                   <TableRow key={item.memberId} className="cursor-pointer" onClick={() => router.push(`/assets/bonds/${item.memberId}`)}>
                     <TableCell>{item.memberName}</TableCell>
-                    <TableCell>{item.bondsCount || 0}</TableCell>
+                    <TableCell className="text-right">{item.bondsCount || 0}</TableCell>
                     <TableCell className="text-right">{formatter.format(item.totalValue)}</TableCell>
                   </TableRow>
                 );
@@ -335,7 +348,8 @@ export function AssetBreakdownModal({
             </TableBody>
             <TableFooter>
                 <TableRow>
-                    <TableCell colSpan={2} className="font-bold">Total</TableCell>
+                    <TableCell className="font-bold">Total</TableCell>
+                    <TableCell className="text-right font-bold">{totalBondsCount}</TableCell>
                     <TableCell className="text-right font-bold">{formatter.format(totalValue)}</TableCell>
                 </TableRow>
             </TableFooter>
@@ -351,7 +365,7 @@ export function AssetBreakdownModal({
       <DialogHeader className="p-6 pb-4 text-center sm:text-left">
         <DialogTitle>{category} – Family Breakdown</DialogTitle>
         <DialogDescription>
-          Distribution of {category} assets across family members.
+          Showing a total of {totalAssetCount} assets distributed across family members.
         </DialogDescription>
       </DialogHeader>
       
