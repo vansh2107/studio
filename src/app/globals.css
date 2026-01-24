@@ -132,7 +132,7 @@
   z-index: -1;
   inset: -1.5px; /* Controls border thickness, should match original border width */
   border-radius: inherit; /* Matches parent's border radius */
-  background: conic-gradient(from var(--angle), hsl(var(--primary)), hsl(var(--accent)), #ff8a00, hsl(var(--accent)), hsl(var(--primary)));
+  background: conic-gradient(from var(--angle), hsl(var(--primary)), #A020F0, #FF69B4, #FF8A00, hsl(var(--primary)));
   opacity: 0;
   transition: opacity 300ms ease-in-out;
 }
