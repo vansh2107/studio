@@ -103,10 +103,11 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
             {/* Prev Arrow */}
             {items.length > 1 && (
                 <Button
-                    variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleNavigation('prev'); }}
-                    className="text-foreground h-16 w-16 hover:scale-110 transition-transform shrink-0 hover:bg-transparent"
+                    variant="ghost"
+                    onClick={(e) => { e.stopPropagation(); handleNavigation('prev'); }}
+                    className="h-[40vh] w-auto shrink-0 bg-transparent p-0 shadow-none border-none ring-0 focus-visible:ring-0 hover:bg-transparent text-gray-700 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-300"
                 >
-                    <ArrowLeft className="h-10 w-10" />
+                    <ArrowLeft className="h-[35vh] w-auto" />
                 </Button>
             )}
 
@@ -179,10 +180,11 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
             {/* Next Arrow */}
             {items.length > 1 && (
                 <Button
-                    variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleNavigation('next'); }}
-                    className="text-foreground h-16 w-16 hover:scale-110 transition-transform shrink-0 hover:bg-transparent"
+                    variant="ghost"
+                    onClick={(e) => { e.stopPropagation(); handleNavigation('next'); }}
+                    className="h-[40vh] w-auto shrink-0 bg-transparent p-0 shadow-none border-none ring-0 focus-visible:ring-0 hover:bg-transparent text-gray-700 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-300"
                 >
-                    <ArrowRight className="h-10 w-10" />
+                    <ArrowRight className="h-[35vh] w-auto" />
                 </Button>
             )}
           </motion.div>
