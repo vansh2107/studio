@@ -352,7 +352,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
           </div>
         )}
 
-      <Card className="futuristic-hover">
+      <Card className="gradient-border-card">
         <CardContent className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row md:items-stretch md:justify-around divide-y md:divide-y-0 md:divide-x divide-border">
                 <MetricItem label="Total Net Worth" value={formatter.format(totalNetWorth)} isPrimary />
@@ -378,10 +378,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
                 canClick ? "cursor-pointer" : "cursor-default"
               )}
             >
-              <Card className={cn(
-                  "flex flex-col h-full futuristic-hover", 
-                  canClick && "transition-colors"
-              )}>
+              <Card className="flex flex-col h-full gradient-border-card">
                 <CardHeader className="flex-row items-center gap-4 space-y-0">
                     <div className="p-3 rounded-full bg-primary/10 text-primary">
                       <Icon className="h-6 w-6" />
@@ -402,7 +399,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
             </button>
           );
         })}
-         <Card className="flex flex-col h-full futuristic-hover">
+         <Card className="flex flex-col h-full gradient-border-card">
             <CardHeader className="flex-row items-center gap-4 space-y-0">
                 <div className="p-3 rounded-full bg-primary/10 text-primary">
                     <HelpCircle className="h-6 w-6" />
@@ -420,7 +417,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
       <TaskOverviewSection tasks={scopedTasks} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <Card className="futuristic-hover">
+          <Card className="gradient-border-card">
               <CardHeader>
                   <CardTitle className="text-xl">Compliance</CardTitle>
                   <Separator />
@@ -441,7 +438,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
               </CardContent>
           </Card>
 
-          <Card className="futuristic-hover">
+          <Card className="gradient-border-card">
               <CardHeader>
                   <CardTitle className="text-xl">Alerts</CardTitle>
                    <Separator />
