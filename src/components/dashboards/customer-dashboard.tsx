@@ -307,7 +307,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
       <div className="space-y-6">
         <div className="space-y-2">
             <h1 className="text-3xl font-bold font-headline">{user.role === 'CUSTOMER' ? 'Family Dashboard' : 'Dashboard'}</h1>
-            <p className="text-muted-foreground">A summary of your family's financial health.</p>
+            <p className="text-muted-foreground">{user.role === 'SUPER_ADMIN' ? "A summary of all clients' wealth" : user.role === 'CUSTOMER' ? "A summary of your family's wealth" : "A summary of your clients' wealth"}</p>
         </div>
 
         {user.role === 'SUPER_ADMIN' ? (
