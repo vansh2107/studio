@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { X, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface InteractiveAssetCardViewerProps<T> {
   items: T[];
@@ -21,6 +21,7 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
 }: InteractiveAssetCardViewerProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [direction, setDirection] = useState(0);
 
   const handleCardClick = (index: number) => {
     setSelectedIndex(index);
@@ -32,28 +33,47 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
     setIsFlipped(false);
   };
   
-  const handleNavigation = (direction: 'next' | 'prev') => {
+  const handleNavigation = (navDirection: 'next' | 'prev') => {
     if (selectedIndex === null) return;
     setIsFlipped(false);
-    setTimeout(() => {
-        if (direction === 'next') {
-            setSelectedIndex((prevIndex) => (prevIndex! + 1) % items.length);
-        } else {
-            setSelectedIndex((prevIndex) => (prevIndex! - 1 + items.length) % items.length);
-        }
-    }, 150); // allow flip back animation to start
-  }
+
+    if (navDirection === 'next') {
+        setDirection(1);
+        setSelectedIndex((prevIndex) => (prevIndex! + 1) % items.length);
+    } else {
+        setDirection(-1);
+        setSelectedIndex((prevIndex) => (prevIndex! - 1 + items.length) % items.length);
+    }
+  };
 
   const handleDotClick = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
-    if (selectedIndex === index) return;
+    if (selectedIndex === null || selectedIndex === index) return;
+    
     setIsFlipped(false);
-    setTimeout(() => {
-        setSelectedIndex(index);
-    }, 150);
-  }
+    setDirection(index > selectedIndex ? 1 : -1);
+    setSelectedIndex(index);
+  };
 
   const selectedItem = selectedIndex !== null ? items[selectedIndex] : null;
+
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? "100%" : "-100%",
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? "100%" : "-100%",
+      opacity: 0,
+    }),
+  };
+
 
   return (
     <>
@@ -74,59 +94,66 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
       <AnimatePresence>
         {selectedItem && selectedIndex !== null && (
           <motion.div
-            className="fixed inset-0 bg-black/70 flex items-center justify-center z-[8000] p-4 gap-6"
+            className="fixed inset-0 flex items-center justify-center z-[8000] p-4"
             onClick={handleClose}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            animate={{ opacity: 1, backdropFilter: 'blur(8px) dim(60%)' }}
+            exit={{ opacity: 0, backdropFilter: 'blur(0px) dim(0%)' }}
           >
             {/* Prev Arrow */}
             {items.length > 1 && (
                 <Button
                     variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleNavigation('prev'); }}
-                    className="bg-black/20 hover:bg-black/40 text-white hover:text-white rounded-full shrink-0"
+                    className="text-white h-12 w-12 hover:scale-110 transition-transform shrink-0"
                 >
-                    <ArrowLeft className="h-6 w-6" />
+                    <ArrowLeft className="h-8 w-8" />
                 </Button>
             )}
 
             {/* Card and Dots Container */}
             <div className="flex flex-col items-center gap-4">
                 <motion.div
-                    layoutId={`${layoutIdPrefix}-${selectedIndex}`}
-                    className="w-[50vw] h-[50vh] relative"
+                    className="w-[50vw] h-[50vh] relative overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                     style={{ perspective: 1000 }}
                 >
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleClose}
-                    className="absolute top-2 right-2 z-[60] bg-black/30 hover:bg-black/50 text-white hover:text-white rounded-full"
-                >
-                    <X className="h-5 w-5" />
-                </Button>
-                
-                <motion.div
-                    className="w-full h-full cursor-pointer"
-                    style={{ transformStyle: 'preserve-3d' }}
-                    onClick={() => setIsFlipped(!isFlipped)}
-                    animate={{ rotateY: isFlipped ? 180 : 0 }}
-                    transition={{ duration: 0.6, ease: 'easeInOut' }}
-                >
+                  <AnimatePresence initial={false} custom={direction}>
                     <motion.div
-                    className="absolute inset-0"
-                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+                        key={selectedIndex}
+                        layoutId={`${layoutIdPrefix}-${selectedIndex}`}
+                        custom={direction}
+                        variants={slideVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{
+                          x: { type: "spring", stiffness: 300, damping: 30 },
+                          opacity: { duration: 0.2 },
+                        }}
+                        className="absolute inset-0"
                     >
-                    {renderCardFront(selectedItem, true)}
+                      <motion.div
+                          className="w-full h-full cursor-pointer"
+                          style={{ transformStyle: 'preserve-3d' }}
+                          onClick={() => setIsFlipped(!isFlipped)}
+                          animate={{ rotateY: isFlipped ? 180 : 0 }}
+                          transition={{ duration: 0.6, ease: 'easeInOut' }}
+                      >
+                          <motion.div
+                          className="absolute inset-0"
+                          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+                          >
+                          {renderCardFront(selectedItem, true)}
+                          </motion.div>
+                          <motion.div
+                          className="absolute inset-0 bg-card rounded-xl overflow-hidden"
+                          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                          >
+                          {renderCardBack(selectedItem)}
+                          </motion.div>
+                      </motion.div>
                     </motion.div>
-                    <motion.div
-                    className="absolute inset-0 bg-card rounded-xl overflow-hidden"
-                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-                    >
-                    {renderCardBack(selectedItem)}
-                    </motion.div>
-                </motion.div>
+                  </AnimatePresence>
                 </motion.div>
 
                 {/* Dots */}
@@ -153,9 +180,9 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
             {items.length > 1 && (
                 <Button
                     variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleNavigation('next'); }}
-                    className="bg-black/20 hover:bg-black/40 text-white hover:text-white rounded-full shrink-0"
+                    className="text-white h-12 w-12 hover:scale-110 transition-transform shrink-0"
                 >
-                    <ArrowRight className="h-6 w-6" />
+                    <ArrowRight className="h-8 w-8" />
                 </Button>
             )}
           </motion.div>
