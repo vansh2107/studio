@@ -106,3 +106,68 @@
 [cmdk-input] {
   pointer-events: auto !important;
 }
+
+/* Futuristic Card Hover Effect */
+@property --angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes rotate-border {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.futuristic-hover {
+  position: relative;
+  transition: all 300ms ease-in-out;
+}
+
+/* This is the gradient border */
+.futuristic-hover::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -1.5px; /* Controls border thickness, should match original border width */
+  border-radius: inherit; /* Matches parent's border radius */
+  background: conic-gradient(from var(--angle), hsl(var(--primary)), hsl(var(--accent)), #ff8a00, hsl(var(--accent)), hsl(var(--primary)));
+  opacity: 0;
+  transition: opacity 300ms ease-in-out;
+}
+
+/* This is the background glow/gradient */
+.futuristic-hover::after {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.05));
+  opacity: 0;
+  transition: opacity 300ms ease-in-out;
+}
+
+.futuristic-hover:hover {
+  box-shadow: 0 0 25px hsla(var(--primary) / 0.25);
+  border-color: hsl(var(--primary) / 0.1); /* Subtle border color on hover */
+}
+
+.futuristic-hover:hover::before {
+  opacity: 1;
+  animation: rotate-border 4s linear infinite;
+}
+
+.futuristic-hover:hover::after {
+  opacity: 1;
+}
+
+/* For glassmorphism, the card itself needs a semi-transparent background on hover */
+@supports (backdrop-filter: blur(6px)) or (-webkit-backdrop-filter: blur(6px)) {
+  .futuristic-hover:hover {
+    background-color: hsla(var(--card) / 0.1);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+}
