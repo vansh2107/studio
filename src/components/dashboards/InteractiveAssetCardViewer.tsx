@@ -97,23 +97,23 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
             className="fixed inset-0 flex items-center justify-center z-[8000] p-4"
             onClick={handleClose}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1, backdropFilter: 'blur(8px) dim(60%)' }}
-            exit={{ opacity: 0, backdropFilter: 'blur(0px) dim(0%)' }}
+            animate={{ opacity: 1, backdropFilter: 'blur(8px)' }}
+            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
           >
             {/* Prev Arrow */}
             {items.length > 1 && (
                 <Button
                     variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleNavigation('prev'); }}
-                    className="text-white h-12 w-12 hover:scale-110 transition-transform shrink-0"
+                    className="text-foreground h-16 w-16 hover:scale-110 transition-transform shrink-0 hover:bg-transparent"
                 >
-                    <ArrowLeft className="h-8 w-8" />
+                    <ArrowLeft className="h-10 w-10" />
                 </Button>
             )}
 
             {/* Card and Dots Container */}
             <div className="flex flex-col items-center gap-4">
                 <motion.div
-                    className="w-[50vw] h-[50vh] relative overflow-hidden"
+                    className="w-[50vw] h-[50vh] relative"
                     onClick={(e) => e.stopPropagation()}
                     style={{ perspective: 1000 }}
                 >
@@ -164,10 +164,10 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
                         key={index}
                         onClick={(e) => handleDotClick(e, index)}
                         className={cn(
-                            "h-2 rounded-full transition-all duration-300",
+                            "rounded-full transition-all duration-300",
                             index === selectedIndex
-                            ? "w-4 bg-primary"
-                            : "w-2 bg-white/70 hover:bg-white"
+                            ? "w-3 h-3 bg-primary"
+                            : "w-2 h-2 bg-white/70 hover:bg-white"
                         )}
                         aria-label={`Go to slide ${index + 1}`}
                         />
@@ -180,9 +180,9 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
             {items.length > 1 && (
                 <Button
                     variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleNavigation('next'); }}
-                    className="text-white h-12 w-12 hover:scale-110 transition-transform shrink-0"
+                    className="text-foreground h-16 w-16 hover:scale-110 transition-transform shrink-0 hover:bg-transparent"
                 >
-                    <ArrowRight className="h-8 w-8" />
+                    <ArrowRight className="h-10 w-10" />
                 </Button>
             )}
           </motion.div>
