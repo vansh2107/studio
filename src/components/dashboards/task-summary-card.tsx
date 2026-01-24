@@ -373,7 +373,7 @@ export function TaskSummaryCard({ allTasks, limit = 5 }: { allTasks: Task[], lim
     
     return (
       <TooltipProvider>
-        <Card className="lg:col-span-7 gradient-border-card">
+        <Card className="lg:col-span-7">
             <CardHeader>
                 <TaskOverview tasks={allTasks} />
             </CardHeader>

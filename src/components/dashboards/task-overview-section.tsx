@@ -67,7 +67,7 @@ export function TaskOverviewSection({ tasks }: TaskOverviewSectionProps) {
               tabIndex={0}
               onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleCardClick(status)}
               className={cn(
-                "cursor-pointer hover:-translate-y-1 transition-all duration-200 futuristic-hover",
+                "cursor-pointer hover:-translate-y-1 transition-all duration-200",
                 statusConfig[status].className
               )}
               onClick={() => handleCardClick(status)}
