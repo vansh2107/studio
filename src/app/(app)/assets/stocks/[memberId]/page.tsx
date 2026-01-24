@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { InteractiveAssetCardViewer } from '@/components/dashboards/InteractiveAssetCardViewer';
+import Image from 'next/image';
 
 const formatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -18,8 +19,16 @@ const formatter = new Intl.NumberFormat('en-IN', {
 const CardFront = ({ dp, isExpanded = false }: { dp: DpData, isExpanded?: boolean }) => (
     <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 to-orange-400", isExpanded && "rounded-xl")}>
         <CardHeader>
-            <CardTitle className="text-3xl font-bold">{dp.dpName}</CardTitle>
-            <CardDescription className="text-blue-100">{dp.stocks.length} assets in this DP</CardDescription>
+            <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center font-bold text-2xl">
+                    {dp.dpName.charAt(0)}
+                </div>
+                <div>
+                    <CardTitle className="text-2xl font-semibold">{dp.dpName}</CardTitle>
+                    {dp.dpId && <p className="text-sm text-white/70">DP-ID: {dp.dpId}</p>}
+                </div>
+            </div>
+            <CardDescription className="text-blue-100 pt-2">{dp.stocks.length} assets in this DP</CardDescription>
         </CardHeader>
         <CardContent>
             <p className="text-blue-100">Total Value</p>
@@ -73,6 +82,7 @@ const CardBack = ({ dp }: { dp: DpData }) => (
 
 type DpData = {
     dpName: string;
+    dpId: string;
     stocks: (typeof mockStockDetails);
     totalValue: number;
 };
@@ -94,8 +104,15 @@ export default function StockDetailsPage() {
             }
             grouped.get(stock.dpName)?.push(stock);
         });
+        const dpidMap: { [key: string]: string } = {
+            'Zerodha': 'IN300095',
+            'Upstox': 'IN300214',
+            'ICICI Direct': 'IN300118',
+            'HDFC Securities': 'IN300183'
+        };
         return Array.from(grouped.entries()).map(([dpName, stocks]) => ({
             dpName,
+            dpId: dpidMap[dpName] || 'IN' + Math.floor(100000 + Math.random() * 900000),
             stocks,
             totalValue: stocks.reduce((sum, s) => sum + s.currentMarketValue * s.quantity, 0),
         }));

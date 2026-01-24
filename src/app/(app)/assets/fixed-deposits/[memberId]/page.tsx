@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams } from 'next/navigation';
@@ -7,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { InteractiveAssetCardViewer } from '@/components/dashboards/InteractiveAssetCardViewer';
+import Image from 'next/image';
 
 const formatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -28,10 +30,18 @@ const formatDate = (dateString?: string) => {
 };
 
 const CardFront = ({ item, isExpanded }: { item: GroupedFDs; isExpanded?: boolean }) => (
-    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 to-orange-400", isExpanded && "rounded-xl")}>
+    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 to-gray-400", isExpanded && "rounded-xl")}>
         <CardHeader>
-            <CardTitle className="text-3xl font-bold">{item.fdName}</CardTitle>
-            <CardDescription className="text-blue-100">{item.fds.length} assets in this FD</CardDescription>
+             <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center font-bold text-2xl">
+                    {item.fdName.charAt(0)}
+                </div>
+                <div>
+                    <CardTitle className="text-2xl font-semibold">{item.fdName}</CardTitle>
+                    {item.bankName && <p className="text-sm text-white/70">Bank: {item.bankName}</p>}
+                </div>
+            </div>
+            <CardDescription className="text-blue-100 pt-2">{item.fds.length} assets in this FD</CardDescription>
         </CardHeader>
         <CardContent>
             <p className="text-blue-100">Total Value</p>
@@ -76,6 +86,7 @@ const CardBack = ({ item }: { item: GroupedFDs }) => (
 
 type GroupedFDs = {
   fdName: string;
+  bankName: string;
   fds: (typeof mockFixedDepositDetails);
   totalAmount: number;
 };
@@ -99,6 +110,7 @@ export default function FixedDepositDetailsPage() {
         });
         return Array.from(grouped.entries()).map(([fdName, fds]) => ({
             fdName,
+            bankName: fds[0]?.bankName || 'N/A',
             fds,
             totalAmount: fds.reduce((sum, f) => sum + f.amount, 0),
         }));
