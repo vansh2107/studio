@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { cn } from '@/lib/utils';
 import { InteractiveAssetCardViewer } from '@/components/dashboards/InteractiveAssetCardViewer';
 import Image from 'next/image';
+import { FileText } from 'lucide-react';
 
 const formatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -30,18 +31,21 @@ const formatDate = (dateString?: string) => {
 };
 
 const CardFront = ({ item, isExpanded }: { item: GroupedBonds; isExpanded?: boolean }) => (
-    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 to-yellow-400", isExpanded && "rounded-xl")}>
-        <CardHeader>
+    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 to-orange-400", isExpanded && "rounded-xl")}>
+        <CardHeader className="flex flex-row justify-between items-start">
             <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center font-bold text-2xl">
-                    {item.issuer.charAt(0)}
+                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                    <CardTitle className="text-2xl font-semibold">{item.issuer}</CardTitle>
-                    {item.bondName && <p className="text-sm text-white/70">Bond: {item.bondName}</p>}
+                    <CardTitle className="text-2xl font-semibold">Bonds</CardTitle>
+                    <CardDescription className="text-blue-100 pt-1">{item.bonds.length} assets</CardDescription>
                 </div>
             </div>
-            <CardDescription className="text-blue-100 pt-2">{item.bonds.length} assets in this issuer</CardDescription>
+            <div className="text-right flex-shrink-0">
+                 <h3 className="text-lg font-bold">{item.issuer}</h3>
+                 {item.bondName && <p className="text-sm opacity-80">{item.bondName}</p>}
+            </div>
         </CardHeader>
         <CardContent>
             <p className="text-blue-100">Total Value</p>
