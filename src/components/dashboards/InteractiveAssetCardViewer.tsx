@@ -105,28 +105,28 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
 
       <FullScreenOverlay isOpen={!!selectedItem || !!specialExpansionItem} onClose={handleClose}>
         
-        <AnimatePresence>
-          {specialExpansionItem && (
+        {specialExpansionItem && (
+          <div
+            className="flex flex-col items-center justify-center gap-4 max-h-[90vh] w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
             <motion.div
-              className="flex flex-col items-center gap-4 max-h-[85vh] w-full"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              onClick={(e) => e.stopPropagation()}
+              layoutId={`${layoutIdPrefix}-${specialExpansionIndex}`}
+              className="w-[60vw] max-w-xl h-56 shrink-0"
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
             >
-              <motion.div
-                layoutId={`${layoutIdPrefix}-${specialExpansionIndex}`}
-                className="w-[60vw] max-w-xl h-56 shrink-0"
-              >
-                {renderCardFront(specialExpansionItem, true)}
-              </motion.div>
-              <div className="w-[80vw] max-w-4xl overflow-y-auto rounded-xl">
-                {renderCardBack(specialExpansionItem)}
-              </div>
+              {renderCardFront(specialExpansionItem, true)}
             </motion.div>
-          )}
-        </AnimatePresence>
+            <motion.div 
+              className="w-[80vw] max-w-4xl overflow-y-auto rounded-xl"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+            >
+              {renderCardBack(specialExpansionItem)}
+            </motion.div>
+          </div>
+        )}
 
         {!specialExpansionItem && selectedItem && (
             <>
