@@ -119,21 +119,19 @@
 
 .gradient-border-card {
   position: relative;
-  border-radius: var(--radius);
+  /* Reset border and background from base card styles to allow pseudo-elements to work */
+  border-width: 0 !important;
+  background: transparent !important;
   overflow: hidden;
-  background: transparent;
-  border-width: 0;
+  /* Establish a stacking context */
+  z-index: 0;
 }
 
-.gradient-border-card > * {
-    position: relative;
-    z-index: 2;
-}
-
+/* The rotating gradient layer. Sits at the very back. */
 .gradient-border-card::before {
   content: '';
   position: absolute;
-  z-index: 0;
+  z-index: -2; /* Layer behind the mask */
   left: -50%;
   top: -50%;
   width: 200%;
@@ -142,14 +140,18 @@
   animation: rotateBorder 8s linear infinite;
 }
 
+/* The mask layer. This creates the card's inner background,
+   covering the rotating gradient except for a few pixels around the edge,
+   which forms the border. */
 .gradient-border-card::after {
   content: '';
   position: absolute;
-  z-index: 1;
+  z-index: -1; /* Layer behind content, but on top of the gradient */
   left: 2px;
   top: 2px;
   width: calc(100% - 4px);
   height: calc(100% - 4px);
-  background: linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(59,130,246,0.18) 50%, rgba(249,115,22,0.18) 50%, rgba(249,115,22,0.18) 100%);
+  /* Use the card's theme background color to create the opaque mask */
+  background: hsl(var(--card));
   border-radius: calc(var(--radius) - 2px);
 }
