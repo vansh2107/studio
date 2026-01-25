@@ -108,7 +108,7 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
               <div className="flex flex-col items-center justify-start h-full w-full pt-16 overflow-y-auto px-4">
                 <motion.div
                   layoutId={`${layoutIdPrefix}-${selectedIndex}`}
-                  className="w-[80vw] max-w-4xl h-56 flex-shrink-0"
+                  className="w-[60vw] max-w-3xl h-56 flex-shrink-0"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {renderCardFront(selectedItem, true)}
