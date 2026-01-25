@@ -399,7 +399,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
             </button>
           );
         })}
-         <Card className="flex flex-col h-full">
+         <Card className="flex flex-col h-full gradient-border-card">
             <CardHeader className="flex-row items-center gap-4 space-y-0">
                 <div className="p-3 rounded-full bg-primary/10 text-primary">
                     <HelpCircle className="h-6 w-6" />

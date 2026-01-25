@@ -110,6 +110,7 @@
 .gradient-border-card {
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, rgba(59,130,246,0.03), rgba(236,72,153,0.03));
 }
 
 .gradient-border-card::before {
@@ -121,10 +122,6 @@
   z-index: -1;
   opacity: 0;
   transition: opacity 0.3s ease;
-}
-
-.gradient-border-card:hover {
-  background: linear-gradient(135deg, rgba(59,130,246,0.05), rgba(236,72,153,0.05));
 }
 
 .gradient-border-card:hover::before {
