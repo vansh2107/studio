@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -355,7 +356,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
           </div>
         )}
 
-      <Card className="gradient-border-card">
+      <Card className="gradient-background-card">
         <CardContent className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row md:items-stretch md:justify-around divide-y md:divide-y-0 md:divide-x divide-border">
                 <MetricItem label="Total Net Worth" value={formatter.format(totalNetWorth)} isPrimary />
@@ -420,7 +421,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
       <TaskOverviewSection tasks={scopedTasks} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <Card>
+          <Card className="gradient-background-card">
               <CardHeader>
                   <CardTitle className="text-xl">Compliance</CardTitle>
                   <Separator />
@@ -441,7 +442,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
               </CardContent>
           </Card>
 
-          <Card>
+          <Card className="gradient-background-card">
               <CardHeader>
                   <CardTitle className="text-xl">Alerts</CardTitle>
                    <Separator />
