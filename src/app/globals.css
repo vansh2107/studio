@@ -152,6 +152,12 @@
   width: calc(100% - 4px);
   height: calc(100% - 4px);
   /* Use the card's theme background color to create the opaque mask */
-  background: hsl(var(--card));
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.18) 0%,
+    rgba(59, 130, 246, 0.18) 50%,
+    rgba(249, 115, 22, 0.18) 50%,
+    rgba(249, 115, 22, 0.18) 100%
+  );
   border-radius: calc(var(--radius) - 2px);
 }
