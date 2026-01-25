@@ -108,17 +108,20 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
         <AnimatePresence>
           {specialExpansionItem && (
             <motion.div
-              className="w-[80vw] max-w-4xl max-h-[85vh] overflow-y-auto rounded-xl"
+              className="flex flex-col items-center gap-4 max-h-[85vh] w-full"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <motion.div layoutId={`${layoutIdPrefix}-${specialExpansionIndex}`} className="h-56">
+              <motion.div
+                layoutId={`${layoutIdPrefix}-${specialExpansionIndex}`}
+                className="w-[60vw] max-w-xl h-56 shrink-0"
+              >
                 {renderCardFront(specialExpansionItem, true)}
               </motion.div>
-              <div className="mt-4">
+              <div className="w-[80vw] max-w-4xl overflow-y-auto rounded-xl">
                 {renderCardBack(specialExpansionItem)}
               </div>
             </motion.div>
