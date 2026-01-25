@@ -148,6 +148,6 @@
   top: 2px;
   width: calc(100% - 4px);
   height: calc(100% - 4px);
-  background: hsl(var(--card));
+  background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(249,115,22,0.12));
   border-radius: calc(var(--radius) - 2px);
 }
