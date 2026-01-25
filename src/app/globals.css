@@ -151,8 +151,9 @@
   top: 2px;
   width: calc(100% - 4px);
   height: calc(100% - 4px);
-  /* Use the card's theme background color to create the opaque mask */
-  background: linear-gradient(
+  /* Use the card's theme background color for opacity, and layer the gradient on top */
+  background-color: hsl(var(--card)); /* Opaque base color */
+  background-image: linear-gradient( /* Translucent gradient on top */
     135deg,
     rgba(59, 130, 246, 0.18) 0%,
     rgba(59, 130, 246, 0.18) 50%,
