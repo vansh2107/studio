@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -13,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useTasks, type Task, type TaskStatus } from '@/hooks/use-tasks';
+import { useTasks, type Task } from '@/hooks/use-tasks';
+import { TASK_STATUSES, type TaskStatus } from '@/lib/constants';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Edit, Download, AlertTriangle } from 'lucide-react';
@@ -41,13 +41,12 @@ import {
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { isOverdue } from '@/lib/is-overdue';
-import { getAllClients, mockFamilyMembers, getAllRMs } from '@/lib/mock-data';
+import { getAllClients, familyMembers, getAllRMs } from '@/lib/mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/combobox';
 import { InteractiveAssetCardViewer } from '@/components/dashboards/InteractiveAssetCardViewer';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ClipboardList } from 'lucide-react';
-import { TASK_STATUSES } from '@/lib/constants';
 
 const getInitials = (name: string) => {
   if (!name) return '';
@@ -112,7 +111,7 @@ export default function TasksPage() {
       relation: 'Head'
     }));
 
-    const members = mockFamilyMembers.map(m => {
+    const members = familyMembers.map(m => {
       const head = getAllClients().find(c => c.id === m.clientId);
       return {
         label: `${m.firstName} ${m.lastName} (${m.relation} of ${head?.firstName})`,
