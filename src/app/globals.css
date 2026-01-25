@@ -135,7 +135,6 @@
   top: -50%;
   width: 200%;
   height: 200%;
-  /* Fix: 50/50 color split for the border */
   background-image: conic-gradient(#3B82F6 0%, #3B82F6 50%, #F97316 50%, #F97316 100%);
   animation: rotateBorder 8s linear infinite;
 }
