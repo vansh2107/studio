@@ -151,6 +151,7 @@ export default function StockDetailsPage() {
 
             <InteractiveAssetCardViewer<DpData>
                 items={stocksByDp}
+                memberName={member.name}
                 renderCardFront={(item, isExpanded) => <CardFront dp={item} isExpanded={isExpanded} />}
                 renderCardBack={(item) => <CardBack dp={item} />}
                 layoutIdPrefix="stock-card"
