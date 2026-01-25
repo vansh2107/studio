@@ -121,6 +121,10 @@
   background-image: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(249, 115, 22, 0.18));
 }
 
+.orange-gradient-background-card {
+  background-image: linear-gradient(135deg, rgba(251, 146, 60, 0.18), rgba(249, 115, 22, 0.18));
+}
+
 .gradient-border-card {
   position: relative;
   /* Reset border and background from base card styles to allow pseudo-elements to work */

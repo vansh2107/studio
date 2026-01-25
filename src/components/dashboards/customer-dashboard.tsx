@@ -356,7 +356,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
           </div>
         )}
 
-      <Card className="gradient-background-card">
+      <Card className="orange-gradient-background-card">
         <CardContent className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row md:items-stretch md:justify-around divide-y md:divide-y-0 md:divide-x divide-border">
                 <MetricItem label="Total Net Worth" value={formatter.format(totalNetWorth)} isPrimary />
