@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 
 
 type ActiveModal = 'form' | 'view-family' | 'view-member' | 'member-form' | null;
@@ -53,6 +54,7 @@ export default function ClientsPage() {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
   const [loading, setLoading] = useState(true);
   const [showOnlyHeads, setShowOnlyHeads] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -149,23 +151,20 @@ export default function ClientsPage() {
   }, [effectiveUser, familyMembers]);
 
   const filteredClients = useMemo(() => {
-    if (showOnlyHeads) {
-      return allDisplayClients.filter(c => c.isFamilyHead);
+    let clientsToFilter = allDisplayClients;
+
+    if (searchTerm) {
+        clientsToFilter = clientsToFilter.filter(client =>
+            client.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
     }
     
-    // If not showing only heads, show all members of all visible families
-    const visibleHeadIds = new Set(
-        allDisplayClients.filter(c => c.isFamilyHead).map(c => c.id)
-    );
-
-    return allDisplayClients.filter(c => {
-        if (c.isFamilyHead) {
-            return visibleHeadIds.has(c.id);
-        }
-        const member = c as FamilyMember;
-        return visibleHeadIds.has(member.clientId);
-    });
-}, [allDisplayClients, showOnlyHeads]);
+    if (showOnlyHeads) {
+      return clientsToFilter.filter(c => c.isFamilyHead);
+    }
+    
+    return clientsToFilter;
+}, [allDisplayClients, showOnlyHeads, searchTerm]);
 
 
   const handleCloseModal = () => {
@@ -332,13 +331,22 @@ export default function ClientsPage() {
           </div>
         </div>
         
-        <div className="flex justify-end items-center space-x-2 py-4">
-            <Label htmlFor="show-heads-only">Show only Family Heads</Label>
-            <Switch
-                id="show-heads-only"
-                checked={showOnlyHeads}
-                onCheckedChange={setShowOnlyHeads}
-            />
+        <div className="flex justify-between items-center py-4">
+            <div className="w-full max-w-sm">
+                <Input 
+                    placeholder="Search by name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+            <div className="flex items-center space-x-2">
+                <Label htmlFor="show-heads-only">Show only Family Heads</Label>
+                <Switch
+                    id="show-heads-only"
+                    checked={showOnlyHeads}
+                    onCheckedChange={setShowOnlyHeads}
+                />
+            </div>
         </div>
 
         <Card>

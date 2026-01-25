@@ -467,11 +467,13 @@ export default function TasksPage() {
         }
     }
 
+    // Apply status filter
     if (statusFilter) {
       if (statusFilter === 'Overdue') {
-        return filtered.filter(task => isOverdue(task));
+        filtered = filtered.filter(task => isOverdue(task));
+      } else {
+        filtered = filtered.filter(task => task.status === statusFilter);
       }
-      return filtered.filter(task => task.status === statusFilter);
     }
     
     return filtered;
@@ -676,7 +678,7 @@ export default function TasksPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-full max-w-xs">
+                    <div className="w-full max-w-[400px]">
                         <Combobox
                             options={clientOptions}
                             value={clientFilter || 'all'}
@@ -867,5 +869,6 @@ export default function TasksPage() {
     </TooltipProvider>
   );
 }
+
 
 
