@@ -122,6 +122,9 @@
   z-index: 0;
   border-radius: var(--radius);
   overflow: hidden;
+  /* Fix: Override card defaults to make pseudo-elements visible */
+  background: transparent;
+  border-width: 0;
 }
 
 .gradient-border-card::before {
@@ -132,11 +135,8 @@
   top: -50%;
   width: 200%;
   height: 200%;
-  background-color: #399953;
-  background-repeat: no-repeat;
-  background-size: 50% 50%, 50% 50%;
-  background-position: 0 0, 100% 0, 100% 100%, 0 100%;
-  background-image: conic-gradient(from 180deg at 50% 50%, #8b5cf6, #ec4899, #f97316, #4F7CFF, #8b5cf6);
+  /* Fix: 50/50 color split for the border */
+  background-image: conic-gradient(#3B82F6 0%, #3B82F6 50%, #F97316 50%, #F97316 100%);
   animation: rotateBorder 8s linear infinite;
 }
 
