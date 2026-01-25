@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -289,7 +288,10 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
   const showFilterDropdown = user.role !== 'SUPER_ADMIN' && user.role !== 'CUSTOMER' && dropdownOptions.length > 0;
 
   const MetricItem = ({ label, value, isPrimary = false }: { label: string, value: string, isPrimary?: boolean }) => (
-    <div className="flex flex-col items-center justify-center text-center flex-1 py-2">
+    <div className={cn(
+        "flex flex-col items-center justify-center text-center flex-1 py-2",
+        isPrimary && "text-base"
+    )}>
         <p className={cn(
             "text-sm text-muted-foreground mb-1",
             isPrimary && "text-base"
@@ -353,7 +355,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
           </div>
         )}
 
-      <Card>
+      <Card className="gradient-border-card">
         <CardContent className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row md:items-stretch md:justify-around divide-y md:divide-y-0 md:divide-x divide-border">
                 <MetricItem label="Total Net Worth" value={formatter.format(totalNetWorth)} isPrimary />
