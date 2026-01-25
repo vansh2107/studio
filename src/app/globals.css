@@ -119,18 +119,21 @@
 
 .gradient-border-card {
   position: relative;
-  isolation: isolate; /* Creates a new stacking context */
   border-radius: var(--radius);
   overflow: hidden;
-  /* Fix: Override card defaults to make pseudo-elements visible */
   background: transparent;
   border-width: 0;
+}
+
+.gradient-border-card > * {
+    position: relative;
+    z-index: 2;
 }
 
 .gradient-border-card::before {
   content: '';
   position: absolute;
-  z-index: -2; /* Furthest back */
+  z-index: 0;
   left: -50%;
   top: -50%;
   width: 200%;
@@ -142,7 +145,7 @@
 .gradient-border-card::after {
   content: '';
   position: absolute;
-  z-index: -1; /* In front of the border, behind the content */
+  z-index: 1;
   left: 2px;
   top: 2px;
   width: calc(100% - 4px);
