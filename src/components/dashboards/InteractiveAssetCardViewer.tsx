@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -13,7 +12,7 @@ interface InteractiveAssetCardViewerProps<T> {
   renderCardFront: (item: T, isExpanded: boolean) => React.ReactNode;
   renderCardBack: (item: T) => React.ReactNode;
   layoutIdPrefix: string;
-  memberName?: string;
+  expandedCardClassName?: string;
 }
 
 export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
@@ -21,26 +20,19 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
   renderCardFront,
   renderCardBack,
   layoutIdPrefix,
-  memberName,
+  expandedCardClassName,
 }: InteractiveAssetCardViewerProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [direction, setDirection] = useState(0);
-  const [specialExpansionIndex, setSpecialExpansionIndex] = useState<number | null>(null);
 
   const handleCardClick = (index: number) => {
-    const item = items[index];
-    if (memberName === 'Ashish Hirpara' && item.dpName === 'Upstox') {
-      setSpecialExpansionIndex(index);
-    } else {
-      setSelectedIndex(index);
-      setIsFlipped(false);
-    }
+    setSelectedIndex(index);
+    setIsFlipped(false);
   };
 
   const handleClose = () => {
     setSelectedIndex(null);
-    setSpecialExpansionIndex(null);
     setIsFlipped(false);
   };
   
@@ -67,7 +59,6 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
   };
 
   const selectedItem = selectedIndex !== null ? items[selectedIndex] : null;
-  const specialExpansionItem = specialExpansionIndex !== null ? items[specialExpansionIndex] : null;
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -89,7 +80,7 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
 
   return (
     <>
-      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {items.map((item, index) => (
           <motion.div
             key={item.id || index}
@@ -103,32 +94,9 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
         ))}
       </motion.div>
 
-      <FullScreenOverlay isOpen={!!selectedItem || !!specialExpansionItem} onClose={handleClose}>
+      <FullScreenOverlay isOpen={!!selectedItem} onClose={handleClose}>
         
-        {specialExpansionItem && (
-          <div
-            className="flex flex-col items-center justify-center gap-4 max-h-[90vh] w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <motion.div
-              layoutId={`${layoutIdPrefix}-${specialExpansionIndex}`}
-              className="w-[60vw] max-w-xl h-56 shrink-0"
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-            >
-              {renderCardFront(specialExpansionItem, true)}
-            </motion.div>
-            <motion.div 
-              className="w-[80vw] max-w-4xl overflow-y-auto rounded-xl"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.3 }}
-            >
-              {renderCardBack(specialExpansionItem)}
-            </motion.div>
-          </div>
-        )}
-
-        {!specialExpansionItem && selectedItem && (
+        {selectedItem && (
             <>
                 {items.length > 1 && (
                     <Button
@@ -142,7 +110,7 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
 
                 <div className="flex flex-col items-center gap-4">
                     <motion.div
-                        className="w-[50vw] h-[50vh] relative"
+                        className={cn("w-[50vw] h-[50vh] relative", expandedCardClassName)}
                         onClick={(e) => e.stopPropagation()}
                         style={{ perspective: 1000 }}
                     >
@@ -219,3 +187,4 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
     </>
   );
 }
+    
