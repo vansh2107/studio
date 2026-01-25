@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -12,13 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useTasks } from '@/hooks/use-tasks';
+import { useTasks, type Task, type TaskStatus } from '@/hooks/use-tasks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Edit, Download, AlertTriangle } from 'lucide-react';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import type { TaskFormData } from '@/components/tasks/create-task-modal';
-import { Task, TaskStatus } from '@/hooks/use-tasks';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useToast } from '@/hooks/use-toast';
@@ -47,6 +47,7 @@ import { Combobox } from '@/components/ui/combobox';
 import { InteractiveAssetCardViewer } from '@/components/dashboards/InteractiveAssetCardViewer';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ClipboardList } from 'lucide-react';
+import { TASK_STATUSES } from '@/lib/constants';
 
 const getInitials = (name: string) => {
   if (!name) return '';
@@ -441,7 +442,7 @@ export default function TasksPage() {
                           <SelectContent>
                               <SelectItem value="All">All Statuses</SelectItem>
                               <SelectItem value="Overdue">Overdue</SelectItem>
-                              {Object.values(TaskStatus).map(status => (
+                              {TASK_STATUSES.map(status => (
                                   <SelectItem key={status} value={status}>{status}</SelectItem>
                               ))}
                           </SelectContent>
@@ -496,4 +497,6 @@ export default function TasksPage() {
     </TooltipProvider>
   );
 }
+    
+
     
