@@ -60,7 +60,7 @@ function AppLayoutSkeleton() {
               </div>
             </div>
           </div>
-          <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t bg-[#F2F3F5]">
+          <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t bg-muted">
             © FinArray — All rights reserved
           </footer>
         </main>
@@ -90,7 +90,7 @@ export function AppLayout({
              <div className="flex-1 p-4 sm:p-6 lg:p-8">
                 <div className="mx-auto w-full max-w-7xl">{children}</div>
              </div>
-             <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t bg-[#F2F3F5]">
+             <footer className="w-full text-center text-sm text-muted-foreground py-4 border-t bg-muted">
                 © FinArray — All rights reserved
             </footer>
           </main>
