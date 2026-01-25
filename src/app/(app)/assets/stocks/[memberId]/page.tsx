@@ -96,8 +96,17 @@ export default function StockDetailsPage() {
     const memberId = params.memberId as string;
 
     const member = useMemo(() => {
-        const allMembers = [...clients, ...familyMembers];
-        return allMembers.find(m => m.id === memberId);
+        const allPossibleMembers = [...clients, ...familyMembers];
+        const foundMember = allPossibleMembers.find(m => m.id === memberId);
+        
+        // The member might not have a `name` property if it's from the `clients` array initially.
+        if (foundMember && !foundMember.name) {
+            return {
+                ...foundMember,
+                name: `${foundMember.firstName} ${foundMember.lastName}`
+            };
+        }
+        return foundMember;
     }, [memberId]);
 
     const stocksByDp = useMemo(() => {

@@ -13,6 +13,7 @@ interface InteractiveAssetCardViewerProps<T> {
   renderCardBack: (item: T) => React.ReactNode;
   layoutIdPrefix: string;
   expandedCardClassName?: string;
+  memberName?: string;
 }
 
 export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
@@ -21,6 +22,7 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
   renderCardBack,
   layoutIdPrefix,
   expandedCardClassName,
+  memberName,
 }: InteractiveAssetCardViewerProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -96,95 +98,123 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
 
       <FullScreenOverlay isOpen={!!selectedItem} onClose={handleClose}>
         
-        {selectedItem && (
+        {selectedItem && (() => {
+          const isSpecialCase =
+            memberName === 'Ashish Hirpara' &&
+            (selectedItem as any).dpName === 'Upstox';
+
+          if (isSpecialCase) {
+            return (
+              <div className="flex flex-col items-center justify-start h-full w-full pt-16 overflow-y-auto px-4">
+                <motion.div
+                  layoutId={`${layoutIdPrefix}-${selectedIndex}`}
+                  className="w-[80vw] max-w-4xl h-56 flex-shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {renderCardFront(selectedItem, true)}
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
+                  className="w-[80vw] max-w-4xl mt-4"
+                   onClick={(e) => e.stopPropagation()}
+                >
+                  {renderCardBack(selectedItem)}
+                </motion.div>
+              </div>
+            );
+          }
+
+          // Default rendering logic for all other cards
+          return (
             <>
-                {items.length > 1 && (
-                    <Button
-                        variant="ghost"
-                        onClick={(e) => { e.stopPropagation(); handleNavigation('prev'); }}
-                        className="h-[40vh] w-auto shrink-0 bg-transparent p-0 shadow-none border-none ring-0 focus-visible:ring-0 hover:bg-transparent text-gray-700 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-300"
-                    >
-                        <ArrowLeft className="h-[35vh] w-auto" />
-                    </Button>
-                )}
+              {items.length > 1 && (
+                  <Button
+                      variant="ghost"
+                      onClick={(e) => { e.stopPropagation(); handleNavigation('prev'); }}
+                      className="h-[40vh] w-auto shrink-0 bg-transparent p-0 shadow-none border-none ring-0 focus-visible:ring-0 hover:bg-transparent text-gray-700 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-300"
+                  >
+                      <ArrowLeft className="h-[35vh] w-auto" />
+                  </Button>
+              )}
 
-                <div className="flex flex-col items-center gap-4">
-                    <motion.div
-                        className={cn("w-[50vw] h-[50vh] relative", expandedCardClassName)}
-                        onClick={(e) => e.stopPropagation()}
-                        style={{ perspective: 1000 }}
-                    >
-                      <AnimatePresence initial={false} custom={direction}>
+              <div className="flex flex-col items-center gap-4">
+                  <motion.div
+                      className={cn("w-[50vw] h-[50vh] relative", expandedCardClassName)}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ perspective: 1000 }}
+                  >
+                    <AnimatePresence initial={false} custom={direction}>
+                      <motion.div
+                          key={selectedIndex}
+                          layoutId={`${layoutIdPrefix}-${selectedIndex}`}
+                          custom={direction}
+                          variants={slideVariants}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                          transition={{
+                            x: { type: "spring", stiffness: 300, damping: 30 },
+                            opacity: { duration: 0.2 },
+                          }}
+                          className="absolute inset-0"
+                      >
                         <motion.div
-                            key={selectedIndex}
-                            layoutId={`${layoutIdPrefix}-${selectedIndex}`}
-                            custom={direction}
-                            variants={slideVariants}
-                            initial="enter"
-                            animate="center"
-                            exit="exit"
-                            transition={{
-                              x: { type: "spring", stiffness: 300, damping: 30 },
-                              opacity: { duration: 0.2 },
-                            }}
-                            className="absolute inset-0"
+                            className="w-full h-full cursor-pointer"
+                            style={{ transformStyle: 'preserve-3d' }}
+                            onClick={() => setIsFlipped(!isFlipped)}
+                            animate={{ rotateY: isFlipped ? 180 : 0 }}
+                            transition={{ duration: 0.6, ease: 'easeInOut' }}
                         >
-                          <motion.div
-                              className="w-full h-full cursor-pointer"
-                              style={{ transformStyle: 'preserve-3d' }}
-                              onClick={() => setIsFlipped(!isFlipped)}
-                              animate={{ rotateY: isFlipped ? 180 : 0 }}
-                              transition={{ duration: 0.6, ease: 'easeInOut' }}
-                          >
-                              <motion.div
-                              className="absolute inset-0"
-                              style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-                              >
-                              {renderCardFront(selectedItem!, true)}
-                              </motion.div>
-                              <motion.div
-                              className="absolute inset-0 bg-card rounded-xl overflow-hidden"
-                              style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-                              >
-                              {renderCardBack(selectedItem!)}
-                              </motion.div>
-                          </motion.div>
+                            <motion.div
+                            className="absolute inset-0"
+                            style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+                            >
+                            {renderCardFront(selectedItem!, true)}
+                            </motion.div>
+                            <motion.div
+                            className="absolute inset-0 bg-card rounded-xl overflow-hidden"
+                            style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                            >
+                            {renderCardBack(selectedItem!)}
+                            </motion.div>
                         </motion.div>
-                      </AnimatePresence>
-                    </motion.div>
+                      </motion.div>
+                    </AnimatePresence>
+                  </motion.div>
 
-                    {items.length > 1 && (
-                        <div className="flex gap-2">
-                        {items.map((_, index) => (
-                            <button
-                            key={index}
-                            onClick={(e) => handleDotClick(e, index)}
-                            className={cn(
-                                "rounded-full transition-all duration-300",
-                                index === selectedIndex
-                                ? "w-3 h-3 bg-primary"
-                                : "w-2 h-2 bg-white/70 hover:bg-white"
-                            )}
-                            aria-label={`Go to slide ${index + 1}`}
-                            />
-                        ))}
-                        </div>
-                    )}
-                </div>
+                  {items.length > 1 && (
+                      <div className="flex gap-2">
+                      {items.map((_, index) => (
+                          <button
+                          key={index}
+                          onClick={(e) => handleDotClick(e, index)}
+                          className={cn(
+                              "rounded-full transition-all duration-300",
+                              index === selectedIndex
+                              ? "w-3 h-3 bg-primary"
+                              : "w-2 h-2 bg-white/70 hover:bg-white"
+                          )}
+                          aria-label={`Go to slide ${index + 1}`}
+                          />
+                      ))}
+                      </div>
+                  )}
+              </div>
 
-                {items.length > 1 && (
-                    <Button
-                        variant="ghost"
-                        onClick={(e) => { e.stopPropagation(); handleNavigation('next'); }}
-                        className="h-[40vh] w-auto shrink-0 bg-transparent p-0 shadow-none border-none ring-0 focus-visible:ring-0 hover:bg-transparent text-gray-700 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-300"
-                    >
-                        <ArrowRight className="h-[35vh] w-auto" />
-                    </Button>
-                )}
+              {items.length > 1 && (
+                  <Button
+                      variant="ghost"
+                      onClick={(e) => { e.stopPropagation(); handleNavigation('next'); }}
+                      className="h-[40vh] w-auto shrink-0 bg-transparent p-0 shadow-none border-none ring-0 focus-visible:ring-0 hover:bg-transparent text-gray-700 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-300"
+                  >
+                      <ArrowRight className="h-[35vh] w-auto" />
+                  </Button>
+              )}
             </>
-        )}
+          );
+        })()}
       </FullScreenOverlay>
     </>
   );
 }
-    
