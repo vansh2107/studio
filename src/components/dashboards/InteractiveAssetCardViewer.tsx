@@ -25,22 +25,18 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
   memberName,
 }: InteractiveAssetCardViewerProps<T>) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [isFlipped, setIsFlipped] = useState(false);
   const [direction, setDirection] = useState(0);
 
   const handleCardClick = (index: number) => {
     setSelectedIndex(index);
-    setIsFlipped(false);
   };
 
   const handleClose = () => {
     setSelectedIndex(null);
-    setIsFlipped(false);
   };
   
   const handleNavigation = (navDirection: 'next' | 'prev') => {
     if (selectedIndex === null) return;
-    setIsFlipped(false);
 
     if (navDirection === 'next') {
         setDirection(1);
@@ -55,7 +51,6 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
     e.stopPropagation();
     if (selectedIndex === null || selectedIndex === index) return;
     
-    setIsFlipped(false);
     setDirection(index > selectedIndex ? 1 : -1);
     setSelectedIndex(index);
   };
@@ -142,7 +137,6 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
                   <motion.div
                       className={cn("w-[50vw] h-[50vh] relative", expandedCardClassName)}
                       onClick={(e) => e.stopPropagation()}
-                      style={{ perspective: 1000 }}
                   >
                     <AnimatePresence initial={false} custom={direction}>
                       <motion.div
@@ -157,28 +151,9 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
                             x: { type: "spring", stiffness: 300, damping: 30 },
                             opacity: { duration: 0.2 },
                           }}
-                          className="absolute inset-0"
+                          className="absolute inset-0 bg-card rounded-xl overflow-hidden"
                       >
-                        <motion.div
-                            className="w-full h-full cursor-pointer"
-                            style={{ transformStyle: 'preserve-3d' }}
-                            onClick={() => setIsFlipped(!isFlipped)}
-                            animate={{ rotateY: isFlipped ? 180 : 0 }}
-                            transition={{ duration: 0.6, ease: 'easeInOut' }}
-                        >
-                            <motion.div
-                            className="absolute inset-0"
-                            style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-                            >
-                            {renderCardFront(selectedItem!, true)}
-                            </motion.div>
-                            <motion.div
-                            className="absolute inset-0 bg-card rounded-xl overflow-hidden"
-                            style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-                            >
-                            {renderCardBack(selectedItem!)}
-                            </motion.div>
-                        </motion.div>
+                        {renderCardBack(selectedItem!)}
                       </motion.div>
                     </AnimatePresence>
                   </motion.div>
