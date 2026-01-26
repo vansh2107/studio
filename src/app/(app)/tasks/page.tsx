@@ -89,275 +89,6 @@ const truncateText = (text: string | undefined, maxLength: number) => {
     return text.substring(0, maxLength) + '...';
 };
 
-const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, canDelete, onEdit, onDelete }: { task: Task; canUpdate: boolean; canEditTask: boolean; canDelete: boolean, onEdit: (task: Task) => void, onDelete: (task: Task) => void }) => {
-  const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div>
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
-      <div className="text-sm text-foreground">{children || '—'}</div>
-    </div>
-  );
-  
-  const Section = ({ title, children, className }: { title: string, children: React.ReactNode, className?: string }) => (
-    <div className="space-y-4">
-      <h4 className="text-md font-semibold text-primary">{title}</h4>
-      <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4", className)}>
-        {children}
-      </div>
-    </div>
-  );
-
-  const formatDate = (dateString?: string | null) => {
-    if (!dateString) return '—';
-    try {
-        if (dateString.includes(' ')) {
-            const parsedDate = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
-            if (!isNaN(parsedDate.getTime())) {
-                return format(parsedDate, 'dd MMM yyyy, h:mm a');
-            }
-        }
-      return format(parseISO(dateString), 'dd MMM yyyy, h:mm a');
-    } catch {
-      return dateString;
-    }
-  };
-
-  const formatCurrency = (amount?: number) => {
-    if (amount === undefined || amount === null) return '—';
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
-  }
-  
-  const getStatusBadgeVariant = (status?: string) => {
-    if (!status) return 'outline';
-    const lowerCaseStatus = status.toLowerCase();
-    if (['completed', 'received', 'done', 'credited', 'yes'].includes(lowerCaseStatus)) return 'default';
-    if (['pending', 'in progress', 'no'].includes(lowerCaseStatus)) return 'secondary';
-    return 'outline';
-  };
-  
-  const eventVisuals: { [key: string]: { icon: React.ElementType, color: string } } = {
-      TASK_CREATED: { icon: Plus, color: 'bg-primary' },
-      STATUS_CHANGED: { icon: Edit2, color: 'bg-blue-500' },
-      ASSIGNED_RM: { icon: User, color: 'bg-gray-500' },
-      TASK_RM_ASSIGNED: { icon: User, color: 'bg-gray-500' },
-      TASK_COMPLETED: { icon: CheckCircleIcon, color: 'bg-green-500' },
-      TASK_REOPENED: { icon: Repeat, color: 'bg-orange-500' },
-      FIELD_UPDATED: { icon: Edit2, color: 'bg-gray-500' },
-      default: { icon: AlertCircle, color: 'bg-gray-500' },
-  };
-
-  const getEventVisuals = (event: TimelineEvent) => {
-      let visuals = eventVisuals[event.eventType] || eventVisuals.default;
-      if (event.eventType === 'STATUS_CHANGED') {
-          const newStatus = event.description.split(' to ')[1]?.replace(/"/g, '');
-          if (newStatus === 'Completed') return { icon: CheckCircleIcon, color: 'bg-green-500' };
-          if (newStatus === 'Cancelled' || newStatus === 'Rejected') return { icon: AlertCircle, color: 'bg-destructive' };
-      }
-      return visuals;
-  }
-
-  const sortedEvents = (task.timelineEvents || []).slice().sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
-  return (
-    <div className="bg-muted/30 p-6 space-y-6 relative">
-       <div className="absolute top-4 right-4 flex items-center gap-2">
-        {canEditTask && (
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="bg-background" onClick={() => onEdit(task)}>
-                        <Edit className="h-4 w-4" />
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent>Edit Task</TooltipContent>
-            </Tooltip>
-        )}
-        {canDelete && (
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="bg-background text-destructive hover:text-destructive border-destructive/50" onClick={() => onDelete(task)} disabled={!canEditTask}>
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent><p>{canEditTask ? 'Delete Task' : 'Cannot delete locked task'}</p></TooltipContent>
-            </Tooltip>
-        )}
-      </div>
-
-      <Section title="Task History">
-        <div className="col-span-full">
-            <ScrollArea className="w-full pb-4">
-                <div className="flex p-4 items-start">
-                    {sortedEvents.map((event, index) => {
-                        const { icon: Icon, color } = getEventVisuals(event);
-                        return (
-                            <React.Fragment key={event.id}>
-                                <div className="flex flex-col items-center text-center w-40 flex-shrink-0">
-                                    <TooltipProvider>
-                                      <Tooltip>
-                                        <TooltipTrigger>
-                                          <div className={cn("flex h-12 w-12 items-center justify-center rounded-full border-4 border-muted/50", color)}>
-                                              <Icon className="h-6 w-6 text-white" />
-                                          </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p className="font-bold">{event.title}</p>
-                                            <p>{event.description}</p>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
-
-                                    <p className="mt-2 font-semibold text-sm truncate">{event.title}</p>
-                                    <p className="text-xs text-muted-foreground mt-1 h-8 text-ellipsis overflow-hidden">
-                                      {event.description}
-                                    </p>
-                                    <p className="text-xs font-semibold text-muted-foreground mt-2">
-                                        {format(parseISO(event.timestamp), 'dd MMM, h:mm a')}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">by {event.performedBy}</p>
-                                </div>
-
-                                {index < sortedEvents.length - 1 && (
-                                    <div className="w-24 h-px bg-border mt-6 flex-shrink-0" />
-                                )}
-                            </React.Fragment>
-                        );
-                    })}
-                </div>
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-             {sortedEvents.length === 0 && <p className="text-sm text-muted-foreground px-4">No history for this task.</p>}
-        </div>
-      </Section>
-      
-      <Section title="General Information">
-        <DetailItem label="Task ID">{task.id}</DetailItem>
-        <DetailItem label="Category">{task.category}</DetailItem>
-        <DetailItem label="Current Status">
-           <Badge variant={getStatusBadgeVariant(task.status)}>{task.status}</Badge>
-        </DetailItem>
-        {task.status2 && (
-             <DetailItem label="Secondary Status">
-                <Badge variant={getStatusBadgeVariant(task.status2)}>{task.status2}</Badge>
-            </DetailItem>
-        )}
-        {task.description && <div className="lg:col-span-3"><DetailItem label="Description">{task.description}</DetailItem></div>}
-      </Section>
-      
-      <Section title="People">
-         <DetailItem label="Client Name">{task.clientName}</DetailItem>
-         <DetailItem label="Assigned RM">{task.rmName}</DetailItem>
-         <DetailItem label="Serviceable RM">{task.serviceableRM}</DetailItem>
-      </Section>
-
-      {task.category === 'Mutual Funds' && task.mutualFund && (
-        <Section title="Mutual Fund Details">
-          <DetailItem label="Family Head">{task.mutualFund.familyHead}</DetailItem>
-          <DetailItem label="Service">{task.mutualFund.service}</DetailItem>
-          <DetailItem label="Folio No.">{task.mutualFund.folioNo}</DetailItem>
-          <DetailItem label="AMC Name">{task.mutualFund.nameOfAMC}</DetailItem>
-          <DetailItem label="Amount">{formatCurrency(task.mutualFund.amount)}</DetailItem>
-          <DetailItem label="Document Status">
-            <Badge variant={getStatusBadgeVariant(task.mutualFund.documentStatus)}>{task.mutualFund.documentStatus}</Badge>
-          </DetailItem>
-          <DetailItem label="Signature Status">
-            <Badge variant={getStatusBadgeVariant(task.mutualFund.signatureStatus)}>{task.mutualFund.signatureStatus}</Badge>
-          </DetailItem>
-           <DetailItem label="AMC Submission">
-            <Badge variant={getStatusBadgeVariant(task.mutualFund.amcSubmissionStatus)}>{task.mutualFund.amcSubmissionStatus}</Badge>
-          </DetailItem>
-        </Section>
-      )}
-
-      {task.category === 'Life Insurance' && task.insurance && (
-        <Section title="Life Insurance Details">
-           <DetailItem label="Family Head">{task.insurance.familyHead}</DetailItem>
-           <DetailItem label="Associate">{task.insurance.associate}</DetailItem>
-           <DetailItem label="Policy No.">{task.insurance.policyNo}</DetailItem>
-           <DetailItem label="Company">{task.insurance.company}</DetailItem>
-           <DetailItem label="Insurance Type">{task.insurance.insuranceType}</DetailItem>
-
-           {task.insurance.insuranceType === 'Non-Financial' && (
-            <>
-              <DetailItem label="Service">{task.insurance.typeOfService}</DetailItem>
-              <DetailItem label="Date">{formatDate(task.insurance.nonFinancialDate)}</DetailItem>
-            </>
-           )}
-
-           {task.insurance.insuranceType === 'Financial' && (
-            <>
-              <DetailItem label="Financial Service">{task.insurance.financialService}</DetailItem>
-              {task.insurance.financialService === 'Maturity' && <>
-                <DetailItem label="Maturity Due Date">{formatDate(task.insurance.maturityDueDate)}</DetailItem>
-                <DetailItem label="Maturity Amount">{formatCurrency(task.insurance.maturityAmount)}</DetailItem>
-              </>}
-              {task.insurance.financialService === 'Death Claim' && <DetailItem label="Process Date">{formatDate(task.insurance.deathClaimProcessDate)}</DetailItem>}
-              {task.insurance.financialService === 'Surrender' && <DetailItem label="Process Date">{formatDate(task.insurance.surrenderProcessDate)}</DetailItem>}
-              
-               <DetailItem label="Amount Status">
-                  <Badge variant={getStatusBadgeVariant(task.insurance.amountStatus)}>{task.insurance.amountStatus}</Badge>
-               </DetailItem>
-
-              {task.insurance.amountStatus === 'Credited' && <>
-                <DetailItem label="Received Date">{formatDate(task.insurance.receivedDate)}</DetailItem>
-                <DetailItem label="Received Amount">{formatCurrency(task.insurance.receivedAmount)}</DetailItem>
-                <DetailItem label="Re-investment">
-                   <Badge variant={getStatusBadgeVariant(task.insurance.reinvestmentStatus)}>{task.insurance.reinvestmentStatus}</Badge>
-                </DetailItem>
-                {task.insurance.reinvestmentStatus === 'Pending' && <DetailItem label="Approx. Re-investment Date">{formatDate(task.insurance.reinvestmentApproxDate)}</DetailItem>}
-                {task.insurance.reinvestmentStatus === 'No' && <DetailItem label="Reason for No Re-investment">{task.insurance.reinvestmentReason}</DetailItem>}
-              </>}
-            </>
-           )}
-        </Section>
-      )}
-
-      {task.category === 'General Insurance' && task.generalInsuranceTask && (
-        <Section title="General Insurance Task Details">
-          <DetailItem label="Service Category">{task.generalInsuranceTask.serviceCategory}</DetailItem>
-          <DetailItem label="Sub Category">{task.generalInsuranceTask.subCategory}</DetailItem>
-          <DetailItem label="Policy Number">{task.generalInsuranceTask.policyNumber}</DetailItem>
-        </Section>
-      )}
-      
-      {task.category === 'Stocks' && task.stocksTask && (
-        <Section title="Stocks Task Details">
-          <DetailItem label="Service">{task.stocksTask.service}</DetailItem>
-          <DetailItem label="DPID">{task.stocksTask.dpid}</DetailItem>
-        </Section>
-      )}
-
-      {task.category === 'FDs' && task.fdTask && (
-        <Section title="Fixed Deposit Task Details">
-          <DetailItem label="Service Category">{task.fdTask.serviceCategory}</DetailItem>
-          <DetailItem label="Folio Number">{task.fdTask.folioNumber}</DetailItem>
-        </Section>
-      )}
-
-      {task.category === 'Bonds' && task.bondsTask && (
-        <Section title="Bonds Task Details">
-          <DetailItem label="Service Category">{task.bondsTask.serviceCategory}</DetailItem>
-          <DetailItem label="ISIN Number">{task.bondsTask.isinNumber}</DetailItem>
-        </Section>
-      )}
-
-      {task.category === 'PPF' && task.ppfTask && (
-        <Section title="PPF Task Details">
-          <DetailItem label="Service Category">{task.ppfTask.serviceCategory}</DetailItem>
-          <DetailItem label="Policy Number">{task.ppfTask.policyNumber}</DetailItem>
-          <DetailItem label="Bank Account Number">{task.ppfTask.bankAccountNumber}</DetailItem>
-        </Section>
-      )}
-
-      {task.category === 'Physical to Demat' && task.physicalToDematTask && (
-        <Section title="Physical to Demat Task Details">
-          <DetailItem label="Service Category">{task.physicalToDematTask.serviceCategory}</DetailItem>
-          <DetailItem label="Folio Number">{task.physicalToDematTask.folioNumber}</DetailItem>
-        </Section>
-      )}
-    </div>
-  );
-};
-
-
 export default function TasksPage() {
   const { effectiveUser, hasPermission } = useCurrentUser();
   const { toast } = useToast();
@@ -375,6 +106,304 @@ export default function TasksPage() {
   const canUpdate = hasPermission('TASK', 'edit');
   const canDelete = hasPermission('TASK', 'delete');
   const isSuperAdmin = effectiveUser?.role === 'SUPER_ADMIN';
+
+  const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
+    updateTask(taskId, { status: newStatus });
+    toast({
+        title: "Task Status Updated",
+        description: `Task status has been changed to "${newStatus}".`
+    });
+  };
+
+  const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, canDelete, onEdit, onDelete }: { task: Task; canUpdate: boolean; canEditTask: boolean; canDelete: boolean, onEdit: (task: Task) => void, onDelete: (task: Task) => void }) => {
+    const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+        <div className="text-sm text-foreground">{children || '—'}</div>
+      </div>
+    );
+    
+    const Section = ({ title, children, className }: { title: string, children: React.ReactNode, className?: string }) => (
+      <div className="space-y-4">
+        <h4 className="text-md font-semibold text-primary">{title}</h4>
+        <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4", className)}>
+          {children}
+        </div>
+      </div>
+    );
+  
+    const formatDate = (dateString?: string | null) => {
+      if (!dateString) return '—';
+      try {
+          if (dateString.includes(' ')) {
+              const parsedDate = parse(dateString, 'dd-MM-yyyy HH:mm', new Date());
+              if (!isNaN(parsedDate.getTime())) {
+                  return format(parsedDate, 'dd MMM yyyy, h:mm a');
+              }
+          }
+        return format(parseISO(dateString), 'dd MMM yyyy, h:mm a');
+      } catch {
+        return dateString;
+      }
+    };
+  
+    const formatCurrency = (amount?: number) => {
+      if (amount === undefined || amount === null) return '—';
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+    }
+    
+    const getStatusBadgeVariant = (status?: string) => {
+      if (!status) return 'outline';
+      const lowerCaseStatus = status.toLowerCase();
+      if (['completed', 'received', 'done', 'credited', 'yes'].includes(lowerCaseStatus)) return 'default';
+      if (['pending', 'in progress', 'no'].includes(lowerCaseStatus)) return 'secondary';
+      return 'outline';
+    };
+    
+    const eventVisuals: { [key: string]: { icon: React.ElementType, color: string } } = {
+        TASK_CREATED: { icon: Plus, color: 'bg-primary' },
+        STATUS_CHANGED: { icon: Edit2, color: 'bg-blue-500' },
+        ASSIGNED_RM: { icon: User, color: 'bg-gray-500' },
+        TASK_RM_ASSIGNED: { icon: User, color: 'bg-gray-500' },
+        TASK_COMPLETED: { icon: CheckCircleIcon, color: 'bg-green-500' },
+        TASK_REOPENED: { icon: Repeat, color: 'bg-orange-500' },
+        FIELD_UPDATED: { icon: Edit2, color: 'bg-gray-500' },
+        default: { icon: AlertCircle, color: 'bg-gray-500' },
+    };
+  
+    const getEventVisuals = (event: TimelineEvent) => {
+        let visuals = eventVisuals[event.eventType] || eventVisuals.default;
+        if (event.eventType === 'STATUS_CHANGED') {
+            const newStatus = event.description.split(' to ')[1]?.replace(/"/g, '');
+            if (newStatus === 'Completed') return { icon: CheckCircleIcon, color: 'bg-green-500' };
+            if (newStatus === 'Cancelled' || newStatus === 'Rejected') return { icon: AlertCircle, color: 'bg-destructive' };
+        }
+        return visuals;
+    }
+  
+    const sortedEvents = (task.timelineEvents || []).slice().sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const overdue = isOverdue(task);
+    const isTerminal = terminalStatuses.includes(task.status);
+    const canChangeStatus = canUpdate && (isSuperAdmin || !isTerminal);
+  
+    return (
+      <div className="bg-muted/30 p-6 space-y-6 relative">
+         <div className="absolute top-4 right-4 flex items-center gap-2">
+          {canEditTask && (
+              <Tooltip>
+                  <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" className="bg-background" onClick={() => onEdit(task)}>
+                          <Edit className="h-4 w-4" />
+                      </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit Task</TooltipContent>
+              </Tooltip>
+          )}
+          {canDelete && (
+              <Tooltip>
+                  <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" className="bg-background text-destructive hover:text-destructive border-destructive/50" onClick={() => onDelete(task)} disabled={!canEditTask}>
+                          <Trash2 className="h-4 w-4" />
+                      </Button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>{canEditTask ? 'Delete Task' : 'Cannot delete locked task'}</p></TooltipContent>
+              </Tooltip>
+          )}
+        </div>
+  
+        <Section title="Task History">
+          <div className="col-span-full">
+              <ScrollArea className="w-full pb-4">
+                  <div className="flex p-4 items-start">
+                      {sortedEvents.map((event, index) => {
+                          const { icon: Icon, color } = getEventVisuals(event);
+                          return (
+                              <React.Fragment key={event.id}>
+                                  <div className="flex flex-col items-center text-center w-40 flex-shrink-0">
+                                      <TooltipProvider>
+                                        <Tooltip>
+                                          <TooltipTrigger>
+                                            <div className={cn("flex h-12 w-12 items-center justify-center rounded-full border-4 border-muted/50", color)}>
+                                                <Icon className="h-6 w-6 text-white" />
+                                            </div>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                              <p className="font-bold">{event.title}</p>
+                                              <p>{event.description}</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+  
+                                      <p className="mt-2 font-semibold text-sm truncate">{event.title}</p>
+                                      <p className="text-xs text-muted-foreground mt-1 h-8 text-ellipsis overflow-hidden">
+                                        {event.description}
+                                      </p>
+                                      <p className="text-xs font-semibold text-muted-foreground mt-2">
+                                          {format(parseISO(event.timestamp), 'dd MMM, h:mm a')}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">by {event.performedBy}</p>
+                                  </div>
+  
+                                  {index < sortedEvents.length - 1 && (
+                                      <div className="w-24 h-px bg-border mt-6 flex-shrink-0" />
+                                  )}
+                              </React.Fragment>
+                          );
+                      })}
+                  </div>
+                  <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+               {sortedEvents.length === 0 && <p className="text-sm text-muted-foreground px-4">No history for this task.</p>}
+          </div>
+        </Section>
+        
+        <Section title="General Information">
+          <DetailItem label="Task ID">{task.id}</DetailItem>
+          <DetailItem label="Category">{task.category}</DetailItem>
+          <DetailItem label="Current Status">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!canChangeStatus}>
+                    <Badge 
+                        variant={overdue ? 'destructive' : getStatusBadgeVariant(task.status)}
+                        className={cn(canChangeStatus ? "cursor-pointer" : "cursor-not-allowed")}
+                    >
+                        {overdue ? 'Overdue' : task.status}
+                    </Badge>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    {TASK_STATUSES.map(status => (
+                        task.status !== status && (
+                            <DropdownMenuItem key={status} onSelect={() => handleStatusChange(task.id, status)}>
+                                Move to {status}
+                            </DropdownMenuItem>
+                        )
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+          </DetailItem>
+          {task.status2 && (
+               <DetailItem label="Secondary Status">
+                  <Badge variant={getStatusBadgeVariant(task.status2)}>{task.status2}</Badge>
+              </DetailItem>
+          )}
+          {task.description && <div className="lg:col-span-3"><DetailItem label="Description">{task.description}</DetailItem></div>}
+        </Section>
+        
+        <Section title="People">
+           <DetailItem label="Client Name">{task.clientName}</DetailItem>
+           <DetailItem label="Assigned RM">{task.rmName}</DetailItem>
+           <DetailItem label="Serviceable RM">{task.serviceableRM}</DetailItem>
+        </Section>
+  
+        {task.category === 'Mutual Funds' && task.mutualFund && (
+          <Section title="Mutual Fund Details">
+            <DetailItem label="Family Head">{task.mutualFund.familyHead}</DetailItem>
+            <DetailItem label="Service">{task.mutualFund.service}</DetailItem>
+            <DetailItem label="Folio No.">{task.mutualFund.folioNo}</DetailItem>
+            <DetailItem label="AMC Name">{task.mutualFund.nameOfAMC}</DetailItem>
+            <DetailItem label="Amount">{formatCurrency(task.mutualFund.amount)}</DetailItem>
+            <DetailItem label="Document Status">
+              <Badge variant={getStatusBadgeVariant(task.mutualFund.documentStatus)}>{task.mutualFund.documentStatus}</Badge>
+            </DetailItem>
+            <DetailItem label="Signature Status">
+              <Badge variant={getStatusBadgeVariant(task.mutualFund.signatureStatus)}>{task.mutualFund.signatureStatus}</Badge>
+            </DetailItem>
+             <DetailItem label="AMC Submission">
+              <Badge variant={getStatusBadgeVariant(task.mutualFund.amcSubmissionStatus)}>{task.mutualFund.amcSubmissionStatus}</Badge>
+            </DetailItem>
+          </Section>
+        )}
+  
+        {task.category === 'Life Insurance' && task.insurance && (
+          <Section title="Life Insurance Details">
+             <DetailItem label="Family Head">{task.insurance.familyHead}</DetailItem>
+             <DetailItem label="Associate">{task.insurance.associate}</DetailItem>
+             <DetailItem label="Policy No.">{task.insurance.policyNo}</DetailItem>
+             <DetailItem label="Company">{task.insurance.company}</DetailItem>
+             <DetailItem label="Insurance Type">{task.insurance.insuranceType}</DetailItem>
+  
+             {task.insurance.insuranceType === 'Non-Financial' && (
+              <>
+                <DetailItem label="Service">{task.insurance.typeOfService}</DetailItem>
+                <DetailItem label="Date">{formatDate(task.insurance.nonFinancialDate)}</DetailItem>
+              </>
+             )}
+  
+             {task.insurance.insuranceType === 'Financial' && (
+              <>
+                <DetailItem label="Financial Service">{task.insurance.financialService}</DetailItem>
+                {task.insurance.financialService === 'Maturity' && <>
+                  <DetailItem label="Maturity Due Date">{formatDate(task.insurance.maturityDueDate)}</DetailItem>
+                  <DetailItem label="Maturity Amount">{formatCurrency(task.insurance.maturityAmount)}</DetailItem>
+                </>}
+                {task.insurance.financialService === 'Death Claim' && <DetailItem label="Process Date">{formatDate(task.insurance.deathClaimProcessDate)}</DetailItem>}
+                {task.insurance.financialService === 'Surrender' && <DetailItem label="Process Date">{formatDate(task.insurance.surrenderProcessDate)}</DetailItem>}
+                
+                 <DetailItem label="Amount Status">
+                    <Badge variant={getStatusBadgeVariant(task.insurance.amountStatus)}>{task.insurance.amountStatus}</Badge>
+                 </DetailItem>
+  
+                {task.insurance.amountStatus === 'Credited' && <>
+                  <DetailItem label="Received Date">{formatDate(task.insurance.receivedDate)}</DetailItem>
+                  <DetailItem label="Received Amount">{formatCurrency(task.insurance.receivedAmount)}</DetailItem>
+                  <DetailItem label="Re-investment">
+                     <Badge variant={getStatusBadgeVariant(task.insurance.reinvestmentStatus)}>{task.insurance.reinvestmentStatus}</Badge>
+                  </DetailItem>
+                  {task.insurance.reinvestmentStatus === 'Pending' && <DetailItem label="Approx. Re-investment Date">{formatDate(task.insurance.reinvestmentApproxDate)}</DetailItem>}
+                  {task.insurance.reinvestmentStatus === 'No' && <DetailItem label="Reason for No Re-investment">{task.insurance.reinvestmentReason}</DetailItem>}
+                </>}
+              </>
+             )}
+          </Section>
+        )}
+  
+        {task.category === 'General Insurance' && task.generalInsuranceTask && (
+          <Section title="General Insurance Task Details">
+            <DetailItem label="Service Category">{task.generalInsuranceTask.serviceCategory}</DetailItem>
+            <DetailItem label="Sub Category">{task.generalInsuranceTask.subCategory}</DetailItem>
+            <DetailItem label="Policy Number">{task.generalInsuranceTask.policyNumber}</DetailItem>
+          </Section>
+        )}
+        
+        {task.category === 'Stocks' && task.stocksTask && (
+          <Section title="Stocks Task Details">
+            <DetailItem label="Service">{task.stocksTask.service}</DetailItem>
+            <DetailItem label="DPID">{task.stocksTask.dpid}</DetailItem>
+          </Section>
+        )}
+  
+        {task.category === 'FDs' && task.fdTask && (
+          <Section title="Fixed Deposit Task Details">
+            <DetailItem label="Service Category">{task.fdTask.serviceCategory}</DetailItem>
+            <DetailItem label="Folio Number">{task.fdTask.folioNumber}</DetailItem>
+          </Section>
+        )}
+  
+        {task.category === 'Bonds' && task.bondsTask && (
+          <Section title="Bonds Task Details">
+            <DetailItem label="Service Category">{task.bondsTask.serviceCategory}</DetailItem>
+            <DetailItem label="ISIN Number">{task.bondsTask.isinNumber}</DetailItem>
+          </Section>
+        )}
+  
+        {task.category === 'PPF' && task.ppfTask && (
+          <Section title="PPF Task Details">
+            <DetailItem label="Service Category">{task.ppfTask.serviceCategory}</DetailItem>
+            <DetailItem label="Policy Number">{task.ppfTask.policyNumber}</DetailItem>
+            <DetailItem label="Bank Account Number">{task.ppfTask.bankAccountNumber}</DetailItem>
+          </Section>
+        )}
+  
+        {task.category === 'Physical to Demat' && task.physicalToDematTask && (
+          <Section title="Physical to Demat Task Details">
+            <DetailItem label="Service Category">{task.physicalToDematTask.serviceCategory}</DetailItem>
+            <DetailItem label="Folio Number">{task.physicalToDematTask.folioNumber}</DetailItem>
+          </Section>
+        )}
+      </div>
+    );
+  };
+  
 
   const clientOptions = useMemo(() => {
     const heads = getAllClients().map(c => ({
@@ -726,7 +755,3 @@ export default function TasksPage() {
     
 
     
-
-
-
-  
