@@ -89,7 +89,7 @@ const truncateText = (text: string | undefined, maxLength: number) => {
     return text.substring(0, maxLength) + '...';
 };
 
-const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: Task; canUpdate: boolean; canEditTask: boolean, onEdit: (task: Task) => void }) => {
+const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, canDelete, onEdit, onDelete }: { task: Task; canUpdate: boolean; canEditTask: boolean; canDelete: boolean, onEdit: (task: Task) => void, onDelete: (task: Task) => void }) => {
   const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
     <div>
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
@@ -159,17 +159,28 @@ const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, onEdit }: { task: T
 
   return (
     <div className="bg-muted/30 p-6 space-y-6 relative">
-      {canEditTask && (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="absolute top-4 right-4 bg-background"
-          onClick={() => onEdit(task)}
-        >
-          <Edit className="mr-2 h-4 w-4" />
-          Edit Task
-        </Button>
-      )}
+       <div className="absolute top-4 right-4 flex items-center gap-2">
+        {canEditTask && (
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" className="bg-background" onClick={() => onEdit(task)}>
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>Edit Task</TooltipContent>
+            </Tooltip>
+        )}
+        {canDelete && (
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" className="bg-background text-destructive hover:text-destructive border-destructive/50" onClick={() => onDelete(task)} disabled={!canEditTask}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>{canEditTask ? 'Delete Task' : 'Cannot delete locked task'}</p></TooltipContent>
+            </Tooltip>
+        )}
+      </div>
 
       <Section title="Task History">
         <div className="col-span-full">
@@ -567,100 +578,31 @@ export default function TasksPage() {
   );
 
   const TaskCardBack = ({ item, onEdit, onDelete }: { item: GroupedTasks; onEdit: (task: Task) => void; onDelete: (task: Task) => void; }) => {
-    const [expandedRow, setExpandedRow] = useState<string | null>(null);
-
-    const toggleExpandRow = (taskId: string) => {
-        setExpandedRow(current => (current === taskId ? null : taskId));
-    };
-
     return (
         <div className="w-full h-full flex flex-col text-card-foreground bg-card rounded-xl">
             <CardHeader>
                 <CardTitle>Tasks for {item.clientName}</CardTitle>
                 <CardDescription>Detailed list of all assigned tasks.</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-12"></TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Due Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {item.tasks.map(task => {
-                            const isExpanded = expandedRow === task.id;
-                            const descriptionContent = task.insurance?.policyNo || task.mutualFund?.folioNo || task.description;
-                            const overdue = isOverdue(task);
-                            const isTerminal = terminalStatuses.includes(task.status);
-                            const canEditTask = isSuperAdmin || !isTerminal;
+            <CardContent className="flex-1 overflow-y-auto p-2 space-y-2">
+                {item.tasks.length > 0 ? (
+                    item.tasks.map(task => {
+                        const isTerminal = terminalStatuses.includes(task.status);
+                        const canEditTask = isSuperAdmin || !isTerminal;
 
-                            return (
-                                <React.Fragment key={task.id}>
-                                    <TableRow className={cn(isExpanded && "bg-muted/50")}>
-                                        <TableCell>
-                                            <Button variant="ghost" size="icon" onClick={() => toggleExpandRow(task.id)}>
-                                                <ChevronRight className={cn('h-4 w-4 transition-transform', isExpanded && 'rotate-90')} />
-                                            </Button>
-                                        </TableCell>
-                                        <TableCell className="font-medium">{task.category}</TableCell>
-                                        <TableCell>
-                                            <Tooltip>
-                                                <TooltipTrigger>{truncateText(descriptionContent, 25)}</TooltipTrigger>
-                                                {(descriptionContent && descriptionContent.length > 25) && (
-                                                    <TooltipContent><p className="max-w-xs">{descriptionContent}</p></TooltipContent>
-                                                )}
-                                            </Tooltip>
-                                        </TableCell>
-                                        <TableCell>{formatDate(task.dueDate)}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={overdue ? 'destructive' : getStatusBadgeVariant(task.status)}>
-                                                {overdue ? 'Overdue' : task.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-1">
-                                            {canUpdate && (
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button variant="ghost" size="icon" onClick={() => onEdit(task)} disabled={!canEditTask}>
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>{canEditTask ? 'Edit Task' : 'Cannot edit locked task'}</p></TooltipContent>
-                                                </Tooltip>
-                                            )}
-                                            {canDelete && (
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => onDelete(task)} disabled={!canEditTask}>
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>{canEditTask ? 'Delete Task' : 'Cannot delete locked task'}</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            )}
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                    {isExpanded && (
-                                        <TableRow className="bg-muted/50 hover:bg-muted/50">
-                                            <TableCell colSpan={6}>
-                                                <ExpandedTaskDetails task={task} canUpdate={canUpdate} canEditTask={canEditTask} onEdit={onEdit} />
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </React.Fragment>
-                            )
-                        })}
-                    </TableBody>
-                </Table>
+                        return (
+                            <Card key={task.id} className="overflow-hidden">
+                                <ExpandedTaskDetails task={task} canUpdate={canUpdate} canEditTask={canEditTask} onEdit={onEdit} canDelete={canDelete} onDelete={onDelete} />
+                            </Card>
+                        )
+                    })
+                ) : (
+                    <div className="text-center py-20 text-muted-foreground">
+                        <ClipboardList className="mx-auto h-12 w-12" />
+                        <h3 className="mt-4 text-lg font-semibold">No Tasks</h3>
+                        <p className="mt-1 text-sm">This client has no tasks assigned.</p>
+                    </div>
+                )}
             </CardContent>
         </div>
     );
@@ -785,3 +727,6 @@ export default function TasksPage() {
 
     
 
+
+
+  
