@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -122,12 +123,17 @@ export function AssetBreakdownModal({
       };
       current.assets.push(asset);
       current.totalValue += asset.value;
-      if (asset.premiumAmount) {
+
+      if (asset.category === 'General Insurance') {
+        current.totalPremium = (current.totalPremium || 0) + asset.value;
+      } else if (asset.premiumAmount) {
         current.totalPremium = (current.totalPremium || 0) + asset.premiumAmount;
       }
+      
       if (asset.sumAssured) {
         current.totalSumAssured = (current.totalSumAssured || 0) + asset.sumAssured;
       }
+      
       switch (category) {
         case 'Fixed Deposits':
           current.fdCount = (current.fdCount || 0) + 1;
@@ -377,13 +383,9 @@ export function AssetBreakdownModal({
         );
 
        case 'General Insurance':
-
         const generalInsuranceTotals = {
-
-            totalPremium: categoryAssets.reduce((sum, asset) => sum + (asset.premiumAmount || 0), 0),
-
+            totalPremium: categoryAssets.reduce((sum, asset) => sum + asset.value, 0),
             totalSumAssured: categoryAssets.reduce((sum, asset) => sum + (asset.sumAssured || 0), 0),
-
         };
 
         const totalGIPolicyCount = memberData.reduce((sum, item) => sum + (item.policyCount || 0), 0);
