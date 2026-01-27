@@ -24,6 +24,8 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { Combobox } from '@/components/ui/combobox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ASSET_TYPES } from '@/lib/asset-form-types';
 
 const ExpandedAssetDetails = ({ asset, onEdit }: { asset: Asset; onEdit: (asset: Asset) => void }) => {
   const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -238,6 +240,8 @@ export default function AssetsPage() {
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [clientFilterId, setClientFilterId] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState('none');
 
   const canCreate = hasPermission('ASSETS', 'create');
 
@@ -296,19 +300,54 @@ export default function AssetsPage() {
     return assets.filter(asset => scopedClientIds.has(asset.familyHeadId));
   }, [assets, familyHeads, effectiveUser]);
 
+  const getAssetAmountValue = (asset: Asset): number => {
+    switch (asset.assetType) {
+      case 'GENERAL INSURANCE':
+        return Number(asset.generalInsurance?.sumAssured || 0);
+      case 'PHYSICAL TO DEMAT':
+        return Number(asset.physicalToDemat?.totalValue || 0);
+      case 'BONDS':
+        return Number(asset.bonds?.bondAmount || 0);
+      case 'FIXED DEPOSITS':
+        return Number(asset.fixedDeposits?.depositedAmount || 0);
+      case 'PPF':
+        return Number(asset.ppf?.balance || 0);
+      case 'MUTUAL FUNDS':
+        return Number(asset.mutualFunds?.investedAmount || 0);
+      case 'LIFE INSURANCE':
+        return Number(asset.lifeInsurance?.sumAssured || 0);
+      default:
+        return 0;
+    }
+  }
+
   const filteredAssets = useMemo(() => {
-    if (clientFilterId === 'all') {
-        return scopedAssets;
+    let assetsToFilter = [...scopedAssets];
+
+    if (clientFilterId !== 'all') {
+        const selectedOption = clientOptions.find(opt => opt.value === clientFilterId);
+        const familyId = (selectedOption as any)?.clientId || selectedOption?.value;
+
+        if (familyId) {
+            assetsToFilter = assetsToFilter.filter(asset => asset.familyHeadId === familyId);
+        }
     }
 
-    const selectedOption = clientOptions.find(opt => opt.value === clientFilterId);
-    const familyId = (selectedOption as any)?.clientId || selectedOption?.value;
-
-    if (familyId) {
-        return scopedAssets.filter(asset => asset.familyHeadId === familyId);
+    if (categoryFilter !== 'all') {
+        assetsToFilter = assetsToFilter.filter(asset => asset.assetType === categoryFilter);
     }
-    return scopedAssets;
-  }, [scopedAssets, clientFilterId, clientOptions]);
+    
+    if (sortOrder !== 'none') {
+        assetsToFilter.sort((a, b) => {
+            const valueA = getAssetAmountValue(a);
+            const valueB = getAssetAmountValue(b);
+            return sortOrder === 'asc' ? valueA - valueB : valueB - valueA;
+        });
+    }
+
+    return assetsToFilter;
+  }, [scopedAssets, clientFilterId, clientOptions, categoryFilter, sortOrder]);
+
 
   const handleSaveAsset = (asset: Asset) => {
     if (editingAsset) {
@@ -411,19 +450,41 @@ export default function AssetsPage() {
         
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
+             <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-xl font-semibold">All Assets</h2>
                     <p className="text-muted-foreground">A list of all assets created for clients.</p>
                 </div>
-                <div className="w-full max-w-xs">
+                <div className="flex items-center gap-2">
                     <Combobox
                         options={clientOptions}
                         value={clientFilterId}
                         onChange={setClientFilterId}
                         placeholder="Filter by client..."
                         searchPlaceholder="Search clients..."
+                        className="w-[250px]"
                     />
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            {ASSET_TYPES.map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={sortOrder} onValueChange={setSortOrder}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">No Sorting</SelectItem>
+                            <SelectItem value="asc">Amount (Low to High)</SelectItem>
+                            <SelectItem value="desc">Amount (High to Low)</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
           </CardHeader>
