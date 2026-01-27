@@ -591,15 +591,15 @@ export default function TasksPage() {
   const terminalStatuses: TaskStatus[] = ['Completed', 'Cancelled', 'Rejected'];
 
   const TaskCardFront = ({ item, isExpanded }: { item: GroupedTasks; isExpanded?: boolean }) => (
-    <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-primary to-accent", isExpanded && "rounded-xl")}>
+    <Card className={cn("h-full w-full flex flex-col justify-between text-black shadow-lg bg-premium-dark-metal", isExpanded && "rounded-xl")}>
         <CardHeader>
             <div className="flex items-center gap-4">
                 <Avatar>
                     <AvatarFallback>{getInitials(item.clientName)}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <CardTitle className="text-xl">{item.clientName}</CardTitle>
-                    <CardDescription className="text-primary-foreground/80 pt-1">{item.tasks.length} tasks</CardDescription>
+                    <CardTitle className="text-xl text-white">{item.clientName}</CardTitle>
+                    <CardDescription className="text-white/80 pt-1">{item.tasks.length} tasks</CardDescription>
                 </div>
             </div>
         </CardHeader>
@@ -610,7 +610,7 @@ export default function TasksPage() {
                     <span>{item.overdueCount} Overdue</span>
                 </div>
             )}
-             {!isExpanded && <p className="text-sm mt-4 text-primary-foreground/70">Click to view details</p>}
+             {!isExpanded && <p className="text-sm mt-4 text-white/70">Click to view details</p>}
         </CardContent>
     </Card>
   );

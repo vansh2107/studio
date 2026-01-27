@@ -13,6 +13,7 @@ export default {
       backgroundImage: {
         'orange-gradient-vertical': 'linear-gradient(180deg, #f7b25a 0%, #e48210 40%, #cc6800 100%)',
         'orange-gradient-horizontal': 'linear-gradient(180deg, #f8a63c 0%, #e87500 100%)',
+        'premium-dark-metal': 'linear-gradient(145deg, #434343, #8a8a8a, #434343)',
       },
       fontFamily: {
         body: ['Roboto', 'sans-serif'],
