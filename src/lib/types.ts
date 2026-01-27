@@ -326,14 +326,30 @@ export interface MutualFundsDetails {
 
 export interface LifeInsuranceDetails {
   holderName?: string;
-  company: string;
-  policyNumber: string;
-  planName?: string;
-  sumAssured?: number;
-  premiumAmount?: number;
-  policyStartDate?: string;
-  policyEndDate?: string;
+  proposer?: string;
+  lifeAssured?: string;
   jointHolders?: { name: string }[];
+  company: string;
+  planName?: string;
+  planType?: string;
+  policyNumber: string;
+  policyStartDate?: string;
+  premiumMode?: 'Yearly' | 'Quarterly' | 'Monthly' | 'Half-Yearly';
+  policyTerm?: number;
+  premiumPayingTerm?: number;
+  premiumsPaid?: number;
+  grossAmount?: number;
+  gst?: number;
+  netAmount?: number;
+  lastPremiumPaidDate?: string;
+  totalPaid?: number;
+  premiumPending?: number;
+  liability?: number;
+  bonusValue?: number;
+  sumAssured?: number;
+  policyEndDate?: string;
+  status?: string;
+  isActive?: boolean;
   nominees?: { name: string; allocation?: number; dateOfBirth?: string; }[];
 }
 

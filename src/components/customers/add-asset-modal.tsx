@@ -210,16 +210,32 @@ const lifeInsuranceSchema = z.object({
     familyHead: z.string().min(1, "Family Head is required."),
     assetType: z.literal("LIFE INSURANCE"),
     lifeInsurance: z.object({
-        holderName: z.string().min(1, "Holder name is required."),
-        company: z.string().min(1, "Company is required."),
-        policyNumber: z.string().min(1, "Policy Number is required."),
-        planName: z.string().optional(),
-        sumAssured: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-        premiumAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
-        policyStartDate: z.string().optional().refine(isDateInPast, { message: "Start Date cannot be in the future." }),
-        policyEndDate: z.string().optional().refine(isDateInFuture, { message: "End Date cannot be in the past." }),
-        nominees: nomineesArraySchema,
+        holderName: z.string().optional(),
+        proposer: z.string().optional(),
+        lifeAssured: z.string().optional(),
         jointHolders: z.array(jointHolderSchema).max(3).optional(),
+        company: z.string().min(1, "Company is required."),
+        planName: z.string().optional(),
+        planType: z.string().optional(),
+        policyNumber: z.string().min(1, "Policy Number is required."),
+        policyStartDate: z.string().optional().refine(isDateInPast, { message: "Date of Purchase cannot be in the future." }),
+        premiumMode: z.enum(['Yearly', 'Quarterly', 'Monthly', 'Half-Yearly']).optional(),
+        policyTerm: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().int().min(0, "Must be a positive number.").optional()),
+        premiumPayingTerm: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().int().min(0, "Must be a positive number.").optional()),
+        premiumsPaid: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().int().min(0, "Must be a positive number.").optional()),
+        grossAmount: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().min(0, "Must be a positive number.").optional()),
+        gst: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().min(0, "Must be a positive number.").optional()),
+        netAmount: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().min(0).optional()),
+        lastPremiumPaidDate: z.string().optional().refine(isDateInPast, { message: "Date cannot be in the future." }),
+        totalPaid: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().min(0).optional()),
+        premiumPending: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().min(0).optional()),
+        liability: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().min(0).optional()),
+        bonusValue: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().min(0).optional()),
+        sumAssured: z.preprocess((val) => (val === '' || val === null) ? undefined : Number(val), z.number().min(0).optional()),
+        policyEndDate: z.string().optional().refine(isDateInFuture, { message: "Maturity Date cannot be in the past." }),
+        status: z.string().optional(),
+        isActive: z.boolean().optional().default(true),
+        nominees: nomineesArraySchema,
     })
 });
 
@@ -432,7 +448,14 @@ export function AddAssetModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl flex flex-col max-h-[90vh] p-0 gap-0">
+      <DialogContent 
+        onPointerDownOutside={(e) => {
+          if (assetType === 'LIFE INSURANCE') {
+            e.preventDefault();
+          }
+        }}
+        className="max-w-4xl flex flex-col max-h-[90vh] p-0 gap-0"
+      >
         <DialogHeader className="p-6 border-b">
           <DialogTitle>
             {assetToEdit ? 'Edit Asset' : 'Add Asset'}
