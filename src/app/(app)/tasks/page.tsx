@@ -17,7 +17,7 @@ import { useTasks, type Task } from '@/hooks/use-tasks';
 import { TASK_STATUSES, type TaskStatus } from '@/lib/constants';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Edit, Download, AlertTriangle, ChevronRight, User, Repeat, AlertCircle, Edit2, CheckCircleIcon } from 'lucide-react';
+import { Plus, Trash2, Edit, Download, AlertTriangle, ChevronRight, User as UserIcon, Repeat, AlertCircle, Edit2, CheckCircleIcon } from 'lucide-react';
 import { CreateTaskModal } from '@/components/tasks/create-task-modal';
 import type { TaskFormData } from '@/components/tasks/create-task-modal';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -48,7 +48,7 @@ import { Combobox } from '@/components/ui/combobox';
 import { InteractiveAssetCardViewer } from '@/components/dashboards/InteractiveAssetCardViewer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ClipboardList } from 'lucide-react';
-import { TimelineEvent, User, FamilyMember } from '@/lib/types';
+import type { TimelineEvent, User, FamilyMember } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
@@ -116,7 +116,7 @@ export default function TasksPage() {
     });
   };
 
-  const ExpandedTaskDetails = ({ task, canUpdate, canEditTask, canDelete, onEdit, onDelete }: { task: Task; canUpdate: boolean; canEditTask: boolean; canDelete: boolean, onEdit: (task: Task) => void, onDelete: (task: Task) => void }) => {
+  const ExpandedTaskDetails = ({ task, onEdit }: { task: Task; onEdit: (task: Task) => void }) => {
     const DetailItem = ({ label, children }: { label: string; children: React.ReactNode }) => (
       <div>
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
@@ -164,8 +164,8 @@ export default function TasksPage() {
     const eventVisuals: { [key: string]: { icon: React.ElementType, color: string } } = {
         TASK_CREATED: { icon: Plus, color: 'bg-primary' },
         STATUS_CHANGED: { icon: Edit2, color: 'bg-blue-500' },
-        ASSIGNED_RM: { icon: User, color: 'bg-gray-500' },
-        TASK_RM_ASSIGNED: { icon: User, color: 'bg-gray-500' },
+        ASSIGNED_RM: { icon: UserIcon, color: 'bg-gray-500' },
+        TASK_RM_ASSIGNED: { icon: UserIcon, color: 'bg-gray-500' },
         TASK_COMPLETED: { icon: CheckCircleIcon, color: 'bg-green-500' },
         TASK_REOPENED: { icon: Repeat, color: 'bg-orange-500' },
         FIELD_UPDATED: { icon: Edit2, color: 'bg-gray-500' },
@@ -212,27 +212,23 @@ export default function TasksPage() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-
-          {canEditTask && (
-              <Tooltip>
-                  <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" className="bg-background" onClick={() => onEdit(task)}>
-                          <Edit className="h-4 w-4" />
-                      </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Edit Task</TooltipContent>
-              </Tooltip>
-          )}
-          {canDelete && (
-              <Tooltip>
-                  <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" className="bg-background text-destructive hover:text-destructive border-destructive/50" onClick={() => onDelete(task)} disabled={!canEditTask}>
-                          <Trash2 className="h-4 w-4" />
-                      </Button>
-                  </TooltipTrigger>
-                  <TooltipContent><p>{canEditTask ? 'Delete Task' : 'Cannot delete locked task'}</p></TooltipContent>
-              </Tooltip>
-          )}
+          
+          <Tooltip>
+              <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" className="bg-background" onClick={() => onEdit(task)}>
+                      <Edit className="h-4 w-4" />
+                  </Button>
+              </TooltipTrigger>
+              <TooltipContent>Edit Task</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+              <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" className="bg-background text-destructive hover:text-destructive border-destructive/50" onClick={() => setTaskToDelete(task)} disabled={!canDelete}>
+                      <Trash2 className="h-4 w-4" />
+                  </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>{canDelete ? 'Delete Task' : 'Cannot delete task'}</p></TooltipContent>
+          </Tooltip>
         </div>
   
         <Section title="Task History">
@@ -636,7 +632,7 @@ export default function TasksPage() {
     </Card>
   );
 
-  const TaskCardBack = ({ item, onEdit, onDelete }: { item: GroupedTasks; onEdit: (task: Task) => void; onDelete: (task: Task) => void; }) => {
+  const TaskCardBack = ({ item }: { item: GroupedTasks; }) => {
     return (
         <div className="w-full h-full flex flex-col text-card-foreground bg-card rounded-xl">
             <CardHeader>
@@ -646,12 +642,9 @@ export default function TasksPage() {
             <CardContent className="flex-1 overflow-y-auto p-2 space-y-2">
                 {item.tasks.length > 0 ? (
                     item.tasks.map(task => {
-                        const isTerminal = terminalStatuses.includes(task.status);
-                        const canEditTask = isSuperAdmin || !isTerminal;
-
                         return (
                             <Card key={task.id} className="overflow-hidden">
-                                <ExpandedTaskDetails task={task} canUpdate={canUpdate} canEditTask={canEditTask} onEdit={onEdit} canDelete={canDelete} onDelete={onDelete} />
+                                <ExpandedTaskDetails task={task} onEdit={handleOpenEditModal} />
                             </Card>
                         )
                     })
@@ -727,7 +720,7 @@ export default function TasksPage() {
                           <SelectContent>
                               <SelectItem value="All">All Statuses</SelectItem>
                               <SelectItem value="Overdue">Overdue</SelectItem>
-                              {TASK_STATUSES.map(status => (
+                              {Object.values(TASK_STATUSES).map(status => (
                                   <SelectItem key={status} value={status}>{status}</SelectItem>
                               ))}
                           </SelectContent>
@@ -741,7 +734,7 @@ export default function TasksPage() {
                 <InteractiveAssetCardViewer
                     items={tasksByClient}
                     renderCardFront={(item, isExpanded) => <TaskCardFront item={item} isExpanded={isExpanded} />}
-                    renderCardBack={(item) => <TaskCardBack item={item} onEdit={handleOpenEditModal} onDelete={setTaskToDelete} />}
+                    renderCardBack={(item) => <TaskCardBack item={item} />}
                     layoutIdPrefix="task-card"
                     expandedCardClassName="w-[75vw] h-[75vh]"
                 />
@@ -786,3 +779,6 @@ export default function TasksPage() {
 
     
 
+
+
+    
