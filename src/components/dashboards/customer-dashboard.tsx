@@ -421,38 +421,38 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
       <TaskOverviewSection tasks={scopedTasks} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <Card className="gradient-background-card">
+          <Card className="bg-premium-dark-metal text-white">
               <CardHeader>
-                  <CardTitle className="text-xl">Compliance</CardTitle>
-                  <Separator />
+                  <CardTitle className="text-xl text-white">Compliance</CardTitle>
+                  <Separator className="bg-white/20" />
               </CardHeader>
               <CardContent>
                   <ul className="space-y-3">
                       {['Address Update', 'Email Update', 'Mobile Number Update', 'Nominee Update', 'PAN Card Update', 'Name Change'].map(item => (
-                          <li key={item} className="flex justify-between items-center text-sm font-medium p-2 -m-2 rounded-md hover:bg-muted cursor-pointer transition-colors" role="button" tabIndex={0}>
+                          <li key={item} className="flex justify-between items-center text-sm font-medium p-2 -m-2 rounded-md hover:bg-white/10 cursor-pointer transition-colors" role="button" tabIndex={0}>
                               <span>{item}</span>
-                              <Badge variant="secondary">{Math.floor(Math.random() * 15) + 1}</Badge>
+                              <Badge variant="secondary" className="bg-white/20 text-white">{Math.floor(Math.random() * 15) + 1}</Badge>
                           </li>
                       ))}
-                      <li className="flex justify-between items-center text-sm font-medium p-2 -m-2 rounded-md hover:bg-muted cursor-pointer transition-colors" role="button" tabIndex={0}>
+                      <li className="flex justify-between items-center text-sm font-medium p-2 -m-2 rounded-md hover:bg-white/10 cursor-pointer transition-colors" role="button" tabIndex={0}>
                           <span>Document Not Available</span>
-                          <Badge variant="secondary">{Math.floor(Math.random() * 5)}</Badge>
+                          <Badge variant="secondary" className="bg-white/20 text-white">{Math.floor(Math.random() * 5)}</Badge>
                       </li>
                   </ul>
               </CardContent>
           </Card>
 
-          <Card className="gradient-background-card">
+          <Card className="bg-premium-dark-metal text-white">
               <CardHeader>
-                  <CardTitle className="text-xl">Alerts</CardTitle>
-                   <Separator />
+                  <CardTitle className="text-xl text-white">Alerts</CardTitle>
+                   <Separator className="bg-white/20"/>
               </CardHeader>
               <CardContent>
                   <ul className="space-y-3">
                         {['FD Maturity', 'Insurance Renewal', 'Insurance Maturity', 'Bond Maturity', 'Upcoming Birthday', 'Minor to Major'].map(item => (
-                          <li key={item} className="flex justify-between items-center text-sm font-medium p-2 -m-2 rounded-md hover:bg-muted cursor-pointer transition-colors" role="button" tabIndex={0}>
+                          <li key={item} className="flex justify-between items-center text-sm font-medium p-2 -m-2 rounded-md hover:bg-white/10 cursor-pointer transition-colors" role="button" tabIndex={0}>
                               <span>{item}</span>
-                                <Badge variant="destructive">{Math.floor(Math.random() * 8)}</Badge>
+                                <Badge variant="destructive" className="bg-destructive/80 text-destructive-foreground">{Math.floor(Math.random() * 8)}</Badge>
                           </li>
                       ))}
                   </ul>
