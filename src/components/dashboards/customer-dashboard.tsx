@@ -421,7 +421,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
       <TaskOverviewSection tasks={scopedTasks} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <Card className="bg-premium-dark-metal text-white">
+          <Card className="bg-gradient-to-br from-blue-700 to-orange-400 text-white">
               <CardHeader>
                   <CardTitle className="text-xl text-white">Compliance</CardTitle>
                   <Separator className="bg-white/20" />
@@ -442,7 +442,7 @@ export default function CustomerDashboard({ user, allTasks }: CustomerDashboardP
               </CardContent>
           </Card>
 
-          <Card className="bg-premium-dark-metal text-white">
+          <Card className="bg-gradient-to-br from-blue-700 to-orange-400 text-white">
               <CardHeader>
                   <CardTitle className="text-xl text-white">Alerts</CardTitle>
                    <Separator className="bg-white/20"/>
