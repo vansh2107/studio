@@ -32,9 +32,9 @@ const formatDate = (dateString?: string) => {
 
 const CardFront = ({ item, isExpanded }: { item: GroupedBonds; isExpanded?: boolean }) => (
     <Card className={cn("h-full w-full flex flex-col justify-between text-white shadow-lg bg-gradient-to-br from-blue-700 to-orange-400", isExpanded && "rounded-xl")}>
-        <CardHeader className="flex flex-row justify-between items-start">
+        <CardHeader className="flex flex-row justify-between items-start gap-4">
             <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
                     <FileText className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -42,9 +42,9 @@ const CardFront = ({ item, isExpanded }: { item: GroupedBonds; isExpanded?: bool
                     <CardDescription className="text-blue-100 pt-1">{item.bonds.length} assets</CardDescription>
                 </div>
             </div>
-            <div className="text-right flex-shrink-0">
-                 <h3 className="text-lg font-bold">{item.issuer}</h3>
-                 {item.bondName && <p className="text-sm opacity-80">{item.bondName}</p>}
+            <div className="text-right min-w-0">
+                 <h3 className="text-lg font-bold truncate">{item.issuer}</h3>
+                 {item.bondName && <p className="text-sm opacity-80 truncate">{item.bondName}</p>}
             </div>
         </CardHeader>
         <CardContent>
