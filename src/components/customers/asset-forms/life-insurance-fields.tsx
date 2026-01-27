@@ -30,6 +30,7 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
       'lifeInsurance.netAmount',
       'lifeInsurance.premiumMode',
       'lifeInsurance.premiumPayingTerm',
+      'lifeInsurance.premiumPayable',
     ]
   });
 
@@ -40,6 +41,20 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
     const netAmount = (isNaN(gross) ? 0 : gross) + (isNaN(gst) ? 0 : gst);
     setValue('lifeInsurance.netAmount', netAmount > 0 ? netAmount : '', { shouldValidate: true });
   }, [watchedFields[0], watchedFields[1], setValue]);
+  
+  // Calculate Premium Payable
+  useEffect(() => {
+    const premiumMode = watchedFields[4] as keyof typeof premiumModeMultipliers;
+    const premiumPayingTerm = parseInt(watchedFields[5], 10);
+    const multiplier = premiumModeMultipliers[premiumMode] || 0;
+    
+    if (!isNaN(premiumPayingTerm) && multiplier > 0) {
+      const totalPremiums = premiumPayingTerm * multiplier;
+      setValue('lifeInsurance.premiumPayable', totalPremiums > 0 ? totalPremiums : '', { shouldValidate: true });
+    } else {
+      setValue('lifeInsurance.premiumPayable', '', { shouldValidate: true });
+    }
+  }, [watchedFields[4], watchedFields[5], setValue]);
 
   // Calculate Total Paid
   useEffect(() => {
@@ -51,22 +66,19 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
   
   // Calculate Premium Pending
   useEffect(() => {
-    const premiumMode = watchedFields[4] as keyof typeof premiumModeMultipliers;
-    const premiumPayingTerm = parseInt(watchedFields[5], 10);
+    const premiumPayable = parseInt(watchedFields[6], 10);
     const premiumsPaid = parseInt(watchedFields[2], 10);
     const netAmount = parseFloat(watchedFields[3]);
     
-    const multiplier = premiumModeMultipliers[premiumMode] || 0;
-    
-    if (!isNaN(premiumPayingTerm) && !isNaN(premiumsPaid) && !isNaN(netAmount) && multiplier > 0) {
-      const totalPremiums = premiumPayingTerm * multiplier;
-      const pendingPremiums = totalPremiums - premiumsPaid;
+    if (!isNaN(premiumPayable) && !isNaN(premiumsPaid) && !isNaN(netAmount)) {
+      const pendingPremiums = premiumPayable - premiumsPaid;
       const pendingAmount = (pendingPremiums > 0 ? pendingPremiums : 0) * netAmount;
       setValue('lifeInsurance.premiumPending', pendingAmount > 0 ? pendingAmount : '', { shouldValidate: true });
     } else {
       setValue('lifeInsurance.premiumPending', '', { shouldValidate: true });
     }
-  }, [watchedFields[4], watchedFields[5], watchedFields[2], watchedFields[3], setValue]);
+  }, [watchedFields[6], watchedFields[2], watchedFields[3], setValue]);
+
 
   const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -130,15 +142,17 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
         </div>
 
         {/* Row 2 */}
-        <JointHolderFields
-            control={control}
-            errors={errors}
-            familyMembers={familyMembers}
-            watch={watch}
-            holderNamePath="lifeInsurance.holderName"
-            jointHoldersPath="lifeInsurance.jointHolders"
-            showPrimaryHolder={false}
-        />
+        <div className="pt-4">
+            <JointHolderFields
+                control={control}
+                errors={errors}
+                familyMembers={familyMembers}
+                watch={watch}
+                holderNamePath="lifeInsurance.holderName"
+                jointHoldersPath="lifeInsurance.jointHolders"
+                showPrimaryHolder={false}
+            />
+        </div>
         
         {/* Row 3 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
@@ -201,6 +215,10 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
             <div>
                 <Label>Premium Paying Term (Yrs)</Label>
                 <Controller name="lifeInsurance.premiumPayingTerm" control={control} render={({ field }) => <Input type="number" onKeyDown={handleNumericKeyDown} {...field} onChange={(e) => handleNumericChange(e, field, true)} value={field.value || ''} />} />
+            </div>
+            <div>
+                <Label>Premium Payable</Label>
+                <Controller name="lifeInsurance.premiumPayable" control={control} render={({ field }) => <Input readOnly {...field} value={field.value || ''} />} />
             </div>
             <div>
                 <Label>No. of Premium Paid</Label>
@@ -274,7 +292,9 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
         </div>
         
         {/* Row 10 */}
-        <NomineeFields control={control} errors={errors?.lifeInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="lifeInsurance.nominees" trigger={trigger} holderNamePath="lifeInsurance.holderName" jointHoldersPath="lifeInsurance.jointHolders" />
+        <div className="pt-4">
+            <NomineeFields control={control} errors={errors?.lifeInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="lifeInsurance.nominees" trigger={trigger} holderNamePath="lifeInsurance.holderName" jointHoldersPath="lifeInsurance.jointHolders" />
+        </div>
     </div>
   );
 }
