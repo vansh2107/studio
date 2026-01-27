@@ -126,10 +126,10 @@
   content: '';
   position: absolute;
   z-index: -2; /* Layer behind the mask */
-  left: -50%;
-  top: -50%;
-  width: 200%;
-  height: 200%;
+  left: -150%;
+  top: -150%;
+  width: 400%;
+  height: 400%;
   background-image: conic-gradient(#3B82F6 0%, #3B82F6 50%, #F97316 50%, #F97316 100%);
   animation: rotateBorder 8s linear infinite;
 }
