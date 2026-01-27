@@ -189,6 +189,29 @@ export default function TasksPage() {
     return (
       <div className="bg-muted/30 p-6 space-y-6 relative">
          <div className="absolute top-4 right-4 flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild disabled={!canChangeStatus}>
+                <Button variant="outline" className="bg-background">
+                  Status:&nbsp;
+                  <Badge
+                    variant={overdue ? 'destructive' : getStatusBadgeVariant(task.status)}
+                    className="pointer-events-none"
+                  >
+                    {overdue ? 'Overdue' : task.status}
+                  </Badge>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {TASK_STATUSES.map(status => (
+                  task.status !== status && (
+                    <DropdownMenuItem key={status} onSelect={() => handleStatusChange(task.id, status)}>
+                      Move to {status}
+                    </DropdownMenuItem>
+                  )
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
           {canEditTask && (
               <Tooltip>
                   <TooltipTrigger asChild>
@@ -261,25 +284,11 @@ export default function TasksPage() {
           <DetailItem label="Task ID">{task.id}</DetailItem>
           <DetailItem label="Category">{task.category}</DetailItem>
           <DetailItem label="Current Status">
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!canChangeStatus}>
-                    <Badge 
-                        variant={overdue ? 'destructive' : getStatusBadgeVariant(task.status)}
-                        className={cn(canChangeStatus ? "cursor-pointer" : "cursor-not-allowed")}
-                    >
-                        {overdue ? 'Overdue' : task.status}
-                    </Badge>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    {TASK_STATUSES.map(status => (
-                        task.status !== status && (
-                            <DropdownMenuItem key={status} onSelect={() => handleStatusChange(task.id, status)}>
-                                Move to {status}
-                            </DropdownMenuItem>
-                        )
-                    ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <Badge 
+                variant={overdue ? 'destructive' : getStatusBadgeVariant(task.status)}
+            >
+                {overdue ? 'Overdue' : task.status}
+            </Badge>
           </DetailItem>
           {task.status2 && (
                <DetailItem label="Secondary Status">
