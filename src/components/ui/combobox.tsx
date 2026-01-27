@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -34,6 +33,7 @@ interface ComboboxProps {
     emptyText?: string;
     className?: string;
     disabled?: boolean;
+    contentClassName?: string;
 }
 
 export function Combobox({ 
@@ -45,6 +45,7 @@ export function Combobox({
     emptyText = "No results found.",
     className,
     disabled,
+    contentClassName,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -79,7 +80,7 @@ export function Combobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0 pointer-events-auto" style={{ width: 'var(--radix-popover-trigger-width)' }}>
+      <PopoverContent className={cn("p-0 pointer-events-auto w-[var(--radix-popover-trigger-width)]", contentClassName)}>
         <Command filter={handleFilter}>
           <CommandInput placeholder={searchPlaceholder} autoFocus />
           <CommandList>

@@ -692,6 +692,7 @@ export default function TasksPage() {
                           onChange={handleClientFilterChange}
                           placeholder="Filter by client..."
                           searchPlaceholder="Search clients..."
+                          contentClassName="w-[400px]"
                       />
                   </div>
                   <div className="w-full max-w-[200px]">
@@ -764,3 +765,4 @@ export default function TasksPage() {
 
 
     
+
