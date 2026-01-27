@@ -295,6 +295,7 @@ export interface PPFDetails {
     balance?: number;
     bankName?: string;
     bankAccountNumber?: string;
+    ppfNumber?: string;
     openingDate?: string;
     matureDate?: string;
     jointHolders?: { name: string }[];

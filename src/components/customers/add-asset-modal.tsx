@@ -176,7 +176,8 @@ const ppfSchema = z.object({
   ppf: z.object({
       holderName: z.string().min(1, "Holder name is required."),
       bankName: z.string().min(1, "Bank name is required."),
-      bankAccountNumber: z.string().min(1, 'Bank account number is required'),
+      bankAccountNumber: z.string().optional(),
+      ppfNumber: z.string().optional(),
       contributedAmount: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
       balance: z.preprocess((val) => val === '' ? undefined : Number(val), z.number().optional()),
       openingDate: z.string().optional().refine(isDateInPast, { message: "Opening Date cannot be in the future." }),

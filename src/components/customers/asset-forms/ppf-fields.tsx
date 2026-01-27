@@ -46,14 +46,19 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
 
       <div className="space-y-4 pt-4">
         {/* ROW 1 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Bank Name</Label>
             <Controller name="ppf.bankName" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
              {errors?.ppf?.bankName && <p className="text-sm text-destructive mt-1">{errors.ppf.bankName.message}</p>}
           </div>
           <div>
-            <Label>Bank Account Number</Label>
+            <Label>PPF Account Number</Label>
+            <Controller name="ppf.ppfNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
+            {errors?.ppf?.ppfNumber && <p className="text-sm text-destructive mt-1">{errors.ppf.ppfNumber.message}</p>}
+          </div>
+          <div>
+            <Label>Bank Account Number (Optional)</Label>
             <Controller name="ppf.bankAccountNumber" control={control} render={({ field }) => <Input {...field} value={field.value || ''} />} />
             {errors?.ppf?.bankAccountNumber && <p className="text-sm text-destructive mt-1">{errors.ppf.bankAccountNumber.message}</p>}
           </div>
