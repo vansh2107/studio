@@ -137,6 +137,7 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
             watch={watch}
             holderNamePath="lifeInsurance.holderName"
             jointHoldersPath="lifeInsurance.jointHolders"
+            showPrimaryHolder={false}
         />
         
         {/* Row 3 */}

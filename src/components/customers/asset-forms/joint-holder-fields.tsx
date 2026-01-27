@@ -1,4 +1,3 @@
-
 'use client';
 import { useFieldArray, Controller } from 'react-hook-form';
 import { Label } from '@/components/ui/label';
@@ -7,6 +6,7 @@ import { PlusCircle, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Client, FamilyMember } from '@/lib/types';
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 // Helper to safely get a nested property from an object
 const get = (obj: any, path: string, defaultValue = undefined) => {
@@ -27,6 +27,7 @@ export function JointHolderFields({
     watch,
     holderNamePath,
     jointHoldersPath = 'jointHolders',
+    showPrimaryHolder = true,
 }: { 
     control: any, 
     errors: any, 
@@ -34,6 +35,7 @@ export function JointHolderFields({
     watch: any,
     holderNamePath: string,
     jointHoldersPath?: string,
+    showPrimaryHolder?: boolean,
 }) {
   const { fields, append, remove } = useFieldArray({
     control,
@@ -47,30 +49,37 @@ export function JointHolderFields({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+      {!showPrimaryHolder && fields.length > 0 && <Label className="font-semibold">Joint Holders</Label>}
+      
+      <div className={cn(
+        "grid grid-cols-1 gap-4 items-end",
+        showPrimaryHolder ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-3"
+      )}>
         {/* Primary Holder */}
-        <div className="space-y-1">
-            <Label>Holder Name</Label>
-            <Controller
-                name={holderNamePath}
-                control={control}
-                render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
-                        <SelectTrigger>
-                        <SelectValue placeholder="Select Holder" />
-                        </SelectTrigger>
-                        <SelectContent>
-                        {familyMembers.map((member) => (
-                            <SelectItem key={member.id} value={member.name}>
-                            {member.name}
-                            </SelectItem>
-                        ))}
-                        </SelectContent>
-                    </Select>
-                )}
-            />
-            {holderNameError && <p className="text-sm text-destructive mt-1">{holderNameError.message}</p>}
-        </div>
+        {showPrimaryHolder && (
+          <div className="space-y-1">
+              <Label>Holder Name</Label>
+              <Controller
+                  name={holderNamePath}
+                  control={control}
+                  render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value || ''}>
+                          <SelectTrigger>
+                          <SelectValue placeholder="Select Holder" />
+                          </SelectTrigger>
+                          <SelectContent>
+                          {familyMembers.map((member) => (
+                              <SelectItem key={member.id} value={member.name}>
+                              {member.name}
+                              </SelectItem>
+                          ))}
+                          </SelectContent>
+                      </Select>
+                  )}
+              />
+              {holderNameError && <p className="text-sm text-destructive mt-1">{holderNameError.message}</p>}
+          </div>
+        )}
 
         {/* Joint Holders */}
         {fields.map((item, index) => {
@@ -85,14 +94,14 @@ export function JointHolderFields({
             return (
                 <div key={item.id} className="space-y-1">
                     <Label>Joint Holder {index + 1}</Label>
-                    <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+                    <div className="flex items-center gap-2">
                         <Controller
                             control={control}
                             name={`${jointHoldersPath}.${index}.name`}
                             render={({ field }) => (
                               <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <SelectTrigger>
-                                    <SelectValue placeholder={`Select Joint Holder ${index + 1}`} />
+                                    <SelectValue placeholder={`Select Joint Holder`} />
                                   </SelectTrigger>
                                   <SelectContent>
                                       {availableOptions.map(option => (
@@ -109,7 +118,7 @@ export function JointHolderFields({
                           variant="ghost"
                           size="icon"
                           onClick={() => remove(index)}
-                          className="h-8 w-8 text-destructive self-center"
+                          className="h-9 w-9 text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
