@@ -10,13 +10,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Client, FamilyMember } from '@/lib/types';
 import React, { useEffect } from 'react';
 
-export function NomineeFields({ control, errors, familyMembers, getValues, setValue, maxNominees = 3, fieldPath = 'nominees', trigger }: { control: any; errors: any; familyMembers: (Client | FamilyMember)[], getValues: any, setValue: any, maxNominees?: number, fieldPath?: string, trigger?: any }) {
+export function NomineeFields({
+    control,
+    errors,
+    familyMembers,
+    getValues,
+    setValue,
+    maxNominees = 3,
+    fieldPath = 'nominees',
+    trigger,
+    holderNamePath,
+    jointHoldersPath,
+}: {
+    control: any;
+    errors: any;
+    familyMembers: (Client | FamilyMember)[];
+    getValues: any;
+    setValue: any;
+    maxNominees?: number;
+    fieldPath?: string;
+    trigger?: any;
+    holderNamePath: string;
+    jointHoldersPath: string;
+}) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: fieldPath as any,
   });
   
   const watchedNominees = useWatch({ control, name: fieldPath });
+  const primaryHolderName = useWatch({ control, name: holderNamePath });
+  const jointHolders = useWatch({ control, name: jointHoldersPath }) || [];
   
   // Effect to manage allocation and trigger validation
   useEffect(() => {
@@ -86,11 +110,27 @@ export function NomineeFields({ control, errors, familyMembers, getValues, setVa
     return today.toISOString().split('T')[0];
   }
 
+  const getAvailableNominees = (currentIndex: number) => {
+    const selectedNomineeNames = (watchedNominees || [])
+        .map((n: {name: string}) => n.name)
+        .filter((name: string, index: number) => name && index !== currentIndex);
+    
+    const jointHolderNames = jointHolders.map((jh: {name: string}) => jh.name);
+
+    return familyMembers.filter(member => {
+        return member.name !== primaryHolderName &&
+               !jointHolderNames.includes(member.name) &&
+               !selectedNomineeNames.includes(member.name);
+    });
+  }
+
   return (
     <div>
       <h3 className="font-semibold text-lg border-b pb-2 mb-4">Nominee Details</h3>
       <div className="space-y-4">
-        {fields.map((item, index) => (
+        {fields.map((item, index) => {
+          const availableNominees = getAvailableNominees(index);
+          return (
           <div key={item.id} className="grid grid-cols-[2fr_1fr_1fr_auto] gap-2 items-end">
             <div>
               <Label>Nominee Name {index + 1}</Label>
@@ -103,7 +143,7 @@ export function NomineeFields({ control, errors, familyMembers, getValues, setVa
                       <SelectValue placeholder="Select Nominee" />
                     </SelectTrigger>
                     <SelectContent>
-                      {familyMembers.map((member) => (
+                      {availableNominees.map((member) => (
                         <SelectItem key={member.id} value={member.name}>
                           {member.name}
                         </SelectItem>
@@ -166,7 +206,7 @@ export function NomineeFields({ control, errors, familyMembers, getValues, setVa
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
           </div>
-        ))}
+        )})}
         
          {fields.length > 1 && (
           <div className={`mt-2 text-sm font-medium text-right pr-12 ${totalAllocation !== 100 ? 'text-destructive' : 'text-muted-foreground'}`}>

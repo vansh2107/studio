@@ -199,7 +199,7 @@ export function BondFields({ control, errors, familyMembers, watch, register, ge
           </div>
         </div>
         
-        <NomineeFields control={control} errors={errors?.bonds?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="bonds.nominees" trigger={trigger} />
+        <NomineeFields control={control} errors={errors?.bonds?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="bonds.nominees" trigger={trigger} holderNamePath="bonds.holderName" jointHoldersPath="bonds.jointHolders" />
       </div>
     </div>
   );

@@ -92,7 +92,7 @@ export function LifeInsuranceFields({ control, errors, familyMembers, register, 
                 {errors?.lifeInsurance?.policyEndDate && <p className="text-sm text-destructive mt-1">{errors.lifeInsurance.policyEndDate.message}</p>}
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.lifeInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="lifeInsurance.nominees" trigger={trigger} />
+        <NomineeFields control={control} errors={errors?.lifeInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="lifeInsurance.nominees" trigger={trigger} holderNamePath="lifeInsurance.holderName" jointHoldersPath="lifeInsurance.jointHolders" />
     </div>
   );
 }

@@ -89,7 +89,7 @@ export function PPFFields({ control, errors, familyMembers, register, watch, get
         </div>
       </div>
 
-      <NomineeFields control={control} errors={errors?.ppf?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="ppf.nominees" trigger={trigger} />
+      <NomineeFields control={control} errors={errors?.ppf?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="ppf.nominees" trigger={trigger} holderNamePath="ppf.holderName" jointHoldersPath="ppf.jointHolders" />
     </div>
   );
 }

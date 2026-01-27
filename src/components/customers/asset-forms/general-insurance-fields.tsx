@@ -167,7 +167,7 @@ export function GeneralInsuranceFields({ control, errors, familyMembers, registe
               </div>
             </div>
         </div>
-        <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="generalInsurance.nominees" trigger={trigger} />
+        <NomineeFields control={control} errors={errors?.generalInsurance?.nominees} familyMembers={familyMembers} getValues={getValues} setValue={setValue} fieldPath="generalInsurance.nominees" trigger={trigger} holderNamePath="generalInsurance.holderName" jointHoldersPath="generalInsurance.jointHolders" />
     </div>
   );
 }
