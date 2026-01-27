@@ -46,15 +46,16 @@ import { getAllClients, familyMembers, getAllRMs } from '@/lib/mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/combobox';
 import { InteractiveAssetCardViewer } from '@/components/dashboards/InteractiveAssetCardViewer';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ClipboardList } from 'lucide-react';
-import { TimelineEvent } from '@/lib/types';
+import { TimelineEvent, User, FamilyMember } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const getInitials = (name: string) => {
   if (!name) return '';
-  return name
+  const nameOnly = name.replace(/\s*\(.*\)\s*/, '');
+  return nameOnly
     .split(' ')
     .map((n) => n[0])
     .join('');
@@ -90,7 +91,7 @@ const truncateText = (text: string | undefined, maxLength: number) => {
 };
 
 export default function TasksPage() {
-  const { effectiveUser, hasPermission } = useCurrentUser();
+  const { effectiveUser, hasPermission, allUsers } = useCurrentUser();
   const { toast } = useToast();
   const { tasks, addTask, updateTask, deleteTask } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -496,14 +497,33 @@ export default function TasksPage() {
         clientTasks[key].tasks.push(task);
     });
 
-    return Object.values(clientTasks).map(group => ({
-        ...group,
-        id: group.tasks[0].clientId,
-        overdueCount: group.tasks.filter(isOverdue).length,
-    }));
-  }, [filteredTasks]);
+    const allPeople: (User | FamilyMember)[] = [...allUsers, ...familyMembers];
 
-  type GroupedTasks = (typeof tasksByClient)[0];
+    return Object.values(clientTasks).map(group => {
+        const justName = group.clientName.replace(/\s*\(.*\)\s*/, '').trim();
+        const person = allPeople.find(p => p.name === justName);
+        
+        let avatarUrl;
+        if(person) {
+            if ('avatarUrl' in person && person.avatarUrl) {
+                avatarUrl = person.avatarUrl;
+            } else if ('emailId' in person && (person as any).emailId) {
+                avatarUrl = `https://avatar.vercel.sh/${(person as any).emailId}.png`;
+            } else if ('email' in person && person.email) {
+                avatarUrl = `https://avatar.vercel.sh/${person.email}.png`;
+            }
+        }
+
+        return {
+            ...group,
+            id: group.tasks[0].clientId,
+            overdueCount: group.tasks.filter(isOverdue).length,
+            avatarUrl: avatarUrl
+        };
+    });
+  }, [filteredTasks, allUsers, familyMembers]);
+
+  type GroupedTasks = (ReturnType<typeof tasksByClient>)[0];
 
   const handleOpenCreateModal = () => {
     if (!canCreate) {
@@ -595,6 +615,7 @@ export default function TasksPage() {
         <CardHeader>
             <div className="flex items-center gap-4">
                 <Avatar>
+                    <AvatarImage src={item.avatarUrl} alt={item.clientName} />
                     <AvatarFallback>{getInitials(item.clientName)}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -764,3 +785,4 @@ export default function TasksPage() {
     
 
     
+
