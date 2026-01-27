@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -62,12 +62,39 @@ export default function ClientsPage() {
   
   const [itemToDelete, setItemToDelete] = useState<DisplayClient | null>(null);
   
-  const getRmForClient = (client: DisplayClient) => {
+  const [columnFilters, setColumnFilters] = useState({
+    firstName: '',
+    lastName: '',
+    role: '',
+    phoneNumber: '',
+    email: '',
+    dateOfBirth: '',
+    rmName: '',
+  });
+
+  const handleColumnFilterChange = (key: keyof typeof columnFilters, value: string) => {
+    setColumnFilters(prev => ({...prev, [key]: value}));
+  };
+
+  const getRmForClient = useCallback((client: DisplayClient) => {
     const associate = allAssociates.find(a => a.id === client.associateId);
     if (!associate) return null;
     const rm = allRMs.find(r => r.id === associate.rmId);
     return rm;
-  };
+  }, []);
+  
+  const formatDate = useCallback((dateString?: string) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = parseISO(dateString);
+      if (!isNaN(date.getTime())) {
+        return format(date, 'dd MMM yyyy');
+      }
+      return dateString;
+    } catch (e) {
+      return dateString;
+    }
+  }, []);
 
   const allDisplayClients: DisplayClient[] = useMemo(() => {
     if (!effectiveUser) return [];
@@ -148,7 +175,7 @@ export default function ClientsPage() {
         return getRolePriority(a) - getRolePriority(b);
     });
 
-  }, [effectiveUser, familyMembers]);
+  }, [effectiveUser, familyMembers, getRmForClient]);
 
   const filteredClients = useMemo(() => {
     let clientsToFilter = allDisplayClients;
@@ -159,12 +186,27 @@ export default function ClientsPage() {
         );
     }
     
+    clientsToFilter = clientsToFilter.filter(client => {
+      const rm = getRmForClient(client);
+      const clientRole = client.isFamilyHead ? 'Head' : (client as FamilyMember).relation;
+      
+      const firstNameMatch = client.firstName.toLowerCase().includes(columnFilters.firstName.toLowerCase());
+      const lastNameMatch = client.lastName.toLowerCase().includes(columnFilters.lastName.toLowerCase());
+      const roleMatch = clientRole.toLowerCase().includes(columnFilters.role.toLowerCase());
+      const phoneMatch = client.phoneNumber.toLowerCase().includes(columnFilters.phoneNumber.toLowerCase());
+      const emailMatch = client.email.toLowerCase().includes(columnFilters.email.toLowerCase());
+      const dobMatch = formatDate(client.dateOfBirth).toLowerCase().includes(columnFilters.dateOfBirth.toLowerCase());
+      const rmMatch = (rm?.name || 'Not Assigned').toLowerCase().includes(columnFilters.rmName.toLowerCase());
+
+      return firstNameMatch && lastNameMatch && roleMatch && phoneMatch && emailMatch && dobMatch && rmMatch;
+    });
+
     if (showOnlyHeads) {
       return clientsToFilter.filter(c => c.isFamilyHead);
     }
     
     return clientsToFilter;
-}, [allDisplayClients, showOnlyHeads, searchTerm]);
+  }, [allDisplayClients, showOnlyHeads, searchTerm, columnFilters, getRmForClient, formatDate]);
 
 
   const handleCloseModal = () => {
@@ -274,21 +316,6 @@ export default function ClientsPage() {
     setFamilyMembers(prev => prev.filter(m => m.id !== memberId));
     toast({ title: 'Success', description: 'Family member has been deleted.' });
   };
-
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    try {
-      // It might be a full ISO string or just YYYY-MM-DD
-      const date = parseISO(dateString);
-      if (!isNaN(date.getTime())) {
-        return format(date, 'dd MMM yyyy');
-      }
-      return dateString;
-    } catch (e) {
-      return dateString;
-    }
-  };
   
   const findCustomerUser = (client: DisplayClient): User | undefined => {
       // Can only impersonate family heads who are actual users
@@ -354,13 +381,83 @@ export default function ClientsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>First Name</TableHead>
-                  <TableHead>Last Name</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Phone Number</TableHead>
-                  <TableHead>Email ID</TableHead>
-                  <TableHead>Date of Birth</TableHead>
-                  <TableHead>Assigned RM</TableHead>
+                   <TableHead>
+                    <div className="flex flex-col gap-1">
+                      <span>First Name</span>
+                      <Input
+                        placeholder="Search..."
+                        value={columnFilters.firstName}
+                        onChange={(e) => handleColumnFilterChange('firstName', e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="flex flex-col gap-1">
+                      <span>Last Name</span>
+                      <Input
+                        placeholder="Search..."
+                        value={columnFilters.lastName}
+                        onChange={(e) => handleColumnFilterChange('lastName', e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="flex flex-col gap-1">
+                      <span>Role</span>
+                      <Input
+                        placeholder="Search..."
+                        value={columnFilters.role}
+                        onChange={(e) => handleColumnFilterChange('role', e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="flex flex-col gap-1">
+                      <span>Phone Number</span>
+                      <Input
+                        placeholder="Search..."
+                        value={columnFilters.phoneNumber}
+                        onChange={(e) => handleColumnFilterChange('phoneNumber', e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="flex flex-col gap-1">
+                      <span>Email ID</span>
+                      <Input
+                        placeholder="Search..."
+                        value={columnFilters.email}
+                        onChange={(e) => handleColumnFilterChange('email', e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="flex flex-col gap-1">
+                      <span>Date of Birth</span>
+                      <Input
+                        placeholder="Search..."
+                        value={columnFilters.dateOfBirth}
+                        onChange={(e) => handleColumnFilterChange('dateOfBirth', e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="flex flex-col gap-1">
+                      <span>Assigned RM</span>
+                      <Input
+                        placeholder="Search..."
+                        value={columnFilters.rmName}
+                        onChange={(e) => handleColumnFilterChange('rmName', e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                  </TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
