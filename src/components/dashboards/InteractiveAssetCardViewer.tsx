@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,7 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
     setSelectedIndex(null);
   };
   
-  const handleNavigation = (navDirection: 'next' | 'prev') => {
+  const handleNavigation = useCallback((navDirection: 'next' | 'prev') => {
     if (selectedIndex === null) return;
 
     if (navDirection === 'next') {
@@ -45,7 +46,29 @@ export function InteractiveAssetCardViewer<T extends { [key: string]: any }>({
         setDirection(-1);
         setSelectedIndex((prevIndex) => (prevIndex! - 1 + items.length) % items.length);
     }
-  };
+  }, [selectedIndex, items.length]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (selectedIndex === null) return;
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        handleNavigation('next');
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        handleNavigation('prev');
+      }
+    };
+
+    if (selectedIndex !== null) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedIndex, handleNavigation]);
 
   const handleDotClick = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
